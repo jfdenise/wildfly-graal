@@ -1,0 +1,16 @@
+{
+    "reflection": [
+        {
+            "type": "hello.Hello",
+            "methods": [
+                {
+                    "name": "main",
+                    "parameterTypes": [
+                        "java.lang.String[]"
+                    ]
+                }
+            ]
+        }
+
+    ]
+}
