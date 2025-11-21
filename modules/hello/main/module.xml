@@ -5,4 +5,9 @@
     <resources>
         <resource-root path="hello.jar"/>
     </resources>
+    
+    <dependencies>
+      <module name="api"/>
+      <module name="provider" services="import"/>
+    </dependencies>
 </module>

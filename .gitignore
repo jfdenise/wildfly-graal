@@ -25,3 +25,6 @@ replay_pid*
 /hello/target/
 /module-launcher/target/
 launcher.Launcher
+hellomodule
+/provider/target/
+/api/target/
