@@ -6,3 +6,28 @@ Fatal error: com.oracle.graal.pointsto.constraints.UnsupportedFeatureException: 
 
     '--trace-object-instantiation=java.util.jar.JarFile'
 
+The culprit object has been instantiated by the 'launcher.Launcher' class initializer with the following trace:
+	at java.util.jar.JarFile.<init>(JarFile.java:333)
+	at org.jboss.modules.xml.ModuleXmlParser$DefaultResourceRootFactory.createResourceLoader(ModuleXmlParser.java:1574)
+	at org.jboss.modules.LocalModuleFinder.lambda$new$0(LocalModuleFinder.java:103)
+	at org.jboss.modules.LocalModuleFinder$$Lambda/0x000000f8016529f0.createResourceLoader(Unknown Source)
+	at org.jboss.modules.xml.ModuleXmlParser.parseResourceRoot(ModuleXmlParser.java:1070)
+	at org.jboss.modules.xml.ModuleXmlParser.parseResources(ModuleXmlParser.java:883)
+	at org.jboss.modules.xml.ModuleXmlParser.parseModuleContents(ModuleXmlParser.java:648)
+	at org.jboss.modules.xml.ModuleXmlParser.parseDocument(ModuleXmlParser.java:411)
+	at org.jboss.modules.xml.ModuleXmlParser.parseModuleXml(ModuleXmlParser.java:277)
+	at org.jboss.modules.xml.ModuleXmlParser.parseModuleXml(ModuleXmlParser.java:255)
+	at org.jboss.modules.xml.ModuleXmlParser.parseModuleXml(ModuleXmlParser.java:235)
+	at org.jboss.modules.LocalModuleFinder.parseModuleXmlFile(LocalModuleFinder.java:234)
+	at org.jboss.modules.LocalModuleFinder.lambda$findModule$1(LocalModuleFinder.java:195)
+	at org.jboss.modules.LocalModuleFinder$$Lambda/0x000000f801652c20.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(AccessController.java:337)
+	at org.jboss.modules.LocalModuleFinder.findModule(LocalModuleFinder.java:195)
+	at org.jboss.modules.ModuleLoader.findModule(ModuleLoader.java:532)
+	at org.jboss.modules.ModuleLoader.loadModuleLocal(ModuleLoader.java:377)
+	at org.jboss.modules.DelegatingModuleLoader.preloadModule(DelegatingModuleLoader.java:57)
+	at org.jboss.modules.Module.addPaths(Module.java:1177)
+	at org.jboss.modules.Module.link(Module.java:1547)
+	at org.jboss.modules.Module.relinkIfNecessary(Module.java:1575)
+	at org.jboss.modules.ModuleLoader.loadModule(ModuleLoader.java:258)
+	at launcher.Launcher.<clinit>(Launcher.java:23)
