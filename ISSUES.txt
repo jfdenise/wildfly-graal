@@ -1,0 +1,8 @@
+# Approach: Loading JBoss Modules in static initializer
+
+- Works for ultra simple, no deps, no service Loader
+- With service Loader:
+Fatal error: com.oracle.graal.pointsto.constraints.UnsupportedFeatureException: Detected a ZipFile object in the image heap. A ZipFile object contains pointers to unmanaged C memory and file descriptors, and these resources are no longer available at image runtime. If these objects should not be stored in the image heap, you can use 
+
+    '--trace-object-instantiation=java.util.jar.JarFile'
+
