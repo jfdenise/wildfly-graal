@@ -8,16 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.log.StreamModuleLogger;
 
 public class Launcher {
 
@@ -31,7 +28,7 @@ public class Launcher {
         //Module.setModuleLogger(new StreamModuleLogger(System.out));
         try {
         // Force loading of this class that must be initialized
-            Class.forName("org.wildfly.common._private.CommonMessages");
+         //   Class.forName("org.wildfly.common._private.CommonMessages");
         Path modulesDir = Paths.get("min-server2/modules").toAbsolutePath();
         LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
         System.out.println("LOCAL LOADER + DEBUG ENABLED" + loader);
@@ -110,9 +107,9 @@ public class Launcher {
 
     public static void main(String[] args) throws Exception {
         System.setProperty("org.jboss.boot.log.file",Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
-        Path p = Paths.get("min-server2/standalone/standalone/logging.properties");
-        System.setProperty("java.util.logging.manager","org.jboss.logmanager.LogManager");
-        System.setProperty("logging.configuration",p.toUri().toString());
+        Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
+        //System.setProperty("java.util.logging.manager","org.jboss.logmanager.LogManager");
+        //System.setProperty("logging.configuration",p.toUri().toString());
         System.setProperty("jboss.home.dir", Paths.get("min-server2").toAbsolutePath().toString());
         System.setProperty("user.home", Paths.get("/users/jdenise").toAbsolutePath().toString());
         System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
