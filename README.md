@@ -5,10 +5,12 @@
 # Build dependencies
 
 * clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
-* galleon install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=deployment-scanner,io --dir=min-server2
+* galleon install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=deployment-scanner,io,logging --dir=min-server2
 * clone and build:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * cd module-launcher
 * mvn clean install
+
+
 
 ## Prepare the built image
 
@@ -17,6 +19,19 @@
 
 ## Build the image
 
+* Add to min-server-graal-agent2/reachability-metadata.json:
+
+    {
+    "type": "org.jboss.logmanager.ExtHandler",
+    "methods": [
+      {
+        "name": "setEnabled",
+        "parameterTypes": [
+          "boolean"
+        ]
+      }
+    ]
+  },
 In this script replace some jdenise with your context. We do compute the classpath dynamically 
 
 * Generate the script: sh ./generate-build-script.sh

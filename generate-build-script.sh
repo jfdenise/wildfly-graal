@@ -8,6 +8,7 @@ arraylength=${#array[@]}
 
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
+-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
 -Djboss.home.dir=/Users/jdenise/workspaces/wildfly-graal/min-server2 \
 -Dorg.jboss.boot.log.file=/Users/jdenise/workspaces/wildfly-graal/min-server2/standalone/log/server.log \
 -Dlogging.configuration=file:///Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone/standalone/logging.properties \
