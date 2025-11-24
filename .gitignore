@@ -2,6 +2,8 @@
 *.class
 min-server-graal-agent2/
 min-server2/
+jboss-modules/
+build-image.sh
 # Log file
 *.log
 

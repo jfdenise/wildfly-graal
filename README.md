@@ -16,9 +16,11 @@
 
 ## Build the image
 
-In this script replace some jdenise with your context.
+In this script replace some jdenise with your context. We do compute the classpath dynamically 
 
-* run: sh ./build-wildfly-image.sh
+* Generate the script: sh ./generate-build-script.sh
+
+* Do the buid: sh ./build-image.sh
 
 ## Run the image
 
