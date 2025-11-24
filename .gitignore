@@ -1,6 +1,7 @@
 # Compiled class file
 *.class
-
+min-server-graal-agent2/
+min-server2/
 # Log file
 *.log
 
@@ -18,7 +19,7 @@
 *.zip
 *.tar.gz
 *.rar
-
+ModuleLauncher-1.0-SNAPSHOT
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
