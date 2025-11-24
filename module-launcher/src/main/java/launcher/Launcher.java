@@ -108,8 +108,9 @@ public class Launcher {
     public static void main(String[] args) throws Exception {
         System.setProperty("org.jboss.boot.log.file",Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
         Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
-        //System.setProperty("java.util.logging.manager","org.jboss.logmanager.LogManager");
-        //System.setProperty("logging.configuration",p.toUri().toString());
+        System.out.println("Setting java.util.logging.manager=org.jboss.logmanager.LogManager");
+        System.setProperty("java.util.logging.manager","org.jboss.logmanager.LogManager");
+        System.setProperty("logging.configuration",p.toUri().toString());
         System.setProperty("jboss.home.dir", Paths.get("min-server2").toAbsolutePath().toString());
         System.setProperty("user.home", Paths.get("/users/jdenise").toAbsolutePath().toString());
         System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
