@@ -25,16 +25,18 @@ public class Launcher {
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
     private static final String SYSPROP_KEY_SYSTEM_MODULES = "jboss.modules.system.pkgs";
     private static Module helloModule;
-    private static List<Module> modules = new ArrayList<>();
-
+    public static Map<String, Module> modules = new HashMap<>();
+    public static Map<String, Module> callerModules= new HashMap<>();
     static {
+        //Module.setModuleLogger(new StreamModuleLogger(System.out));
+        try {
+        // Force loading of this class that must be initialized
+            Class.forName("org.wildfly.common._private.CommonMessages");
         Path modulesDir = Paths.get("min-server2/modules").toAbsolutePath();
         LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
         System.out.println("LOCAL LOADER + DEBUG ENABLED" + loader);
-        Module.setModuleLogger(new StreamModuleLogger(System.out));
-        try {
-            // Force loading of this class that must be initialized
-            Class.forName("org.wildfly.common._private.CommonMessages");
+
+            
             Map<String, Path> all = new HashMap<>();
             handleModules(modulesDir, all);
             for (String k : all.keySet()) {
@@ -44,7 +46,7 @@ public class Launcher {
                     if (k.equals("org.jboss.as.standalone")) {
                         helloModule = mod;
                     }
-                    modules.add(mod);
+                    modules.put(k, mod);
                 } catch (Exception ex) {
                     System.out.println("EX " + ex);
                 }
@@ -114,6 +116,7 @@ public class Launcher {
         System.setProperty("user.home", Paths.get("/users/jdenise").toAbsolutePath().toString());
         System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
         System.setProperty("jboss.server.base.dir", Paths.get("min-server2/standalone").toAbsolutePath().toString());
+        
         helloModule.run(args);
 
     }

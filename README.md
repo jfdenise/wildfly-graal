@@ -4,7 +4,7 @@
 
 # Build dependencies
 
-* galleon install wildfly-core --layers=base-server,-git-history --dir=min-server2
+* galleon install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=io,-git-history --dir=min-server2
 * clone and build:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * cd module-launcher
 * mvn clean install
