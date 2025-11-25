@@ -19,7 +19,7 @@
 
 ## Build the image
 
-* Add to min-server-graal-agent2/reachability-metadata.json:
+* Add to min-server-graal-agent2/reachability-metadata.json (in reflection):
 
     {
     "type": "org.jboss.logmanager.ExtHandler",
@@ -32,6 +32,334 @@
       }
     ]
   },
+** Specific for elytron
+
+*** Add to min-server-graal-agent2/reachability-metadata.json (in reflection):
+  {
+    "type": "org.wildfly.security.WildFlyElytronDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpBasicProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpBearerProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpClientCertProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpFormProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpSpnegoProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.key.WildFlyElytronKeyProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.password.WildFlyElytronPasswordProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.sasl.localuser.WildFlyElytronSaslLocalUserProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.sasl.anonymous.WildFlyElytronSaslAnonymousProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.sasl.gssapi.WildFlyElytronSaslGssapiProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.external.WildFlyElytronSaslExternalProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.external.WildFlyElytronHttpExternalProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.bearer.WildFlyElytronHttpBearerProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.digest.WildFlyElytronSaslDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.entity.WildFlyElytronSaslEntityProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.gs2.WildFlyElytronSaslGs2Provider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.cert.WildFlyElytronHttpClientCertProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.scram.WildFlyElytronSaslScramProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.digest.WildFlyElytronHttpDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.plain.WildFlyElytronSaslPlainProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.oauth2.WildFlyElytronSaslOAuth2Provider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.otp.WildFlyElytronSaslOTPProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.spnego.WildFlyElytronHttpSpnegoProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.keystore.WildFlyElytronKeyStoreProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.digest.WildFlyElytronDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.form.WildFlyElytronHttpFormProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.auth.client.WildFlyElytronClientDefaultSSLContextProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.basic.WildFlyElytronHttpBasicProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.openssl.OpenSSLProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.bouncycastle.jce.provider.BouncyCastleProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  }
+
+*** Add to min-server-graal-agent2/reachability-metadata.json (in resources):
+
+    {
+      "glob": "org/wildfly/security/ssl/TLS13MechanismDatabase.properties"
+    },
+    {
+      "glob": "org/wildfly/security/ssl/MechanismDatabase.properties"
+    },
+
 In this script replace some jdenise with your context. We do compute the classpath dynamically 
 
 * Generate the script: sh ./generate-build-script.sh

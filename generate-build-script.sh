@@ -1,5 +1,5 @@
 
-#files=$(`find ./min-server2/modules/system/layers/base/**/*.jar`)
+#files=$(`find ./modules/**/*.jar`)
 IFS=$'\n'
 array=($(find ./min-server2/modules/system/layers/base/ -name *.jar))
 unset IFS
@@ -8,16 +8,16 @@ arraylength=${#array[@]}
 
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
---trace-object-instantiation=org.apache.sshd.common.file.root.RootedFileSystemProvider,org.jboss.logmanager.LogContext,org.jboss.logmanager.Level \
--Djboss.home.dir=/Users/jdenise/workspaces/wildfly-graal/min-server2 \
+-Djboss.home.dir=/Users/jdenise/workspaces/graal/wildfly-graal/min-server2 \
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
--Dorg.jboss.boot.log.file=/Users/jdenise/workspaces/wildfly-graal/min-server2/standalone/log/server.log \
+-Dlogging.configuration=file:///Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone/configuration/logging.properties \
+-Dorg.jboss.boot.log.file=/Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone/log/server.log \
 -Duser.home==/Users/jdenise \
--Djboss.server.base.dir=/Users/jdenise/workspaces/wildfly-graal/min-server2/standalone \
---initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.wildfly.common._private,\
-org.jboss.modules \
---enable-url-protocols=jar \
+-Djboss.server.base.dir=/Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone \
+--initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules.ModularContentHandlerFactory,org.jboss.modules.DataURLStreamHandler \
+--trace-object-instantiation=org.jboss.logmanager.LogManager \
 -H:ConfigurationFileDirectories=min-server-graal-agent2 \
+--enable-url-protocols=jar,data \
 -cp jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:"
 for (( i=0; i<${arraylength}; i++ ));
 do
