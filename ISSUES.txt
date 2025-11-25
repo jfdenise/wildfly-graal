@@ -1,8 +1,0 @@
-# Approach: Loading JBoss Modules in static initializer
-
-Why, because Failed to register org.jboss.modules.NamedClassLoader as parallel-capable, can't load module at runtime.
-* Can't register data URL at runtime.
-
-* -Djava.util.logging.manager=org.jboss.logmanager.LogManager must be passed at build time, otherwise not found by Logging extension...
-This implies logmanager initialized at build time...
-* ssd* in the classpath enforce some static initialization of logmanager. Such jars are not added to the classpath.

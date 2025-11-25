@@ -22,58 +22,81 @@ import org.jboss.modules.ModularContentHandlerFactory;
 import org.jboss.modules.ModularURLStreamHandlerProvider;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.log.StreamModuleLogger;
 
 public class Launcher {
 
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
     private static final String SYSPROP_KEY_SYSTEM_MODULES = "jboss.modules.system.pkgs";
-    //private static Module helloModule;
+    // Those maps are used by WildFLy to resolve modules at runtime,
+    // We don't have JBoss Modules classloaders at execution time.
+    // Hack to be properly integrated.
     public static Map<String, Module> modules = new HashMap<>();
-    public static Map<String, Module> callerModules= new HashMap<>();
+    public static Map<String, Module> callerModules = new HashMap<>();
+
     static {
-        //Module.setModuleLogger(new StreamModuleLogger(System.out));
+        // This can't be done at runtime.
+        // And the current approach is to have JBoss Modules initialized at runtime.
         try {
-        // Force loading of this class that must be initialized
-         //   Class.forName("org.wildfly.common._private.CommonMessages");
-//        Path modulesDir = Paths.get("modules").toAbsolutePath();
-//        LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
-//        System.out.println("LOCAL LOADER + DEBUG ENABLED" + loader);
-//        helloModule = loader.loadModule("hello");
-//
-//            
-//            Map<String, Path> all = new HashMap<>();
-//            handleModules(modulesDir, all);
-//            for (String k : all.keySet()) {
-//                try {
-//                    System.out.println("Load module " + k);
-//                    Module mod = loader.loadModule(k);
-//                    if (k.equals("org.jboss.as.standalone")) {
-//                        helloModule = mod;
-//                    }
-//                    modules.put(k, mod);
-//                } catch (Exception ex) {
-//                    System.out.println("EX " + ex);
-//                }
-//            }
-try {
-                    System.out.println("REGISTER DATA PROTOCOL");
-                    URL.setURLStreamHandlerFactory(ModularURLStreamHandlerProvider.INSTANCE);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    System.out.println("ERROR WHEN REGISTERING");
-                    // todo log a warning or something
-                }
-                try {
-                    URLConnection.setContentHandlerFactory(ModularContentHandlerFactory.INSTANCE);
-                } catch (Throwable t) {
-                    // todo log a warning or something
-                }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("EX " + ex);
+            System.out.println("Registering custom URL protocol at build time");
+            URL.setURLStreamHandlerFactory(ModularURLStreamHandlerProvider.INSTANCE);
+        } catch (Throwable t) {
+            throw t;
         }
+        try {
+            URLConnection.setContentHandlerFactory(ModularContentHandlerFactory.INSTANCE);
+        } catch (Throwable t) {
+            throw t;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        // Required to avoid JBoss Modules content incompatible with Graal.
+        System.setProperty("org.wildfly.graal", "true");
+        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
+        Iterator<Provider> iterator = providerServiceLoader.iterator();
+        for (;;) {
+            if (!(iterator.hasNext())) {
+                break;
+            }
+            try {
+                final Provider provider = iterator.next();
+                System.out.println(provider.getClass().getName());
+                Security.addProvider(provider);
+            } catch (Throwable ex) {
+                System.out.println("ERROR LOADING Provider " + ex);
+            }
+        }
+        System.setProperty("org.jboss.boot.log.file", Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
+        Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
+        System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
+        System.setProperty("logging.configuration", p.toUri().toString());
+        System.setProperty("jboss.home.dir", Paths.get("min-server2").toAbsolutePath().toString());
+        System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());
+        System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
+        System.setProperty("jboss.server.base.dir", Paths.get("min-server2/standalone").toAbsolutePath().toString());
+
+        Path modulesDir = Paths.get("min-server2/modules").toAbsolutePath();
+        LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
+        Module mainModule = null;
+        Map<String, Path> all = new HashMap<>();
+        // Load all modules to have them accessible at runtime.
+        handleModules(modulesDir, all);
+        for (String k : all.keySet()) {
+            try {
+                Module mod = loader.loadModule(k);
+                if (k.equals("org.jboss.as.standalone")) {
+                    System.out.println("Load module " + k);
+
+                    mainModule = mod;
+                }
+                modules.put(k, mod);
+            } catch (Exception ex) {
+                System.out.println("EX " + ex);
+            }
+        }
+        System.out.println("Running Main entry point");
+        mainModule.run(args);
     }
 
     static void handleModules(Path modulesDir, Map<String, Path> moduleXmlByPkgName) throws IOException {
@@ -125,63 +148,6 @@ try {
                 return FileVisitResult.CONTINUE;
             }
         });
-    }
-
-    public static void main(String[] args) throws Exception {
-        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-            Iterator<Provider> iterator = providerServiceLoader.iterator();
-            for (;;) {
-                if (!(iterator.hasNext())) {
-                    break;
-                }
-                try {
-                final Provider provider = iterator.next();
-                
-                //if (provider.getName().startsWith("WildFly")) {
-                    System.out.println(provider.getClass().getName());
-                    //if(provider.getClass().getName().equals("org.wildfly.security.WildFlyElytronHttpDigestProvider")) {
-                    //providers.add(provider);
-                    Security.addProvider(provider);
-                    //}
-                //}
-                } catch(Throwable ex) {
-                    System.out.println("ERROR LOADING Provider " + ex);
-                }
-            }
-        System.setProperty("org.jboss.boot.log.file",Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
-        Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
-        System.out.println("Setting java.util.logging.manager=org.jboss.logmanager.LogManager");
-        //System.setProperty("java.util.logging.manager","org.jboss.logmanager.LogManager");
-        System.setProperty("logging.configuration",p.toUri().toString());
-        System.setProperty("jboss.home.dir", Paths.get("min-server2").toAbsolutePath().toString());
-        System.setProperty("user.home", Paths.get("/users/jdenise").toAbsolutePath().toString());
-        System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
-        System.setProperty("jboss.server.base.dir", Paths.get("min-server2/standalone").toAbsolutePath().toString());
-//Module.setModuleLogger(new StreamModuleLogger(System.out));
-
-        Path modulesDir = Paths.get("min-server2/modules").toAbsolutePath();
-        LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
-        Module helloModule = null;
-        Map<String, Path> all = new HashMap<>();
-            handleModules(modulesDir, all);
-            for (String k : all.keySet()) {
-                try {
-                    Module mod = loader.loadModule(k);
-                    //Module mod = loader.loadModule(k);
-                    if (k.equals("org.jboss.as.standalone")) {
-                        System.out.println("Load module " + k);
-                        
-                        helloModule = mod;
-                    }
-                    modules.put(k, mod);
-                } catch (Exception ex) {
-                    System.out.println("EX " + ex);
-                }
-            }
-        System.out.println("LOCAL LOADER + DEBUG ENABLED" + loader);
-        //Module helloModule = loader.loadModule("hello");
-        helloModule.run(args);
-
     }
 
     private static String trimPathToModulesDir(String modulePath) {
