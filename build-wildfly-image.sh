@@ -1,5 +1,5 @@
+current_dir=$(pwd)
 
-#files=$(`find ./modules/**/*.jar`)
 IFS=$'\n'
 array=($(find ./min-server2/modules/system/layers/base/ -name *.jar))
 unset IFS
@@ -8,12 +8,12 @@ arraylength=${#array[@]}
 
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
--Djboss.home.dir=/Users/jdenise/workspaces/graal/wildfly-graal/min-server2 \
+-Djboss.home.dir=${current_dir}/min-server2 \
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
--Dlogging.configuration=file:///Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone/configuration/logging.properties \
--Dorg.jboss.boot.log.file=/Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone/log/server.log \
--Duser.home==/Users/jdenise \
--Djboss.server.base.dir=/Users/jdenise/workspaces/graal/wildfly-graal/min-server2/standalone \
+-Dlogging.configuration=file://${current_dir}/min-server2/standalone/configuration/logging.properties \
+-Dorg.jboss.boot.log.file=${current_dir}/min-server2/standalone/log/server.log \
+-Duser.home==/Users/foo \
+-Djboss.server.base.dir=${current_dir}/min-server2/standalone \
 --initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules.ModularContentHandlerFactory,org.jboss.modules.DataURLStreamHandler \
 --trace-object-instantiation=org.jboss.logmanager.LogManager \
 -H:ConfigurationFileDirectories=min-server-graal-agent2 \
@@ -28,3 +28,5 @@ do
 done
 
 echo "$cmd" > "./build-image.sh"
+chmod +x ./build-image.sh
+./build-image.sh
