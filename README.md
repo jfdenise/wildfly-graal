@@ -12,6 +12,7 @@ This demo is an initial approach to have WildFly to benefit from Graal VM with m
 
 * Download from https://www.oracle.com/downloads/graalvm-downloads.html
 * Then call in the terminal:
+
 export GRAALVM_HOME=<path to graal>/Contents/Home/
 export JAVA_HOME=${GRAALVM_HOME}
 export PATH=${GRAALVM_HOME}/bin:$PATH
@@ -22,7 +23,8 @@ Test that native-image is OK, call native-image --help
 
 * clone and build JBoss Modules:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * clone this branch : https://github.com/jfdenise/wildfly-graal/tree/wildfly_welcome_demo
-* cd wildfly-graal/module-launcher, call mvn clean install
+* cd wildfly-graal
+* call: cd module-launcher; mvn clean install; cd ..
 
 # Provision a WildFly server
 
