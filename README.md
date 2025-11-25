@@ -5,7 +5,7 @@
 # Build dependencies
 
 * clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
-* galleon install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=core-server --dir=min-server2
+* galleon install wildfly#39.0.0.Beta1-SNAPSHOT --layers=core-server,naming,undertow,ee-integration --dir=min-server2
 * clone and build:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * cd module-launcher
 * mvn clean install
@@ -349,7 +349,7 @@
         "parameterTypes": []
       }
     ]
-  }
+  },
     {
       "type": "org.wildfly.security.ElytronMessages_$logger"
     },
@@ -445,7 +445,7 @@
   },
     {
       "type": "io.undertow.UndertowMessages_$bundle"
-    }
+    },
 
 *** Add to min-server-graal-agent2/reachability-metadata.json (in resources):
 
@@ -457,7 +457,7 @@
     },
     {
       "glob": "META-INF/services/java.security.Provider"
-    }
+    },
 
 In this script replace some jdenise with your context. We do compute the classpath dynamically 
 
