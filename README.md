@@ -5,7 +5,7 @@
 # Build dependencies
 
 * clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
-* galleon install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=deployment-scanner,io,logging --dir=min-server2
+* galleon install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,deployment-scanner,io,logging,management --dir=min-server2
 * clone and build:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * cd module-launcher
 * mvn clean install
@@ -350,6 +350,102 @@
       }
     ]
   }
+    {
+      "type": "org.wildfly.security.ElytronMessages_$logger"
+    },
+    {
+      "type": "org.wildfly.security.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.auth.server.ElytronMessages_$logger"
+    }
+    ,
+    {
+      "type": "org.wildfly.security.auth.server.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.mechanism._private.ElytronMessages_$logger"
+    }
+    ,
+    {
+      "type": "org.wildfly.security.mechanism._private.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.http.digest.DigestMechanismFactory"
+    },
+    {
+      "type": "org.wildfly.security.http.digest.DigestMechanismFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.Provider"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.auth.realm.ElytronMessages_$logger"
+    }
+    ,
+    {
+      "type": "org.wildfly.security.auth.realm.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.password.impl.PasswordFactorySpiImpl"
+    },
+{
+    "type": "org.wildfly.security.password.impl.PasswordFactorySpiImpl",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "io.undertow.UndertowMessages_$bundle",
+    "fields": [
+      {
+        "name": "INSTANCE"
+      }
+    ]
+  },
+    {
+      "type": "io.undertow.UndertowMessages_$bundle"
+    }
 
 *** Add to min-server-graal-agent2/reachability-metadata.json (in resources):
 
@@ -359,6 +455,9 @@
     {
       "glob": "org/wildfly/security/ssl/MechanismDatabase.properties"
     },
+    {
+      "glob": "META-INF/services/java.security.Provider"
+    }
 
 In this script replace some jdenise with your context. We do compute the classpath dynamically 
 
