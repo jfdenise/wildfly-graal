@@ -6,7 +6,7 @@ This demo is an initial approach to have WildFly to benefit from Graal VM with m
 * For now, the JBoss Modules are loaded at runtime, more investigation is planned to load them at build time to have better perf.
 * All jars are put in the classpath.
 * logmanager is initialized at buildtime
-* A bunch of types are loaded through relection, we use a reachability-metadata.json that contains the needed types and resources.
+* A bunch of types are loaded through reflection, we use a reachability-metadata.json that contains the needed types and resources.
 
 # Install graalvm
 
