@@ -31,3 +31,7 @@ launcher.Launcher
 hellomodule
 /provider/target/
 /api/target/
+/simple-modules/module-launcher/target/
+/simple-modules/hello/target/
+/simple-modules/api/target/
+/simple-modules/provider/target/
