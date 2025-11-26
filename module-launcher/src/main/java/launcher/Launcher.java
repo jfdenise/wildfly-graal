@@ -36,21 +36,21 @@ public class Launcher {
     static {
         try {
             // Required to avoid JBoss Modules content incompatible with Graal.
-            System.setProperty("org.wildfly.graal", "true");
-//        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-//        Iterator<Provider> iterator = providerServiceLoader.iterator();
-//        for (;;) {
-//            if (!(iterator.hasNext())) {
-//                break;
-//            }
-//            try {
-//                final Provider provider = iterator.next();
-//                System.out.println(provider.getClass().getName());
-//                Security.addProvider(provider);
-//            } catch (Throwable ex) {
-//                System.out.println("ERROR LOADING Provider " + ex);
-//            }
-//        }
+           // System.setProperty("org.wildfly.graal", "true");
+        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
+        Iterator<Provider> iterator = providerServiceLoader.iterator();
+        for (;;) {
+            if (!(iterator.hasNext())) {
+                break;
+            }
+            try {
+                final Provider provider = iterator.next();
+                System.out.println(provider.getClass().getName());
+                Security.addProvider(provider);
+            } catch (Throwable ex) {
+                System.out.println("ERROR LOADING Provider " + ex);
+            }
+        }
             System.setProperty("org.jboss.boot.log.file", Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
             Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
             System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
@@ -83,20 +83,6 @@ public class Launcher {
     }
 
     public static void main(String[] args) throws Exception {
-        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-        Iterator<Provider> iterator = providerServiceLoader.iterator();
-        for (;;) {
-            if (!(iterator.hasNext())) {
-                break;
-            }
-            try {
-                final Provider provider = iterator.next();
-                System.out.println(provider.getClass().getName());
-                Security.addProvider(provider);
-            } catch (Throwable ex) {
-                System.out.println("ERROR LOADING Provider " + ex);
-            }
-        }
         System.setProperty("org.wildfly.graal", "true");
         System.setProperty("jboss.home.dir", Paths.get("min-server2").toAbsolutePath().toString());
         System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());

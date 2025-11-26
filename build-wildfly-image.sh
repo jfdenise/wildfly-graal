@@ -1,7 +1,7 @@
 current_dir=$(pwd)
 
 IFS=$'\n'
-array=($(find ./min-server2/modules/system/layers/base/ -name *.jar))
+array=($(find ./min-server2/modules/system/layers/base/ -name \*.jar))
 unset IFS
 
 arraylength=${#array[@]}
@@ -14,17 +14,20 @@ native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 -Dorg.jboss.boot.log.file=${current_dir}/min-server2/standalone/log/server.log \
 -Duser.home==/Users/foo \
 -Djboss.server.base.dir=${current_dir}/min-server2/standalone \
---initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.wildfly.common,io.smallrye.common.expression,io.smallrye.common.expression.Expression\$Flag,org.jboss.modules,org.apache.sshd.common.file.root.RootedFileSystemProvider,org.jboss.logging,org.slf4j.impl.Slf4jLogger \
+--initialize-at-build-time=jakarta.json,org.eclipse.parsson,org.wildfly.openssl.OpenSSLProvider,org.wildfly.security,org.jboss.logmanager,launcher.Launcher,org.wildfly.common,io.smallrye.common.expression,io.smallrye.common.expression.Expression\$Flag,org.jboss.modules,org.apache.sshd.common.file.root.RootedFileSystemProvider,org.jboss.logging,org.slf4j.impl.Slf4jLogger \
 -H:ConfigurationFileDirectories=min-server-graal-agent2 \
 --enable-url-protocols=jar,data \
---enable-all-security-services \
+--trace-object-instantiation=org.bouncycastle.crypto.prng.SP800SecureRandom \
 -cp jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:"
 for (( i=0; i<${arraylength}; i++ ));
 do
   line=${array[$i]}":"
   #if [[ ! $line =~ "sshd" ]]; then
-    cmd="$cmd$line"
+#    cmd="$cmd$line"
   #fi
+  if [[ ! $line =~ "bouncycastle" ]]; then
+    cmd="$cmd$line"
+  fi
 done
 
 echo "$cmd" > "./build-image.sh"
