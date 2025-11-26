@@ -2,8 +2,6 @@ package launcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -15,11 +13,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
-import org.jboss.modules.ModularContentHandlerFactory;
-import org.jboss.modules.ModularURLStreamHandlerProvider;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.log.StreamModuleLogger;
 
 public class Launcher {
 
@@ -31,49 +26,41 @@ public class Launcher {
     // Hack to be properly integrated.
     public static Map<String, Module> modules = new HashMap<>();
     public static Map<String, Module> callerModules = new HashMap<>();
-
+    public static Module mainModule;
     static {
-        // This can't be done at runtime.
-        // And the current approach is to have JBoss Modules initialized at runtime.
         try {
-            System.out.println("Registering custom URL protocol at build time");
-            URL.setURLStreamHandlerFactory(ModularURLStreamHandlerProvider.INSTANCE);
-        } catch (Throwable t) {
-            throw t;
-        }
-        try {
-            URLConnection.setContentHandlerFactory(ModularContentHandlerFactory.INSTANCE);
-        } catch (Throwable t) {
-            throw t;
+            // Required to avoid JBoss Modules content incompatible with Graal.
+            System.setProperty("org.wildfly.graal", "true");
+            //Module.setModuleLogger(new StreamModuleLogger(System.out));
+            Path modulesDir = Paths.get("modules").toAbsolutePath();
+            LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
+            System.out.println("Module loader " + loader);
+            
+            Map<String, Path> all = new HashMap<>();
+            // Load all modules to have them accessible at runtime.
+            findModules(modulesDir, all);
+            for (String k : all.keySet()) {
+                try {
+                    Module mod = loader.loadModule(k);
+                    if (k.equals("hello")) {
+                        mainModule = mod;
+                    }
+                    modules.put(k, mod);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("EX " + ex);
+                }
+            }
+            System.out.println("Running Main entry point");
+            mainModule.run(new String[0]);
+            System.out.println("FINISH PRE-RUN");
+        } catch (Exception ex) {
+           throw new RuntimeException(ex);
         }
     }
 
     public static void main(String[] args) throws Exception {
-        // Required to avoid JBoss Modules content incompatible with Graal.
-        System.setProperty("org.wildfly.graal", "true");
-       //Module.setModuleLogger(new StreamModuleLogger(System.out));
-        Path modulesDir = Paths.get("modules").toAbsolutePath();
-        LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
-        System.out.println("Module loader " + loader);
-        
-        Module mainModule = null;
-        Map<String, Path> all = new HashMap<>();
-        // Load all modules to have them accessible at runtime.
-        findModules(modulesDir, all);
-        for (String k : all.keySet()) {
-            try {
-                Module mod = loader.loadModule(k);
-                if (k.equals("hello")) {
-                    mainModule = mod;
-                }
-                modules.put(k, mod);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                System.out.println("EX " + ex);
-            }
-        }
-        System.out.println("Running Main entry point");
-        mainModule.run(args);
+        mainModule.postRun();
     }
 
     static void handleModules(Path modulesDir, Map<String, Path> moduleXmlByPkgName) throws IOException {

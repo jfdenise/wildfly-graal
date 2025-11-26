@@ -20,7 +20,7 @@ cp api/target/APIModule-1.0-SNAPSHOT.jar modules/api/main/api.jar
 
 java -agentlib:native-image-agent=config-output-dir=./graal-config,experimental-class-define-support=true -cp ../jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar launcher.Launcher
 
-native-image -H:ConfigurationFileDirectories=graal-config -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar -cp ../jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:hello/target/HelloModule-1.0-SNAPSHOT.jar:api/target/APIModule-1.0-SNAPSHOT.jar:provider/target/ProviderModule-1.0-SNAPSHOT.jar --initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules.ModularContentHandlerFactory,org.jboss.modules.DataURLStreamHandler
+native-image --enable-url-protocols=jar,data -H:ConfigurationFileDirectories=graal-config -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar -cp ../jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:hello/target/HelloModule-1.0-SNAPSHOT.jar:api/target/APIModule-1.0-SNAPSHOT.jar:provider/target/ProviderModule-1.0-SNAPSHOT.jar --initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules
 
 ### Run the image
 
