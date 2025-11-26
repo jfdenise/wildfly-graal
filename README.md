@@ -7,6 +7,7 @@ This demo is an initial approach to have WildFly to benefit from Graal VM with m
 * All jars are put in the classpath.
 * logmanager is initialized at buildtime
 * A bunch of types are loaded through reflection, we use a reachability-metadata.json that contains the needed types and resources.
+* We benefit from the `experimental-class-define-support` support of Graal VM to define the WAR classes.
 
 # Install graalvm
 
@@ -55,7 +56,11 @@ JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./min-server-graal-age
 
 # Copy the files needed by the demo
 
-To add a user to access the management console, to disable the PeriodicFile logger, to increase the reflective metadata with some manual content we know we need.
+We do:
+
+* Add a user to access the management console.
+* Disable the PeriodicFile logger (incompatible with build time initialization).
+* Increase the reflective metadata with some manual content we know we need.
 
 ```
 cp files/reachability-metadata.json min-server-graal-agent2/
