@@ -1,7 +1,7 @@
 current_dir=$(pwd)
 
 IFS=$'\n'
-array=($(find ./min-server2/modules/system/layers/base/ -name *.jar))
+array=($(find ./min-server2/modules/system/layers/base/ -name \*.jar))
 unset IFS
 
 arraylength=${#array[@]}
