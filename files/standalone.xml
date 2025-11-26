@@ -2,6 +2,7 @@
 
 <server xmlns="urn:jboss:domain:community:20.0">
     <extensions>
+        <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.logging"/>
@@ -52,7 +53,7 @@
                     <named-formatter name="COLOR-PATTERN"/>
                 </formatter>
             </console-handler>
-            
+
             <logger category="com.arjuna">
                 <level name="WARN"/>
             </logger>
@@ -82,6 +83,9 @@
             </formatter>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
+            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}"/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:6.0">
             <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
         </subsystem>
@@ -227,9 +231,13 @@
                 <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                   <location name="/" handler="welcome-content"/>
+                    <http-invoker/>
                 </host>
             </server>
-            <servlet-container name="default"/>
+            <servlet-container name="default">
+                <jsp-config/>
+                <websockets/>
+            </servlet-container>
             <handlers>
                 <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
             </handlers>

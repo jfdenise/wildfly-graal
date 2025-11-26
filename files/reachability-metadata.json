@@ -1,426 +1,5 @@
 {
   "reflection": [
-         {
-    "type": "org.jboss.logmanager.ExtHandler",
-    "methods": [
-      {
-        "name": "setEnabled",
-        "parameterTypes": [
-          "boolean"
-        ]
-      }
-    ]
-  },{
-    "type": "org.wildfly.security.WildFlyElytronDigestProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronHttpBasicProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronHttpBearerProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronHttpClientCertProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronHttpDigestProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronHttpFormProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronHttpSpnegoProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.WildFlyElytronProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.key.WildFlyElytronKeyProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.password.WildFlyElytronPasswordProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.sasl.localuser.WildFlyElytronSaslLocalUserProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.sasl.anonymous.WildFlyElytronSaslAnonymousProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.sasl.gssapi.WildFlyElytronSaslGssapiProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.external.WildFlyElytronSaslExternalProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.external.WildFlyElytronHttpExternalProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.bearer.WildFlyElytronHttpBearerProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.digest.WildFlyElytronSaslDigestProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.entity.WildFlyElytronSaslEntityProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.gs2.WildFlyElytronSaslGs2Provider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.cert.WildFlyElytronHttpClientCertProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.scram.WildFlyElytronSaslScramProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.digest.WildFlyElytronHttpDigestProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.plain.WildFlyElytronSaslPlainProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.oauth2.WildFlyElytronSaslOAuth2Provider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.sasl.otp.WildFlyElytronSaslOTPProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.spnego.WildFlyElytronHttpSpnegoProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "org.wildfly.security.keystore.WildFlyElytronKeyStoreProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.digest.WildFlyElytronDigestProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.form.WildFlyElytronHttpFormProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.auth.client.WildFlyElytronClientDefaultSSLContextProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.security.http.basic.WildFlyElytronHttpBasicProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.wildfly.openssl.OpenSSLProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.bouncycastle.jce.provider.BouncyCastleProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-    "type": "org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-    {
-      "type": "org.wildfly.security.ElytronMessages_$logger"
-    },
-    {
-      "type": "org.wildfly.security.ElytronMessages_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.wildfly.security.auth.server.ElytronMessages_$logger"
-    }
-    ,
-    {
-      "type": "org.wildfly.security.auth.server.ElytronMessages_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.wildfly.security.mechanism._private.ElytronMessages_$logger"
-    }
-    ,
-    {
-      "type": "org.wildfly.security.mechanism._private.ElytronMessages_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.wildfly.security.http.digest.DigestMechanismFactory"
-    },
-    {
-      "type": "org.wildfly.security.http.digest.DigestMechanismFactory",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.security.Provider"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.wildfly.security.auth.realm.ElytronMessages_$logger"
-    }
-    ,
-    {
-      "type": "org.wildfly.security.auth.realm.ElytronMessages_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.wildfly.security.password.impl.PasswordFactorySpiImpl"
-    },
-{
-    "type": "org.wildfly.security.password.impl.PasswordFactorySpiImpl",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "type": "io.undertow.UndertowMessages_$bundle",
-    "fields": [
-      {
-        "name": "INSTANCE"
-      }
-    ]
-  },
-    {
-      "type": "io.undertow.UndertowMessages_$bundle"
-    },
     {
       "type": "apple.security.AppleProvider",
       "methods": [
@@ -610,6 +189,126 @@
     },
     {
       "type": "io.undertow.UndertowLogger_$logger_en_US"
+    },
+    {
+      "type": "io.undertow.attribute.AuthenticationTypeExchangeAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.BytesSentAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.CookieAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.DateTimeAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.HostAndPortAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.IdentUsernameAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.LocalIPAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.LocalPortAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.LocalServerNameAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.NullAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.PathParameterAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.PredicateContextAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.QueryParameterAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.QueryStringAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RelativePathAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RemoteHostAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RemoteIPAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RemoteObfuscatedIPAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RemoteUserAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestCookieAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestHeaderAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestLineAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestMethodAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestPathAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestProtocolAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestSchemeAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.RequestURLAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ResolvedPathAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ResponseCodeAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ResponseCookieAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ResponseHeaderAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ResponseReasonPhraseAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ResponseTimeAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.SecureExchangeAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.SslCipherAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.SslClientCertAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.SslSessionIdAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.StoredResponse$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.ThreadNameAttribute$Builder"
+    },
+    {
+      "type": "io.undertow.attribute.TransportProtocolAttribute$Builder"
     },
     {
       "type": "io.undertow.server.ConnectorStatisticsImpl"
@@ -1266,9 +965,6 @@
       "type": "java.io.UTFDataFormatException"
     },
     {
-      "type": "java.io.UncheckedIOException"
-    },
-    {
       "type": "java.io.UnsupportedEncodingException"
     },
     {
@@ -1834,6 +1530,15 @@
       "type": "java.nio.file.CopyOption"
     },
     {
+      "type": "java.nio.file.DirectoryStream"
+    },
+    {
+      "type": "java.nio.file.DirectoryStream$Filter"
+    },
+    {
+      "type": "java.nio.file.FileSystem"
+    },
+    {
       "type": "java.nio.file.FileVisitor"
     },
     {
@@ -1859,9 +1564,6 @@
     },
     {
       "type": "java.nio.file.StandardOpenOption"
-    },
-    {
-      "type": "java.nio.file.attribute.FileAttribute"
     },
     {
       "type": "java.security.AccessControlContext",
@@ -2820,6 +2522,9 @@
       "type": "org.apache.jasper.compiler.JspRuntimeContext"
     },
     {
+      "type": "org.apache.jasper.servlet.JspServlet"
+    },
+    {
       "type": "org.eclipse.parsson.JsonProviderImpl",
       "methods": [
         {
@@ -3036,6 +2741,26 @@
       ]
     },
     {
+      "type": "org.jboss.as.server.deployment.scanner.DeploymentScannerExtension"
+    },
+    {
+      "type": "org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger_$logger_en"
+    },
+    {
+      "type": "org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger_$logger_en_US"
+    },
+    {
       "type": "org.jboss.as.server.jmx.RunningStateJmx"
     },
     {
@@ -3119,41 +2844,6 @@
           "name": "setTarget",
           "parameterTypes": [
             "org.jboss.logmanager.handlers.ConsoleHandler$Target"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.jboss.logmanager.handlers.FileHandler",
-      "methods": [
-        {
-          "name": "setAppend",
-          "parameterTypes": [
-            "boolean"
-          ]
-        },
-        {
-          "name": "setFileName",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.jboss.logmanager.handlers.PeriodicRotatingFileHandler",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String",
-            "boolean"
-          ]
-        },
-        {
-          "name": "setSuffix",
-          "parameterTypes": [
-            "java.lang.String"
           ]
         }
       ]
@@ -3327,6 +3017,9 @@
     },
     {
       "type": "org.wildfly.extension.io.logging.IOLogger_$logger_en_US"
+    },
+    {
+      "type": "org.wildfly.extension.requestcontroller.ControlPoint"
     },
     {
       "type": "org.wildfly.extension.requestcontroller.RequestController"
@@ -3992,18 +3685,421 @@
     },
     {
       "type": "sun.util.resources.cldr.CalendarData"
+    },
+    { "type": "org.jboss.logmanager.ExtHandler", "methods": [ { "name": "setEnabled", "parameterTypes": [ "boolean" ] } ] },
+    {
+    "type": "org.wildfly.security.WildFlyElytronDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpBasicProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpBearerProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpClientCertProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpFormProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronHttpSpnegoProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.WildFlyElytronProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.key.WildFlyElytronKeyProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.password.WildFlyElytronPasswordProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.sasl.localuser.WildFlyElytronSaslLocalUserProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.sasl.anonymous.WildFlyElytronSaslAnonymousProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.sasl.gssapi.WildFlyElytronSaslGssapiProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.external.WildFlyElytronSaslExternalProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.external.WildFlyElytronHttpExternalProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.bearer.WildFlyElytronHttpBearerProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.digest.WildFlyElytronSaslDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.entity.WildFlyElytronSaslEntityProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.gs2.WildFlyElytronSaslGs2Provider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.cert.WildFlyElytronHttpClientCertProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.scram.WildFlyElytronSaslScramProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.digest.WildFlyElytronHttpDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.plain.WildFlyElytronSaslPlainProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.oauth2.WildFlyElytronSaslOAuth2Provider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.sasl.otp.WildFlyElytronSaslOTPProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.spnego.WildFlyElytronHttpSpnegoProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "org.wildfly.security.keystore.WildFlyElytronKeyStoreProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.digest.WildFlyElytronDigestProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.form.WildFlyElytronHttpFormProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.auth.client.WildFlyElytronClientDefaultSSLContextProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.security.http.basic.WildFlyElytronHttpBasicProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.wildfly.openssl.OpenSSLProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.bouncycastle.jce.provider.BouncyCastleProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+    "type": "org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+    {
+      "type": "org.wildfly.security.ElytronMessages_$logger"
+    },
+    {
+      "type": "org.wildfly.security.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.auth.server.ElytronMessages_$logger"
+    }
+    ,
+    {
+      "type": "org.wildfly.security.auth.server.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.mechanism._private.ElytronMessages_$logger"
+    }
+    ,
+    {
+      "type": "org.wildfly.security.mechanism._private.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.http.digest.DigestMechanismFactory"
+    },
+    {
+      "type": "org.wildfly.security.http.digest.DigestMechanismFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.Provider"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.auth.realm.ElytronMessages_$logger"
+    }
+    ,
+    {
+      "type": "org.wildfly.security.auth.realm.ElytronMessages_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.wildfly.security.password.impl.PasswordFactorySpiImpl"
+    },
+{
+    "type": "org.wildfly.security.password.impl.PasswordFactorySpiImpl",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "type": "io.undertow.UndertowMessages_$bundle",
+    "fields": [
+      {
+        "name": "INSTANCE"
+      }
+    ]
+  },
+    {
+      "type": "io.undertow.UndertowMessages_$bundle"
     }
   ],
   "resources": [
-        {
-      "glob": "org/wildfly/security/ssl/TLS13MechanismDatabase.properties"
-    },
-    {
-      "glob": "org/wildfly/security/ssl/MechanismDatabase.properties"
-    },
-    {
-      "glob": "META-INF/services/java.security.Provider"
-    },
     {
       "glob": "META-INF/services/java.net.spi.URLStreamHandlerProvider"
     },
@@ -4027,6 +4123,15 @@
     {
       "module": "jdk.jfr",
       "glob": "jdk/jfr/internal/query/view.ini"
-    }
+    },
+        {
+            "glob": "org/wildfly/security/ssl/TLS13MechanismDatabase.properties"
+        },
+        {
+            "glob": "org/wildfly/security/ssl/MechanismDatabase.properties"
+        },
+        {
+            "glob": "META-INF/services/java.security.Provider"
+        }
   ]
 }
