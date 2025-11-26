@@ -14,17 +14,17 @@ native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 -Dorg.jboss.boot.log.file=${current_dir}/min-server2/standalone/log/server.log \
 -Duser.home==/Users/foo \
 -Djboss.server.base.dir=${current_dir}/min-server2/standalone \
---initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules.ModularContentHandlerFactory,org.jboss.modules.DataURLStreamHandler \
---trace-object-instantiation=org.jboss.logmanager.LogManager \
+--initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.wildfly.common,io.smallrye.common.expression,io.smallrye.common.expression.Expression\$Flag,org.jboss.modules,org.apache.sshd.common.file.root.RootedFileSystemProvider,org.jboss.logging,org.slf4j.impl.Slf4jLogger \
 -H:ConfigurationFileDirectories=min-server-graal-agent2 \
 --enable-url-protocols=jar,data \
+--enable-all-security-services \
 -cp jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:"
 for (( i=0; i<${arraylength}; i++ ));
 do
   line=${array[$i]}":"
-  if [[ ! $line =~ "sshd" ]]; then
+  #if [[ ! $line =~ "sshd" ]]; then
     cmd="$cmd$line"
-  fi
+  #fi
 done
 
 echo "$cmd" > "./build-image.sh"
