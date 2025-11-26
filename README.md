@@ -23,9 +23,10 @@ Test that native-image is OK, call `native-image --help`
 
 # Build dependencies
 
-* clone and build JBoss Modules:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * clone this branch : https://github.com/jfdenise/wildfly-graal/tree/wildfly_welcome_demo
 * cd wildfly-graal
+* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
+* call: `cd jboss-modules; mvn clean install; cd ..`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
 # Provision a WildFly server
