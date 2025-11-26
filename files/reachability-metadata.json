@@ -73,6 +73,17 @@
       ]
     },
     {
+      "type": "com.sun.el.ExpressionFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.util.Properties"
+          ]
+        }
+      ]
+    },
+    {
       "type": "com.sun.management.GarbageCollectorMXBean"
     },
     {
@@ -320,10 +331,19 @@
       "type": "io.undertow.server.DefaultByteBufferPool$DefaultPooledBuffer"
     },
     {
+      "type": "io.undertow.server.HttpServerExchange"
+    },
+    {
       "type": "io.undertow.server.handlers.RequestLimit"
     },
     {
+      "type": "io.undertow.server.handlers.cache.LRUCache$CacheEntry"
+    },
+    {
       "type": "io.undertow.server.handlers.cache.LimitedBufferSlicePool"
+    },
+    {
+      "type": "io.undertow.server.protocol.http.HttpReadListener"
     },
     {
       "type": "io.undertow.server.protocol.http.HttpRequestParser$$generated",
@@ -335,6 +355,25 @@
           ]
         }
       ]
+    },
+    {
+      "type": "io.undertow.servlet.core.ManagedFilter"
+    },
+    {
+      "type": "io.undertow.servlet.core.ManagedServlet"
+    },
+    {
+      "type": "io.undertow.servlet.handlers.DefaultServlet"
+    },
+    {
+      "type": "io.undertow.servlet.spec.ServletOutputStreamImpl"
+    },
+    {
+      "type": "io.undertow.servlet.spec.ServletPrintWriterDelegate",
+      "unsafeAllocated": true
+    },
+    {
+      "type": "io.undertow.servlet.sse.ServerSentEventSCI"
     },
     {
       "type": "io.undertow.util.FastConcurrentDirectDeque",
@@ -821,7 +860,55 @@
       ]
     },
     {
+      "type": "io.undertow.websockets.jsr.Bootstrap"
+    },
+    {
+      "type": "io.undertow.websockets.jsr.Bootstrap$WebSocketListener",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.undertow.websockets.jsr.DefaultWebSocketClientSslProvider"
+    },
+    {
+      "type": "io.undertow.websockets.jsr.JsrWebSocketFilter"
+    },
+    {
+      "type": "io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "jakarta.annotation.ManagedBean"
+    },
+    {
+      "type": "jakarta.servlet.GenericServlet"
+    },
+    {
+      "type": "jakarta.servlet.Servlet"
+    },
+    {
+      "type": "jakarta.servlet.ServletConfig"
+    },
+    {
+      "type": "jakarta.servlet.http.HttpServlet"
+    },
+    {
+      "type": "jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV"
+    },
+    {
+      "type": "jakarta.servlet.jsp.jstl.tlv.ScriptFreeTLV"
+    },
+    {
+      "type": "jakarta.servlet.jsp.tagext.TagLibraryValidator"
     },
     {
       "type": "java.beans.PropertyChangeEvent"
@@ -861,6 +948,9 @@
     },
     {
       "type": "java.io.DataInput"
+    },
+    {
+      "type": "java.io.DataInputStream"
     },
     {
       "type": "java.io.DataOutput"
@@ -951,6 +1041,9 @@
     },
     {
       "type": "java.io.Reader"
+    },
+    {
+      "type": "java.io.SequenceInputStream"
     },
     {
       "type": "java.io.Serializable"
@@ -1161,6 +1254,9 @@
       "type": "java.lang.Object"
     },
     {
+      "type": "java.lang.OutOfMemoryError"
+    },
+    {
       "type": "java.lang.Package"
     },
     {
@@ -1260,6 +1356,15 @@
       "type": "java.lang.annotation.Annotation"
     },
     {
+      "type": "java.lang.annotation.Retention"
+    },
+    {
+      "type": "java.lang.annotation.RetentionPolicy"
+    },
+    {
+      "type": "java.lang.annotation.Target"
+    },
+    {
       "type": "java.lang.invoke.ConstantBootstraps"
     },
     {
@@ -1329,6 +1434,9 @@
       "type": "java.lang.ref.Cleaner"
     },
     {
+      "type": "java.lang.ref.PhantomReference"
+    },
+    {
       "type": "java.lang.ref.Reference"
     },
     {
@@ -1339,6 +1447,9 @@
     },
     {
       "type": "java.lang.ref.WeakReference"
+    },
+    {
+      "type": "java.lang.reflect.AccessibleObject"
     },
     {
       "type": "java.lang.reflect.Array"
@@ -1407,6 +1518,9 @@
       "type": "java.net.SocketException"
     },
     {
+      "type": "java.net.URI"
+    },
+    {
       "type": "java.net.URISyntaxException"
     },
     {
@@ -1446,6 +1560,9 @@
       "type": "java.nio.ReadOnlyBufferException"
     },
     {
+      "type": "java.nio.channels.ByteChannel"
+    },
+    {
       "type": "java.nio.channels.CancelledKeyException"
     },
     {
@@ -1480,6 +1597,9 @@
     },
     {
       "type": "java.nio.channels.ScatteringByteChannel"
+    },
+    {
+      "type": "java.nio.channels.SelectableChannel"
     },
     {
       "type": "java.nio.channels.SelectionKey"
@@ -1539,6 +1659,9 @@
       "type": "java.nio.file.FileSystem"
     },
     {
+      "type": "java.nio.file.FileVisitResult"
+    },
+    {
       "type": "java.nio.file.FileVisitor"
     },
     {
@@ -1566,6 +1689,9 @@
       "type": "java.nio.file.StandardOpenOption"
     },
     {
+      "type": "java.nio.file.attribute.FileTime"
+    },
+    {
       "type": "java.security.AccessControlContext",
       "fields": [
         {
@@ -1587,6 +1713,15 @@
     },
     {
       "type": "java.security.BasicPermission"
+    },
+    {
+      "type": "java.security.CodeSigner"
+    },
+    {
+      "type": "java.security.CodeSource"
+    },
+    {
+      "type": "java.security.DigestOutputStream"
     },
     {
       "type": "java.security.GeneralSecurityException"
@@ -1712,6 +1847,12 @@
       "type": "java.security.spec.KeySpec"
     },
     {
+      "type": "java.text.DateFormat"
+    },
+    {
+      "type": "java.text.ParsePosition"
+    },
+    {
       "type": "java.text.SimpleDateFormat"
     },
     {
@@ -1808,6 +1949,9 @@
       "type": "java.util.EventListener"
     },
     {
+      "type": "java.util.EventObject"
+    },
+    {
       "type": "java.util.GregorianCalendar"
     },
     {
@@ -1895,6 +2039,9 @@
       "type": "java.util.Set"
     },
     {
+      "type": "java.util.SortedMap"
+    },
+    {
       "type": "java.util.SortedSet"
     },
     {
@@ -1905,6 +2052,9 @@
     },
     {
       "type": "java.util.StringJoiner"
+    },
+    {
+      "type": "java.util.StringTokenizer"
     },
     {
       "type": "java.util.TimeZone"
@@ -1983,6 +2133,9 @@
     },
     {
       "type": "java.util.concurrent.Future"
+    },
+    {
+      "type": "java.util.concurrent.FutureTask"
     },
     {
       "type": "java.util.concurrent.LinkedBlockingDeque"
@@ -2132,7 +2285,16 @@
       "type": "java.util.jar.Attributes"
     },
     {
+      "type": "java.util.jar.Attributes$Name"
+    },
+    {
+      "type": "java.util.jar.JarEntry"
+    },
+    {
       "type": "java.util.jar.JarFile"
+    },
+    {
+      "type": "java.util.jar.JarInputStream"
     },
     {
       "type": "java.util.jar.Manifest"
@@ -2187,6 +2349,9 @@
     },
     {
       "type": "java.util.zip.Deflater"
+    },
+    {
+      "type": "java.util.zip.ZipEntry"
     },
     {
       "type": "java.util.zip.ZipException"
@@ -2471,6 +2636,12 @@
       "type": "javax.xml.namespace.QName"
     },
     {
+      "type": "javax.xml.parsers.ParserConfigurationException"
+    },
+    {
+      "type": "javax.xml.parsers.SAXParserFactory"
+    },
+    {
       "type": "javax.xml.stream.XMLInputFactory"
     },
     {
@@ -2612,6 +2783,9 @@
       "type": "org.jboss.as.domain.http.server.logging.HttpServerLogger_$logger_en_US"
     },
     {
+      "type": "org.jboss.as.ee.component.BasicComponentInstance"
+    },
+    {
       "type": "org.jboss.as.ee.concurrent.ConcurrencyImplementation30"
     },
     {
@@ -2691,6 +2865,15 @@
     },
     {
       "type": "org.jboss.as.naming.subsystem.NamingExtension"
+    },
+    {
+      "type": "org.jboss.as.quickstarts.helloworld.HelloWorldServlet",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "org.jboss.as.remoting.RemotingExtension"
@@ -2787,6 +2970,12 @@
       "type": "org.jboss.dmr.ValueExpression"
     },
     {
+      "type": "org.jboss.jandex.AnnotationInstance[]"
+    },
+    {
+      "type": "org.jboss.jandex.ClassInfo[]"
+    },
+    {
       "type": "org.jboss.logmanager.CopyOnWriteMap"
     },
     {
@@ -2849,10 +3038,19 @@
       ]
     },
     {
+      "type": "org.jboss.modules.AbstractResourceLoader"
+    },
+    {
+      "type": "org.jboss.modules.ClassSpec"
+    },
+    {
       "type": "org.jboss.modules.ClassTransformer"
     },
     {
       "type": "org.jboss.modules.DependencySpec"
+    },
+    {
+      "type": "org.jboss.modules.IterableResourceLoader"
     },
     {
       "type": "org.jboss.modules.LocalModuleLoader",
@@ -2873,6 +3071,9 @@
       "type": "org.jboss.modules.ModuleDependencySpec"
     },
     {
+      "type": "org.jboss.modules.ModuleDependencySpecBuilder"
+    },
+    {
       "type": "org.jboss.modules.ModuleLoadException"
     },
     {
@@ -2882,10 +3083,34 @@
       "type": "org.jboss.modules.ModuleNotFoundException"
     },
     {
+      "type": "org.jboss.modules.ModuleSpec"
+    },
+    {
+      "type": "org.jboss.modules.ModuleSpec$Builder"
+    },
+    {
+      "type": "org.jboss.modules.PathUtils"
+    },
+    {
+      "type": "org.jboss.modules.Resource"
+    },
+    {
       "type": "org.jboss.modules.ResourceLoader"
     },
     {
+      "type": "org.jboss.modules.ResourceLoaderSpec"
+    },
+    {
+      "type": "org.jboss.modules.filter.MultiplePathFilterBuilder"
+    },
+    {
+      "type": "org.jboss.modules.filter.PathFilters"
+    },
+    {
       "type": "org.jboss.modules.security.FactoryPermissionCollection"
+    },
+    {
+      "type": "org.jboss.modules.security.ImmediatePermissionFactory"
     },
     {
       "type": "org.jboss.modules.security.PermissionFactory"
@@ -2964,6 +3189,23 @@
       "type": "org.jboss.threads.management.StandardThreadPoolMXBean"
     },
     {
+      "type": "org.jboss.vfs.VFSLogger_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.jboss.vfs.VFSLogger_$logger_en"
+    },
+    {
+      "type": "org.jboss.vfs.VFSLogger_$logger_en_US"
+    },
+    {
       "type": "org.jboss.vfs.protocol.VfsUrlStreamHandlerFactory"
     },
     {
@@ -3032,6 +3274,15 @@
     },
     {
       "type": "org.wildfly.extension.undertow.UndertowExtension"
+    },
+    {
+      "type": "org.wildfly.extension.undertow.deployment.JspInitializationListener",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "org.wildfly.extension.undertow.logging.UndertowLogger_$logger",
@@ -3233,6 +3484,12 @@
       "type": "org.xml.sax.SAXException"
     },
     {
+      "type": "org.xml.sax.helpers.DefaultHandler"
+    },
+    {
+      "type": "org.xnio.Connection"
+    },
+    {
       "type": "org.xnio.SequenceOption",
       "fields": [
         {
@@ -3293,6 +3550,9 @@
     },
     {
       "type": "org.xnio.nio.Log_$logger_en_US"
+    },
+    {
+      "type": "org.xnio.nio.NioSocketConduit"
     },
     {
       "type": "org.xnio.nio.NioTcpServer"
@@ -3686,7 +3946,16 @@
     {
       "type": "sun.util.resources.cldr.CalendarData"
     },
-    { "type": "org.jboss.logmanager.ExtHandler", "methods": [ { "name": "setEnabled", "parameterTypes": [ "boolean" ] } ] },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames_en"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames_en_US"
+    },
+        { "type": "org.jboss.logmanager.ExtHandler", "methods": [ { "name": "setEnabled", "parameterTypes": [ "boolean" ] } ] },
     {
     "type": "org.wildfly.security.WildFlyElytronDigestProvider",
     "methods": [
@@ -4097,7 +4366,32 @@
   },
     {
       "type": "io.undertow.UndertowMessages_$bundle"
+    },
+    {
+      "type": "org.jboss.vfs.VFSLogger_$logger"
     }
+    ,
+    {
+      "type": "org.jboss.vfs.VFSLogger_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+    "type": "io.undertow.servlet.handlers.DefaultServlet",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  }
+
   ],
   "resources": [
     {
@@ -4108,6 +4402,9 @@
     },
     {
       "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
+    },
+    {
+      "glob": "META-INF/services/java.util.spi.ResourceBundleControlProvider"
     },
     {
       "glob": "org/jboss/modules/version.properties"
@@ -4124,6 +4421,12 @@
       "module": "jdk.jfr",
       "glob": "jdk/jfr/internal/query/view.ini"
     },
+    {
+      "bundle": "jakarta.servlet.LocalStrings"
+    },
+    {
+      "bundle": "jakarta.servlet.http.LocalStrings"
+    },
         {
             "glob": "org/wildfly/security/ssl/TLS13MechanismDatabase.properties"
         },
@@ -4133,5 +4436,6 @@
         {
             "glob": "META-INF/services/java.security.Provider"
         }
+
   ]
 }

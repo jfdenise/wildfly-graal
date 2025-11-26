@@ -46,6 +46,7 @@ cp files/standalone.xml min-server2/standalone/configuration
 cp files/logging.properties min-server2/standalone/configuration 
 cp files/mgmt-users.properties min-server2/standalone/configuration 
 cp -r files/welcome-content min-server2/
+cp deployments/helloworld.war min-server2/standalone/deployments
 ```
 
 ## Build the image
@@ -58,3 +59,4 @@ cp -r files/welcome-content min-server2/
 
 * Access (with user admin, password admin) to http://127.0.0.1:9990/management 
 * Access the page http://127.0.0.1:8080
+* Acess the servlet http://127.0.0.1:8080/helloworld
