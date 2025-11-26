@@ -3,10 +3,8 @@
 This demo is an initial approach to have WildFly to benefit from Graal VM with minimal changes to server and dependencies.
 
 * Currently, the idea is to use JBoss Modules (that is core in WildFly) and see what we can do.
-* The JBoss Modules is initialized at build time. Just the module loading. Classes are not loaded from JBoss Module loader.
+* The JBoss Modules is initialized at build time.
 * All jars are put in the classpath.
-* logmanager is initialized at buildtime
-* A bunch of types are loaded through reflection, we use a reachability-metadata.json that contains the needed types and resources.
 * We benefit from the `experimental-class-define-support` support of Graal VM to define the WAR classes.
 
 # Install graalvm
@@ -24,7 +22,7 @@ Test that native-image is OK, call `native-image --help`
 
 # Build dependencies
 
-* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/wildfly_welcome_demo
+* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/build_time_add_deployment
 * cd wildfly-graal
 * clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
 * call: `cd jboss-modules; mvn clean install; cd ..`
@@ -59,15 +57,11 @@ JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./min-server-graal-age
 
 We do:
 
-* Add a user to access the management console.
 * Disable the PeriodicFile logger (incompatible with build time initialization).
-* Increase the reflective metadata with some manual content we know we need.
 
 ```
-cp files/reachability-metadata.json min-server-graal-agent2/
 cp files/standalone.xml min-server2/standalone/configuration 
 cp files/logging.properties min-server2/standalone/configuration 
-cp files/mgmt-users.properties min-server2/standalone/configuration 
 cp -r files/welcome-content min-server2/
 ```
 
@@ -79,6 +73,4 @@ cp -r files/welcome-content min-server2/
 
 * `./ModuleLauncher-1.0-SNAPSHOT`
 
-* Access (with user admin, password admin) to http://127.0.0.1:9990/management 
-* Access the page http://127.0.0.1:8080
 * Access the servlet http://127.0.0.1:8080/helloworld
