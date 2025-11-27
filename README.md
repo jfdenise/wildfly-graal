@@ -33,25 +33,15 @@ Test that native-image is OK, call `native-image --help`
 * clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
 * clone and build https://github.com/jfdenise/wildfly/pull/new/graal-poc
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=core-server,servlet --dir=min-server2`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=ee-core-profile-server,jaxrs --dir=min-server2`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
 # Copy the deployment to WildFly
 
 ```
-cp deployments/helloworld.war min-server2/standalone/deployments
+cp deployments/helloworld-rs.war min-server2/standalone/deployments
 ```
-
-# Run the server and access the application
-
-In this phase we capture the relective access and defined classes. In particular the WAR classes.
-
-```
-JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./min-server-graal-agent2,experimental-class-define-support=true" sh ./min-server2/bin/standalone.sh
-```
-* Access the servlet http://127.0.0.1:8080/helloworld
-* Kill the server
 
 # Copy the files needed by the demo
 
@@ -65,6 +55,16 @@ cp files/logging.properties min-server2/standalone/configuration
 cp -r files/welcome-content min-server2/
 ```
 
+# Run the server and access the application
+
+In this phase we capture the relective access and defined classes. In particular the WAR classes.
+
+```
+JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./min-server-graal-agent2,experimental-class-define-support=true" sh ./min-server2/bin/standalone.sh
+```
+* Access the servlet http://127.0.0.1:8080/helloworld-rs
+* Kill the server
+
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
@@ -73,4 +73,4 @@ cp -r files/welcome-content min-server2/
 
 * `./ModuleLauncher-1.0-SNAPSHOT`
 
-* Access the servlet http://127.0.0.1:8080/helloworld
+* Access the servlet http://127.0.0.1:8080/helloworld-rs

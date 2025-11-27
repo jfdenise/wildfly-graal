@@ -45,8 +45,13 @@ public class Launcher {
             }
             try {
                 final Provider provider = iterator.next();
-                System.out.println(provider.getClass().getName());
-                Security.addProvider(provider);
+                
+                if(!provider.getClass().getName().contains("org.bouncycastle")) {
+                    System.out.println(provider.getClass().getName());
+                    Security.addProvider(provider);
+                } else {
+                    System.out.println("DO NOT register " + provider.getClass().getName());
+                }
             } catch (Throwable ex) {
                 System.out.println("ERROR LOADING Provider " + ex);
             }

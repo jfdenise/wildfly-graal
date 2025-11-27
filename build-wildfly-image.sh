@@ -25,9 +25,9 @@ do
   #if [[ ! $line =~ "sshd" ]]; then
 #    cmd="$cmd$line"
   #fi
-  if [[ ! $line =~ "bouncycastle" ]]; then
+  #if [[ ! $line =~ "bcprov-jdk18on-1.82" ]]; then
     cmd="$cmd$line"
-  fi
+  #fi
 done
 
 echo "$cmd" > "./build-image.sh"
