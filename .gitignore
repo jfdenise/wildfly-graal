@@ -35,3 +35,5 @@ hellomodule
 /simple-modules/hello/target/
 /simple-modules/api/target/
 /simple-modules/provider/target/
+simple-modules/mod1_v1/target/
+simple-modules/mod1_v2/target/
