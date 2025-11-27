@@ -30,8 +30,8 @@ Test that native-image is OK, call `native-image --help`
 
 # Provision a WildFly server
 
-* clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
-* clone and build https://github.com/jfdenise/wildfly/pull/new/graal-poc
+* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc
+* clone and build https://github.com/jfdenise/wildfly/tree/graal-poc
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
 unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=core-server,servlet --dir=min-server2`
 
