@@ -69,6 +69,10 @@ cp files/logging.properties min-server2/standalone/configuration
 cp -r files/welcome-content min-server2/
 ```
 
+### Fedora 43
+
+* Make sure to have zlib-devel installed
+
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
