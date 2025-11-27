@@ -24,14 +24,14 @@ Test that native-image is OK, call `native-image --help`
 
 * clone this branch : https://github.com/jfdenise/wildfly-graal/tree/build_time_add_deployment
 * cd wildfly-graal
-* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
+* clone this branch JBoss Modules: https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc
 * call: `cd jboss-modules; mvn clean install; cd ..`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
 # Provision a WildFly server
 
-* clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
-* clone and build https://github.com/jfdenise/wildfly/pull/new/graal-poc
+* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc
+* clone and build https://github.com/jfdenise/wildfly/tree/graal-poc
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
 unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=core-server,servlet --dir=min-server2`
 
@@ -40,7 +40,11 @@ NOTE: make sure to provision the server in the wildfly-graal repo root directory
 # Copy the deployment to WildFly
 
 ```
-cp deployments/helloworld.war min-server2/standalone/deployments
+git clone https://github.com/wildfly/quickstart.git
+quickstart/helloworld
+mvn clean install -DskipTests
+cd ../../
+cp quickstart/helloworld/target/helloworld.war min-server2/standalone/deployments
 ```
 
 # Run the server and access the application
@@ -64,6 +68,10 @@ cp files/standalone.xml min-server2/standalone/configuration
 cp files/logging.properties min-server2/standalone/configuration 
 cp -r files/welcome-content min-server2/
 ```
+
+### Fedora 43
+
+* Make sure to have zlib-devel installed
 
 ## Build the image
 
