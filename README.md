@@ -40,7 +40,11 @@ NOTE: make sure to provision the server in the wildfly-graal repo root directory
 # Copy the deployment to WildFly
 
 ```
-cp deployments/helloworld.war min-server2/standalone/deployments
+git clone https://github.com/wildfly/quickstart.git
+quickstart/helloworld
+mvn clean install -DskipTests
+cd ../../
+cp quickstart/helloworld/target/helloworld.war min-server2/standalone/deployments
 ```
 
 # Run the server and access the application
