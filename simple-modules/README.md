@@ -2,6 +2,8 @@
 
 To highlight limitation at build time. No dynamic classloading can be shared between build time and runt time.
 
+WARNING, requires: https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-post-run
+
 * Build api, provider, hello and module-launcher
 
 ```
@@ -20,11 +22,7 @@ cp api/target/APIModule-1.0-SNAPSHOT.jar modules/api/main/api.jar
 
 ## Build native image with JBoss Modules (JAR + CP)
 
-Produce the metadata to be able to load the Hello class at runtime.
-
-java -agentlib:native-image-agent=config-output-dir=./graal-config,experimental-class-define-support=true -cp ../jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar launcher.Launcher
-
-native-image --enable-url-protocols=jar,data -H:ConfigurationFileDirectories=graal-config -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar -cp ../jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:hello/target/HelloModule-1.0-SNAPSHOT.jar:api/target/APIModule-1.0-SNAPSHOT.jar:provider/target/ProviderModule-1.0-SNAPSHOT.jar --initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules
+native-image --enable-url-protocols=jar,data -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar -cp ../../jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:hello/target/HelloModule-1.0-SNAPSHOT.jar:provider/target/ProviderModule-1.0-SNAPSHOT.jar --initialize-at-build-time=org.jboss.logmanager,launcher.Launcher,org.jboss.modules,hello.Hello,api.Provider,provider.ProviderImpl --enable-sbom=false
 
 ### Run the image
 
