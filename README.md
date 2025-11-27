@@ -3,7 +3,7 @@
 This demo is an initial approach to have WildFly to benefit from Graal VM with minimal changes to server and dependencies.
 
 * Currently, the idea is to use JBoss Modules (that is core in WildFly) and see what we can do.
-* The JBoss Modules is initialized at build time.
+* Server JBoss Modules are initialized at build time.
 * All jars are put in the classpath.
 * We benefit from the `experimental-class-define-support` support of Graal VM to define the WAR classes.
 

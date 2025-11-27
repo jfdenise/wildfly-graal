@@ -18,7 +18,7 @@ native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 -H:ConfigurationFileDirectories=min-server-graal-agent2 \
 --enable-url-protocols=jar,data \
 --trace-object-instantiation=org.bouncycastle.crypto.prng.SP800SecureRandom \
--cp jboss-modules/target/jboss-modules-2.3.0.Final-SNAPSHOT.jar:"
+-cp ${current_dir}/min-server2/jboss-modules.jar:"
 for (( i=0; i<${arraylength}; i++ ));
 do
   line=${array[$i]}":"
