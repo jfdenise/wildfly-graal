@@ -37,28 +37,28 @@ public class Launcher {
         try {
             // Required to avoid JBoss Modules content incompatible with Graal.
            // System.setProperty("org.wildfly.graal", "true");
-        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-        Iterator<Provider> iterator = providerServiceLoader.iterator();
-        for (;;) {
-            if (!(iterator.hasNext())) {
-                break;
-            }
-            try {
-                final Provider provider = iterator.next();
-                
-                if(!provider.getClass().getName().contains("org.bouncycastle")) {
-                    System.out.println(provider.getClass().getName());
-                    Security.addProvider(provider);
-                } else {
-                    System.out.println("DO NOT register " + provider.getClass().getName());
-                }
-            } catch (Throwable ex) {
-                System.out.println("ERROR LOADING Provider " + ex);
-            }
-        }
+//        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
+//        Iterator<Provider> iterator = providerServiceLoader.iterator();
+//        for (;;) {
+//            if (!(iterator.hasNext())) {
+//                break;
+//            }
+//            try {
+//                final Provider provider = iterator.next();
+//                
+//                if(!provider.getClass().getName().contains("org.bouncycastle")) {
+//                    System.out.println(provider.getClass().getName());
+//                    Security.addProvider(provider);
+//                } else {
+//                    System.out.println("DO NOT register " + provider.getClass().getName());
+//                }
+//            } catch (Throwable ex) {
+//                System.out.println("ERROR LOADING Provider " + ex);
+//            }
+//        }
             System.setProperty("org.jboss.boot.log.file", Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
             Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
-            System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
+            //System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
             System.setProperty("logging.configuration", p.toUri().toString());
             System.setProperty("jboss.home.dir", Paths.get("min-server2").toAbsolutePath().toString());
             System.setProperty("jboss.server.base.dir", Paths.get("min-server2/standalone").toAbsolutePath().toString());
@@ -72,17 +72,25 @@ public class Launcher {
             for (String k : all.keySet()) {
                 System.out.println("Load module " + k);
                 try {
-                    Module mod = loader.loadModule(k);
+                    Module mod = null;
                     if (k.equals("org.jboss.as.standalone")) {
-
+                        mod = loader.loadModule(k);
                         mainModule = mod;
                     }
+//                    if (k.equals("org.jboss.logmanager")) {
+//                        System.out.println("LOADING LOG MANAGER");
+//                        mod = loader.loadModule(k);
+//                       
+//                    }
+                    if(mod != null) {
                     modules.put(k, mod);
+                    }
                 } catch (Exception ex) {
                     System.out.println("EX " + ex);
                 }
             }
-        } catch (IOException ex) {
+            mainModule.preRun(new String[0]);
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
