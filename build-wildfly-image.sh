@@ -13,10 +13,10 @@ native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 -Dorg.jboss.boot.log.file=${current_dir}/min-server2/standalone/log/server.log \
 -Duser.home==/Users/foo \
 -Djboss.server.base.dir=${current_dir}/min-server2/standalone \
---initialize-at-build-time=jakarta.json,org.eclipse.parsson,org.wildfly.openssl.OpenSSLProvider,org.wildfly.security,org.jboss.logmanager,launcher.Launcher,org.wildfly.common,io.smallrye.common.expression,io.smallrye.common.expression.Expression\$Flag,org.jboss.modules,org.apache.sshd.common.file.root.RootedFileSystemProvider,org.jboss.logging,org.slf4j.impl.Slf4jLogger \
+--initialize-at-build-time=org.jboss.as.server,org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension,org.jboss.as.controller.persistence.ConfigurationExtensionFactory,jakarta.json,org.eclipse.parsson,org.wildfly.openssl.OpenSSLProvider,org.wildfly.security,org.jboss.logmanager,org.wildfly.controller,launcher.Launcher,org.wildfly.common,io.smallrye.common.expression,io.smallrye.common.expression.Expression\$Flag,org.jboss.modules,org.apache.sshd.common.file.root.RootedFileSystemProvider,org.jboss.logging,org.slf4j.impl.Slf4jLogger \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
---trace-object-instantiation=org.bouncycastle.crypto.prng.SP800SecureRandom \
+--trace-object-instantiation=org.jboss.as.server.logging.ServerLogger_$logger \
 -cp ${current_dir}/min-server2/jboss-modules.jar:"
 for (( i=0; i<${arraylength}; i++ ));
 do
@@ -27,7 +27,13 @@ do
   #if [[ ! $line =~ "bcprov-jdk18on-1.82" ]]; then
    # cmd="$cmd$line"
   #fi
-#if [[  $line =~ "logmanager" ]]; then
+#if [[  $line =~ "org/jboss/as/controller" ]]; then
+#    cmd="$cmd$line"
+#fi
+#if [[ ! $line =~ "org/jboss/logmanager" ]]; then
+#    cmd="$cmd$line"
+#fi
+#if [[ $line =~ "org/jboss/as/server/" ]]; then
 #    cmd="$cmd$line"
 #fi
 done

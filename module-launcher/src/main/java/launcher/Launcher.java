@@ -77,10 +77,17 @@ public class Launcher {
                         mod = loader.loadModule(k);
                         mainModule = mod;
                     }
-//                    if (k.equals("org.jboss.logmanager")) {
-//                        System.out.println("LOADING LOG MANAGER");
+                    if (k.equals("org.jboss.as.controller")) {
+                        System.out.println("LOADING controller");
+                        mod = loader.loadModule(k);
+                        mod.getClassLoader().loadClass("org.jboss.as.controller.persistence.ConfigurationExtensionFactory");
+                    }
+//                    if (k.equals("org.jboss.msc")) {
+//                        System.out.println("LOADING MSC 2");
 //                        mod = loader.loadModule(k);
-//                       
+//                        mod.getClassLoader().loadClass("org.jboss.msc.service.ServiceContainerImpl");
+//                        Class clazz = mod.getClassLoader().loadClass("org.jboss.msc.service.ServiceLogger_$logger", false);
+//                        System.out.println("CLASS " + clazz.getCanonicalName() + " classloader " + clazz.getClassLoader());
 //                    }
                     if(mod != null) {
                     modules.put(k, mod);
