@@ -24,17 +24,18 @@ Test that native-image is OK, call `native-image --help`
 * clone this branch : https://github.com/jfdenise/wildfly-graal/tree/remove_content_from_classpath
 * cd wildfly-graal
 * clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath
-* call: `cd jboss-modules; mvn clean install; cd ..`
-* clone JBoss VFS: https://github.com/jfdenise/jboss-vfstree/graal-poc-remove_content_from_classpath
-* call: `cd jboss-vfs; mvn clean install; cd ..`
-
+* call: `cd jboss-modules; mvn clean install -DskipTests; cd ..`
+* clone JBoss VFS: https://github.com/jfdenise/jboss-vfs/tree/graal-poc-remove_content_from_classpath
+* call: `cd jboss-vfs; mvn clean install -DskipTests; cd ..`
+* clone XNIO: https://github.com/jfdenise/xnio/tree/3.8-graal-poc-remove_content_from_classpath
+* call: `cd xnio; mvn clean install -DskipTests; cd ..`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
 # Provision a WildFly Core server
 
 * clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,-git-history --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,io --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
