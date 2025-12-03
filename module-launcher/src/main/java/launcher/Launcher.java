@@ -35,27 +35,26 @@ public class Launcher {
 
     static {
         try {
-            // Required to avoid JBoss Modules content incompatible with Graal.
-           // System.setProperty("org.wildfly.graal", "true");
-//        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-//        Iterator<Provider> iterator = providerServiceLoader.iterator();
-//        for (;;) {
-//            if (!(iterator.hasNext())) {
-//                break;
-//            }
-//            try {
-//                final Provider provider = iterator.next();
-//                
-//                if(!provider.getClass().getName().contains("org.bouncycastle")) {
-//                    System.out.println(provider.getClass().getName());
-//                    Security.addProvider(provider);
-//                } else {
-//                    System.out.println("DO NOT register " + provider.getClass().getName());
-//                }
-//            } catch (Throwable ex) {
-//                System.out.println("ERROR LOADING Provider " + ex);
-//            }
-//        }
+            System.setProperty("org.wildfly.graal", "true");
+        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
+        Iterator<Provider> iterator = providerServiceLoader.iterator();
+        for (;;) {
+            if (!(iterator.hasNext())) {
+                break;
+            }
+            try {
+                final Provider provider = iterator.next();
+                
+                if(!provider.getClass().getName().contains("org.bouncycastle")) {
+                    System.out.println(provider.getClass().getName());
+                    Security.addProvider(provider);
+                } else {
+                    System.out.println("DO NOT register " + provider.getClass().getName());
+                }
+            } catch (Throwable ex) {
+                System.out.println("ERROR LOADING Provider " + ex);
+            }
+        }
             System.setProperty("org.jboss.boot.log.file", Paths.get("min-server2/standalone/log/server.log").toAbsolutePath().toString());
             Path p = Paths.get("min-server2/standalone/configuration/logging.properties");
             //System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
@@ -77,11 +76,11 @@ public class Launcher {
                         mod = loader.loadModule(k);
                         mainModule = mod;
                     }
-                    if (k.equals("org.jboss.as.controller")) {
-                        System.out.println("LOADING controller");
-                        mod = loader.loadModule(k);
-                        mod.getClassLoader().loadClass("org.jboss.as.controller.persistence.ConfigurationExtensionFactory");
-                    }
+//                    if (k.equals("org.jboss.as.controller")) {
+//                        System.out.println("LOADING controller");
+//                        mod = loader.loadModule(k);
+//                        mod.getClassLoader().loadClass("org.jboss.as.controller.persistence.ConfigurationExtensionFactory");
+//                    }
 //                    if (k.equals("org.jboss.msc")) {
 //                        System.out.println("LOADING MSC 2");
 //                        mod = loader.loadModule(k);

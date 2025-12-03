@@ -8,8 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
@@ -27,6 +29,7 @@ public class Launcher {
     public static Map<String, Module> modules = new HashMap<>();
     public static Map<String, Module> callerModules = new HashMap<>();
     public static Module mainModule;
+    public static List<Class<?>> classes = new ArrayList<>();
     static {
         try {
             // Required to avoid JBoss Modules content incompatible with Graal.
@@ -45,14 +48,22 @@ public class Launcher {
                     if (k.equals("hello")) {
                         mainModule = mod;
                     }
-                    modules.put(k, mod);
+//                    if (k.equals("mod1_v1")) {
+//                        System.out.println("Loading logger class");
+//                        classes.add(mod.getClassLoader().loadClass("mod1.WarningLogger"));
+//                        classes.add(mod.getClassLoader().loadClass("mod1.WarningLogger_$logger"));
+//                    }
+                    
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("EX " + ex);
                 }
             }
-            System.out.println("Running Main entry point");
-            mainModule.run(new String[0]);
+//            classes.add(modules.get("api").getClassLoader().loadClass("api.Provider"));
+//            classes.add(modules.get("provider").getClassLoader().loadClass("provider.ProviderImpl"));
+//            classes.add(modules.get("hello").getClassLoader().loadClass("hello.Hello"));
+            System.out.println("Running Pre main entry point XXX");
+            mainModule.preRun(new String[0]);
             System.out.println("FINISH PRE-RUN");
         } catch (Exception ex) {
            throw new RuntimeException(ex);
@@ -60,7 +71,7 @@ public class Launcher {
     }
 
     public static void main(String[] args) throws Exception {
-        mainModule.postRun();
+        mainModule.run(args);
     }
 
     static void handleModules(Path modulesDir, Map<String, Path> moduleXmlByPkgName) throws IOException {
@@ -140,6 +151,7 @@ public class Launcher {
             if (custompackages != null) {
                 packages.append(",").append(custompackages);
             }
+            //packages.append("org.jboss.logging,mod1");
             System.setProperty(SYSPROP_KEY_SYSTEM_MODULES, packages.toString());
 
             // Get the module loader

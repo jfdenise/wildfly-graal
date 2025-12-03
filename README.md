@@ -1,11 +1,10 @@
-# wildfly-graal Demo
+# wildfly-graal
 
-This demo is an initial approach to have WildFly to benefit from Graal VM with minimal changes to server and dependencies.
+* Nothing in the classpath
+* Load what needs to be loaded at build time (in a pre-main)
+* Then run the server in main.
 
-* Currently, the idea is to use JBoss Modules (that is core in WildFly) and see what we can do.
-* Server JBoss Modules are initialized at build time.
-* All jars are put in the classpath.
-* We benefit from the `experimental-class-define-support` support of Graal VM to define the WAR classes.
+* For now, focusing on WildFly core
 
 # Install graalvm
 
@@ -22,26 +21,22 @@ Test that native-image is OK, call `native-image --help`
 
 # Build dependencies
 
-* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/build_time_add_deployment
+* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/remove_content_from_classpath
 * cd wildfly-graal
-* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/pull/new/2.x-graal-poc
+* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath
 * call: `cd jboss-modules; mvn clean install; cd ..`
+* clone JBoss VFS: https://github.com/jfdenise/jboss-vfstree/graal-poc-remove_content_from_classpath
+* call: `cd jboss-vfs; mvn clean install; cd ..`
+
 * call: `cd module-launcher; mvn clean install; cd ..`
 
-# Provision a WildFly server
+# Provision a WildFly Core server
 
-* clone and build: https://github.com/jfdenise/wildfly-core/pull/new/graal-poc
-* clone and build https://github.com/jfdenise/wildfly/pull/new/graal-poc
+* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=ee-core-profile-server,jaxrs --dir=min-server2`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,-git-history --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
-
-# Copy the deployment to WildFly
-
-```
-cp deployments/helloworld-rs.war min-server2/standalone/deployments
-```
 
 # Copy the files needed by the demo
 
@@ -50,20 +45,8 @@ We do:
 * Disable the PeriodicFile logger (incompatible with build time initialization).
 
 ```
-cp files/standalone.xml min-server2/standalone/configuration 
-cp files/logging.properties min-server2/standalone/configuration 
-cp -r files/welcome-content min-server2/
+cp files/logging.properties min-core-server/standalone/configuration 
 ```
-
-# Run the server and access the application
-
-In this phase we capture the relective access and defined classes. In particular the WAR classes.
-
-```
-JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./min-server-graal-agent2,experimental-class-define-support=true" sh ./min-server2/bin/standalone.sh
-```
-* Access the servlet http://127.0.0.1:8080/helloworld-rs
-* Kill the server
 
 ## Build the image
 
@@ -72,5 +55,3 @@ JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./min-server-graal-age
 ## Run the image
 
 * `./ModuleLauncher-1.0-SNAPSHOT`
-
-* Access the servlet http://127.0.0.1:8080/helloworld-rs

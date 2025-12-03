@@ -8,7 +8,9 @@
     
     <dependencies>
       <module name="api"/>
-      <module name="org.jboss.modules"/>
       <module name="provider" services="import"/>
+      <module name="mod1_v1"/>
+              <module name="org.jboss.logging"/>
+
     </dependencies>
 </module>

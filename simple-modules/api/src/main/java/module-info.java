@@ -1,3 +1,0 @@
-module APIModule {
-    exports api;
-}

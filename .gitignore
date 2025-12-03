@@ -1,8 +1,8 @@
 # Compiled class file
 *.class
-min-server-graal-agent2/
-min-server2/
+min-core-server/
 jboss-modules/
+jboss-vfs/
 build-image.sh
 # Log file
 *.log
@@ -25,12 +25,7 @@ ModuleLauncher-1.0-SNAPSHOT
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
-/hello/target/
 /module-launcher/target/
-launcher.Launcher
-hellomodule
-/provider/target/
-/api/target/
 /simple-modules/module-launcher/target/
 /simple-modules/hello/target/
 /simple-modules/api/target/
