@@ -49,6 +49,16 @@ We do:
 cp files/logging.properties min-core-server/standalone/configuration 
 ```
 
+## Remove content from the server config
+
+* Elytron:
+
+```
+<!--<audit-logging>
+    <file-audit-log name="local-audit" path="audit.log" relative-to="jboss.server.log.dir" format="JSON"/>
+</audit-logging>-->
+```
+
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
