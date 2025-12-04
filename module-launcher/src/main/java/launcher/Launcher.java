@@ -30,7 +30,6 @@ public class Launcher {
     // We don't have JBoss Modules classloaders at execution time.
     // Hack to be properly integrated.
     public static Map<String, Module> modules = new HashMap<>();
-    public static Map<String, Module> callerModules = new HashMap<>();
     static Module mainModule;
 
     static {
@@ -66,14 +65,13 @@ public class Launcher {
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
 
             Map<String, Path> all = new HashMap<>();
-            // Load all modules to have them accessible at runtime.
+            // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
             for (String k : all.keySet()) {
                 System.out.println("Load module " + k);
                 try {
-                    Module mod = null;
+                    Module mod = loader.loadModule(k);
                     if (k.equals("org.jboss.as.standalone")) {
-                        mod = loader.loadModule(k);
                         mainModule = mod;
                     }
 //                    if (k.equals("org.wildfly.extension.io")) {
@@ -92,9 +90,7 @@ public class Launcher {
 //                        Class clazz = mod.getClassLoader().loadClass("org.jboss.msc.service.ServiceLogger_$logger", false);
 //                        System.out.println("CLASS " + clazz.getCanonicalName() + " classloader " + clazz.getClassLoader());
 //                    }
-                    if(mod != null) {
                     modules.put(k, mod);
-                    }
                 } catch (Exception ex) {
                     System.out.println("EX " + ex);
                 }
