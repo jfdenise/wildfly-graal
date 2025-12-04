@@ -45,6 +45,11 @@ org.slf4j.impl.Slf4jLogger,\
 org.wildfly.common,\
 org.wildfly.controller,\
 org.wildfly.core.embedded.spi,\
+org.wildfly.extension.elytron.ElytronExtension,\
+org.wildfly.extension.elytron.ServiceLoaderInitializer,\
+org.wildfly.extension.elytron._private.WildFlyAcmeClient,\
+org.wildfly.extension.elytron._private.ElytronSubsystemMessages,\
+org.wildfly.extension.elytron._private.ElytronSubsystemMessages_\\\$logger,\
 org.wildfly.extension.io,\
 org.wildfly.io.OptionAttributeDefinition,\
 org.wildfly.openssl.OpenSSLProvider,\
@@ -76,26 +81,7 @@ org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 --trace-object-instantiation=org.xnio.OptionMap \
--cp ${current_dir}/min-core-server/jboss-modules.jar:"
-for (( i=0; i<${arraylength}; i++ ));
-do
-  line=${array[$i]}":"
-  #if [[ ! $line =~ "sshd" ]]; then
-#    cmd="$cmd$line"
-  #fi
-  #if [[ ! $line =~ "bcprov-jdk18on-1.82" ]]; then
-   # cmd="$cmd$line"
-  #fi
-#if [[  $line =~ "org/jboss/as/controller" ]]; then
-#    cmd="$cmd$line"
-#fi
-#if [[ ! $line =~ "org/jboss/logmanager" ]]; then
-#    cmd="$cmd$line"
-#fi
-#if [[ $line =~ "xnio" ]]; then
-##    cmd="$cmd$line"
-#fi
-done
+-cp ${current_dir}/min-core-server/jboss-modules.jar"
 
 echo "$cmd" > "./build-image.sh"
 chmod +x ./build-image.sh

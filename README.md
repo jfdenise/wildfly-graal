@@ -35,7 +35,7 @@ Test that native-image is OK, call `native-image --help`
 
 * clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,io --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,elytron --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
