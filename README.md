@@ -29,13 +29,16 @@ Test that native-image is OK, call `native-image --help`
 * call: `cd jboss-vfs; mvn clean install -DskipTests; cd ..`
 * clone XNIO: https://github.com/jfdenise/xnio/tree/3.8-graal-poc-remove_content_from_classpath
 * call: `cd xnio; mvn clean install -DskipTests; cd ..`
+* clone undertow: https://github.com/jfdenise/undertow/tree/graal-poc-empty-classpath
+* call: `cd undertow; mvn clean install -DskipTests; cd ..`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
 # Provision a WildFly Core server
 
 * clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
+* clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly-core#31.0.0.Beta3-SNAPSHOT --layers=base-server,elytron --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,undertow --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -46,7 +49,8 @@ We do:
 * Disable the PeriodicFile logger (incompatible with build time initialization).
 
 ```
-cp files/logging.properties min-core-server/standalone/configuration 
+cp files/logging.properties min-core-server/standalone/configuration
+cp -r files/welcome-content min-core-server/
 ```
 
 ## Remove content from the server config
@@ -59,6 +63,27 @@ cp files/logging.properties min-core-server/standalone/configuration
 </audit-logging>-->
 ```
 
+## Add the welcome content to the server config
+
+Replace undertow subsystem with:
+
+```
+<subsystem xmlns="urn:jboss:domain:undertow:community:14.0" default-virtual-host="default-host" default-servlet-container="default" default-server="default-server" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
+    <byte-buffer-pool name="default"/>
+    <buffer-cache name="default"/>
+    <server name="default-server">
+        <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
+        <host name="default-host" alias="localhost">
+          <location name="/" handler="welcome-content"/>
+        </host>
+    </server>
+    <servlet-container name="default"/>
+     <handlers>
+        <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+    </handlers>
+</subsystem>
+```
+
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
@@ -66,3 +91,4 @@ cp files/logging.properties min-core-server/standalone/configuration
 ## Run the image
 
 * `./ModuleLauncher-1.0-SNAPSHOT`
+* Access the page: http://127.0.0.1:8080
