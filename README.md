@@ -4,8 +4,6 @@
 * Load what needs to be loaded at build time (in a pre-main)
 * Then run the server in main.
 
-* For now, focusing on WildFly core
-
 # Install graalvm
 
 * Download from https://www.oracle.com/downloads/graalvm-downloads.html
@@ -33,7 +31,7 @@ Test that native-image is OK, call `native-image --help`
 * call: `cd undertow; mvn clean install -DskipTests; cd ..`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
-# Provision a WildFly Core server
+# Provision a WildFly server
 
 * clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
 * clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath
@@ -90,5 +88,5 @@ Replace undertow subsystem with:
 
 ## Run the image
 
-* `./ModuleLauncher-1.0-SNAPSHOT`
+* `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080

@@ -8,6 +8,7 @@ arraylength=${#array[@]}
 
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
+wildfly-launcher \
 -Djboss.home.dir=${current_dir}/min-core-server \
 -Dlogging.configuration=file://${current_dir}/min-core-server/standalone/configuration/logging.properties \
 -Dorg.jboss.boot.log.file=${current_dir}/min-core-server/standalone/log/server.log \
