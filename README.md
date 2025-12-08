@@ -36,7 +36,7 @@ Test that native-image is OK, call `native-image --help`
 * clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
 * clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,undertow --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -72,12 +72,16 @@ Replace undertow subsystem with:
     <server name="default-server">
         <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
         <host name="default-host" alias="localhost">
-          <location name="/" handler="welcome-content"/>
+            <location name="/" handler="welcome-content"/>
+            <http-invoker/>
         </host>
     </server>
-    <servlet-container name="default"/>
-     <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+    <servlet-container name="default">
+        <jsp-config/>
+        <websockets/>
+    </servlet-container>
+    <handlers>
+      <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
     </handlers>
 </subsystem>
 ```
