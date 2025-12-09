@@ -33,10 +33,10 @@ Test that native-image is OK, call `native-image --help`
 
 # Provision a WildFly server
 
-* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
-* clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath
+* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath_add-deployment
+* clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath_add_deployment
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,management --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -50,6 +50,17 @@ We do:
 cp files/logging.properties min-core-server/standalone/configuration
 cp -r files/welcome-content min-core-server/
 ```
+
+* Add the modularized deployment
+
+```
+cp -r deployment min-core-server/system/layers/base
+```
+
+# Deploy the deployment
+
+That is a hack for now to have an event at boot to deploy something....
+Use Java server and deploy using WildFly CLI... To be documented.
 
 ## Remove content from the server config
 

@@ -16,6 +16,7 @@ wildfly-launcher \
 -Djboss.server.base.dir=${current_dir}/min-core-server/standalone \
 -H:+PrintClassInitialization \
 --initialize-at-build-time=\
+com.sun.el.ExpressionFactoryImpl,\
 io.smallrye.common.expression,\
 io.smallrye.common.expression.Expression\\\$Flag,\
 io.undertow.UndertowLogger,\
@@ -23,6 +24,7 @@ io.undertow.UndertowLogger_\\\$logger,\
 io.undertow.servlet.UndertowServletMessages,\
 io.undertow.servlet.UndertowServletMessages_\\\$bundle,\
 io.undertow.Version,\
+io.undertow.servlet.api.ListenerInfo,\
 io.undertow.servlet.api.ServletInfo,\
 io.undertow.server.protocol.http.ServiceLoaderInitializer,\
 io.undertow.servlet.api.ServletStackTraces,\
@@ -32,11 +34,17 @@ io.undertow.servlet.util.ConstructorInstanceFactory,\
 io.undertow.util.FastConcurrentDirectDeque,\
 io.undertow.util,\
 io.undertow.util.SimpleAttachmentKey,\
+jakarta.el,\
 jakarta.json,\
+jakarta.servlet.jsp.JspApplicationContext,\
+jakarta.servlet.jsp.JspFactory,\
 launcher.Launcher,\
+org.apache.jasper.runtime.JspApplicationContextImpl,\
+org.apache.jasper.runtime.JspFactoryImpl,\
 org.apache.jasper.servlet.JspServlet,\
 org.apache.sshd.common.file.root.RootedFileSystemProvider,\
 org.eclipse.parsson,\
+org.glassfish.expressly,\
 org.jboss.as.controller,\
 org.jboss.as.controller.PersistentResourceDefinition,\
 org.jboss.as.controller.SimpleResourceDefinition,\
@@ -50,6 +58,7 @@ org.jboss.as.ee.concurrent.ConcurrencyImplementation,\
 org.jboss.as.ee.concurrent.ConcurrencyImplementation30,\
 org.jboss.as.ee.subsystem.EeExtension,\
 org.jboss.as.jmx.model.ManagementModelIntegration,\
+org.jboss.as.naming.deployment.JdkDependenciesProcessor,\
 org.jboss.as.naming.logging,\
 org.jboss.as.naming.subsystem.NamingExtension,\
 org.jboss.as.remoting.RemotingServices,\
@@ -88,6 +97,8 @@ org.wildfly.extension.undertow.AjpListenerResourceDefinition,\
 org.wildfly.extension.undertow.HttpsListenerResourceDefinition,\
 org.wildfly.extension.undertow.ListenerResourceDefinition,\
 org.wildfly.extension.undertow.UndertowExtension,\
+org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService,\
+org.wildfly.extension.undertow.deployment.JspInitializationListener,\
 org.wildfly.extension.undertow.filters,\
 org.wildfly.extension.undertow.filters.AbstractFilterDefinition,\
 org.wildfly.extension.undertow.filters.ModClusterDefinition,\
@@ -96,6 +107,7 @@ org.wildfly.openssl.OpenSSLProvider,\
 org.wildfly.security,\
 org.wildfly.service.descriptor,\
 org.wildfly.subsystem,\
+org.xnio.FileAccess,\
 org.xnio.LocalSocketAddress,\
 org.xnio.Option,\
 org.xnio.Option\\\$1,\
@@ -129,7 +141,7 @@ org.jboss.as.server.DomainServerCommunicationServices,\
 org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
---trace-object-instantiation=org.xnio.OptionMap \
+--trace-object-instantiation=org.xnio.FileAccess \
 -cp ${current_dir}/min-core-server/jboss-modules.jar"
 
 echo "$cmd" > "./build-image.sh"
