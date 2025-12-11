@@ -97,6 +97,18 @@ Replace undertow subsystem with:
 </subsystem>
 ```
 
+## Run the agent to dup service loaders
+
+JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
+
+## Build the substitutions
+
+We do redefine the ServliLoader to route loading to the static context
+
+```
+cd wildfly-substitutions;mvn clean install;cd ..
+```
+
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`

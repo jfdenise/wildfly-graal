@@ -2,8 +2,6 @@ package launcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -13,9 +11,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Provider;
 import java.security.Security;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
@@ -33,27 +34,28 @@ public class Launcher {
     static Module mainModule;
 
     static {
+        new Launcher().hello();
         try {
             System.setProperty("org.wildfly.graal", "true");
-        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-        Iterator<Provider> iterator = providerServiceLoader.iterator();
-        for (;;) {
-            if (!(iterator.hasNext())) {
-                break;
-            }
-            try {
-                final Provider provider = iterator.next();
-                
-                if(!provider.getClass().getName().contains("org.bouncycastle")) {
-                    System.out.println(provider.getClass().getName());
-                    Security.addProvider(provider);
-                } else {
-                    System.out.println("DO NOT register " + provider.getClass().getName());
+            final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
+            Iterator<Provider> iterator = providerServiceLoader.iterator();
+            for (;;) {
+                if (!(iterator.hasNext())) {
+                    break;
                 }
-            } catch (Throwable ex) {
-                System.out.println("ERROR LOADING Provider " + ex);
+                try {
+                    final Provider provider = iterator.next();
+
+                    if (!provider.getClass().getName().contains("org.bouncycastle")) {
+                        System.out.println(provider.getClass().getName());
+                        Security.addProvider(provider);
+                    } else {
+                        System.out.println("DO NOT register " + provider.getClass().getName());
+                    }
+                } catch (Throwable ex) {
+                    System.out.println("ERROR LOADING Provider " + ex);
+                }
             }
-        }
             System.setProperty("org.jboss.boot.log.file", Paths.get("min-core-server/standalone/log/server.log").toAbsolutePath().toString());
             Path p = Paths.get("min-core-server/standalone/configuration/logging.properties");
             //System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
@@ -67,6 +69,7 @@ public class Launcher {
             Map<String, Path> all = new HashMap<>();
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
+            Path cache = Paths.get("min-core-server/jboss-modules-store");
             for (String k : all.keySet()) {
                 System.out.println("Load module " + k);
                 try {
@@ -74,6 +77,12 @@ public class Launcher {
                     if (k.equals("org.jboss.as.standalone")) {
                         mainModule = mod;
                     }
+                    if (k.equals("org.wildfly.extension.undertow")) {
+                        Class<?> clazz = mod.getClassLoader().loadClass("io.undertow.servlet.core.DeploymentManagerImpl");
+                    }
+
+                    //if(!k.equals("org.jboss.logmanager")) {
+                    //}
 //                    if (k.equals("org.wildfly.extension.io")) {
 //                        mod = loader.loadModule(k);
 //                        mod.preLoadServices();
@@ -92,7 +101,33 @@ public class Launcher {
 //                    }
                     modules.put(k, mod);
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     System.out.println("EX " + ex);
+                }
+            }
+            Path dumpedServices = Paths.get("jboss-modules-recorded-services");
+            for (String k : modules.keySet()) {
+                if ("org.jboss.logmanager".equals(k)) {
+                    continue;
+                }
+                Module mod = modules.get(k);
+                Path services = dumpedServices.resolve(k).resolve("services.txt");
+                if (Files.exists(services)) {
+                    List<String> lst = Files.readAllLines(services);
+                    Set<String> seen = new HashSet<>();
+                    for (String serviceClass : lst) {
+                        if(seen.contains(serviceClass)) {
+                            continue;
+                        }
+                        seen.add(serviceClass);
+                        if (!serviceClass.startsWith("java.lang.")) {
+                            try {
+                                mod.addServiceToCache(serviceClass);
+                            } catch(Exception ex) {
+                                        System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k);
+                                        }
+                        }
+                    }
                 }
             }
             mainModule.preRun(new String[0]);
@@ -101,7 +136,12 @@ public class Launcher {
         }
     }
 
+    public void hello() {
+        System.out.println("ORIGINAL");
+    }
+
     public static void main(String[] args) throws Exception {
+        new Launcher().hello();
         System.setProperty("org.wildfly.graal", "true");
         System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
         System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());

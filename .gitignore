@@ -32,3 +32,6 @@ replay_pid*
 /simple-modules/provider/target/
 simple-modules/mod1_v1/target/
 simple-modules/mod1_v2/target/
+/agent/target/
+/wildfly-substitutions/target/
+jboss-modules-recorded-services

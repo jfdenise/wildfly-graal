@@ -84,6 +84,7 @@ org.slf4j.impl.Slf4jLogger,\
 org.wildfly.common,\
 org.wildfly.controller,\
 org.wildfly.core.embedded.spi,\
+org.wildfly.core.instmgr.InstMgrInitialization,\
 org.wildfly.extension.elytron.ElytronExtension,\
 org.wildfly.extension.elytron.ServiceLoaderInitializer,\
 org.wildfly.extension.elytron._private.WildFlyAcmeClient,\
@@ -134,7 +135,8 @@ org.xnio.nio.Log,\
 org.xnio.nio.Log_\\\$logger,\
 org.xnio.nio.NioXnio\\\$DefaultSelectorCreator,\
 org.xnio.nio.NioXnio\\\$4,\
-org.xnio.nio.NioXnio \
+org.xnio.nio.NioXnio,\
+org.xnio.nio.NioXnioProvider \
 --initialize-at-run-time=org.jboss.as.server.services.net,\
 org.jboss.as.server.deployment.module.TempFileProviderService,\
 org.jboss.as.server.DomainServerCommunicationServices,\
@@ -142,8 +144,7 @@ org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 --trace-object-instantiation=org.xnio.FileAccess \
--cp ${current_dir}/min-core-server/jboss-modules.jar"
-
+-cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar"
 echo "$cmd" > "./build-image.sh"
 chmod +x ./build-image.sh
 ./build-image.sh
