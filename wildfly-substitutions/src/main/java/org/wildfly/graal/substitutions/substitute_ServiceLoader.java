@@ -1,4 +1,4 @@
-package substitutions;
+package org.wildfly.graal.substitutions;
 
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Substitute;
