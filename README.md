@@ -19,7 +19,7 @@ Test that native-image is OK, call `native-image --help`
 
 # Build dependencies
 
-* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/remove_content_from_classpath
+* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/archive-io-elytron-undertow-starting
 * cd wildfly-graal
 * clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath
 * call: `cd jboss-modules; mvn clean install -DskipTests; cd ..`
