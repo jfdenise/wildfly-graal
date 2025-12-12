@@ -1,22 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright The WildFly Authors
-  ~ SPDX-License-Identifier: Apache-2.0
-  -->
+~ Copyright The WildFly Authors
+~ SPDX-License-Identifier: Apache-2.0
+-->
 <module name="deployment.helloworld.war" xmlns="urn:jboss:module:1.9">
 
-    <resources>
-        <resource-root path="WEB-INF/classes"/>
-    </resources>
+  <resources>
+    <resource-root path="WEB-INF/classes"/>
+  </resources>
 
-    <dependencies>
-        <!-- for java.beans -->
-        <module name="org.glassfish.javax.el"/>
-        <module name="jakarta.websocket.api"/>
-        <module name="io.undertow.jsp"/>
-        <module name="jakarta.servlet.jstl.api"/>
-        <module name="io.undertow.servlet"/>
-        <module name="org.wildfly.security.elytron"/>
-        <module name="jakarta.servlet.api"/>
-    </dependencies>
+  <dependencies>
+    <module name="jdk.naming.rmi"/>
+    <module name="org.wildfly.naming"/>
+    <module name="io.undertow.websocket"/>
+    <module name="org.glassfish.jakarta.enterprise.concurrent"/>
+    <module name="jakarta.interceptor.api"/>
+    <module name="jakarta.json.api"/>
+    <module name="jakarta.servlet.api"/>
+    <module name="jakarta.servlet.jstl.api"/>
+    <module name="org.glassfish.javax.el"/>
+    <module name="jakarta.servlet.jsp.api"/>
+    <module name="org.jboss.as.ee"/>
+    <module name="io.undertow.jsp"/>
+    <module name="jakarta.resource.api"/>
+    <module name="jakarta.security.auth.message.api"/>
+    <module name="jakarta.json.bind.api"/>
+    <module name="javax.rmi.api" optional="true"/>
+    <module name="jakarta.security.jacc.api"/>
+    <module name="jakarta.enterprise.concurrent.api"/>
+    <module name="org.jboss.vfs"/>
+    <module name="java.se"/>
+    <module name="io.undertow.servlet"/>
+    <module name="jakarta.annotation.api"/>
+    <module name="io.undertow.core"/>
+    <module name="jakarta.websocket.api"/>
+    <module name="jakarta.xml.bind.api" optional="true"/>
+    <module name="org.wildfly.security.elytron"/>
+    <module name="jdk.naming.dns"/>
+    <module name="org.jboss.invocation"/>
+  </dependencies>
 </module>

@@ -2,6 +2,7 @@ package launcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -10,6 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,12 +23,14 @@ import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Launcher {
 
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
-    private static final String SYSPROP_KEY_SYSTEM_MODULES = "jboss.modules.system.pkgs";
+    private static final String SYSPROP_KEY_SYSTEM_PACKAGES = "jboss.modules.system.pkgs";
     // Those maps are used by WildFLy to resolve modules at runtime,
     // We don't have JBoss Modules classloaders at execution time.
     // Hack to be properly integrated.
@@ -116,21 +120,74 @@ public class Launcher {
                     List<String> lst = Files.readAllLines(services);
                     Set<String> seen = new HashSet<>();
                     for (String serviceClass : lst) {
-                        if(seen.contains(serviceClass)) {
+                        if (seen.contains(serviceClass)) {
                             continue;
                         }
                         seen.add(serviceClass);
                         if (!serviceClass.startsWith("java.lang.")) {
                             try {
                                 mod.addServiceToCache(serviceClass);
-                            } catch(Exception ex) {
-                                        System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k);
-                                        }
+                            } catch (Exception ex) {
+                                System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k);
+                            }
                         }
                     }
                 }
             }
             mainModule.preRun(new String[0]);
+            Path dumpedClasses = Paths.get("jboss-modules-recorded-classes");
+            JSONObject jo = new JSONObject(new String(Files.readAllBytes(Paths.get("reflective-dump").resolve("reachability-metadata.json"))));
+            JSONArray reflection = (JSONArray) jo.get("reflection");
+            Map<String, JSONObject> reflectionMap = new HashMap<>();
+            Iterator<?> it = reflection.iterator();
+            while (it.hasNext()) {
+                JSONObject obj = (JSONObject) it.next();
+                String name = (String) obj.get("type");
+                if (obj.has("methods")) {
+                    reflectionMap.put(name, obj);
+                }
+            }
+            System.out.println(reflection.getClass());
+            for (String k : modules.keySet()) {
+                if ("org.jboss.logmanager".equals(k)) {
+                    continue;
+                }
+                Module mod = modules.get(k);
+                mod.populateClasses(dumpedClasses);
+                Set<String> set = mod.getClassesFromCache();
+                for (String clazz : set) {
+                    JSONObject reflectiveType = reflectionMap.get(clazz);
+                    if (reflectiveType != null) {
+                        System.out.println("SPECIFIC REFLECTION FOR " + clazz);
+                        JSONArray methods = (JSONArray) reflectiveType.get("methods");
+                        if (methods != null) {
+                            Iterator<?> itMethods = methods.iterator();
+                            Class<?> loadedClass = mod.getClassFromCache(clazz);
+                            while (itMethods.hasNext()) {
+                                JSONObject method = (JSONObject) itMethods.next();
+                                String name = method.getString("name");
+                                if (name.equals("<init>")) {
+                                    JSONArray args = (JSONArray) method.get("parameterTypes");
+                                    List<Class<?>> params = new ArrayList<>();
+                                    Iterator<?> itArgs = args.iterator();
+                                    StringBuilder key = new StringBuilder();
+                                    key.append(clazz);
+                                    while (itArgs.hasNext()) {
+                                        String t = (String) itArgs.next();
+                                        params.add(mod.getClassLoader().loadClass(t));
+                                        key.append("_" + t);
+                                    }
+                                    Class<?>[] arr = new Class[params.size()];
+                                    arr = params.toArray(arr);
+                                    System.out.println("ADD CONSTRUCTOR " + key);
+                                    Constructor c = loadedClass.getConstructor(arr);
+                                    mod.addConstructorToCache(key.toString(), c);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -223,11 +280,13 @@ public class Launcher {
             System.setProperty(SYSPROP_KEY_MODULE_PATH, modulePath);
 
             final StringBuilder packages = new StringBuilder("org.jboss.modules");
-            String custompackages = System.getProperty(SYSPROP_KEY_SYSTEM_MODULES);
+            String custompackages = System.getProperty(SYSPROP_KEY_SYSTEM_PACKAGES);
             if (custompackages != null) {
                 packages.append(",").append(custompackages);
             }
-            System.setProperty(SYSPROP_KEY_SYSTEM_MODULES, packages.toString());
+            // The ones that are in the classpath
+            packages.append(",com.sun.el,jakarta.el");
+            System.setProperty(SYSPROP_KEY_SYSTEM_PACKAGES, packages.toString());
 
             // Get the module loader
             return Module.getBootModuleLoader();

@@ -99,7 +99,7 @@ Replace undertow subsystem with:
 
 ## Run the agent to dup service loaders
 
-JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
+JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./reflective-dump -javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
 
 ## Build the substitutions
 
@@ -117,3 +117,34 @@ cd wildfly-substitutions;mvn clean install;cd ..
 
 * `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080
+
+## ISSUES
+
+* We can't substitute Constructor on the fly, Substrat VM already substitute java.lang.Class...
+So it means that we need for instances constructed with reflection (a lot in JSP, Servlet, ...) to be put in the classpath and rely on 
+dynamic feature (reflection.json file) to handle them. Problem: Too much goes into the classpath, all undertow, logging, ...
+
+To solve the issue:
+* Refactor the code to rely on pre-loaded constructors
+* Follow the future dynamic feature for custom classloader to be added to Graal.
+
+## What we can already do
+
+* Handle ServiceLoading fully (subsitution)
+* Handle class loading (substitution of ModuleClassLoader find class) to retrieve from the cache.
+
+## The approach
+
+* Run the java server to capture:
+** Loaded services
+** Loaded classes
+** Reflective metadata to retrieve constructors
+
+* Build the image
+** At build time
+*** Load all jboss modules
+*** Populate the classes, constuctors and services caches
+** Initialize a bunch of server classes (--initialize-at-build-time=)
+
+We currently have org/glassfish/expressly and jakarta/el/api in classpath (doesn't require more than that).
+

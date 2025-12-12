@@ -20,6 +20,12 @@
       <version>2.3.0.Final-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
+    <!-- Not used by WildFly -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20250517</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -34,6 +40,25 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                  <excludes>
+                     <exclude>org.jboss.modules:jboss-modules</exclude>
+                   </excludes>
+               </artifactSet>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
