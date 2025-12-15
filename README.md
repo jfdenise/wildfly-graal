@@ -19,6 +19,8 @@ Test that native-image is OK, call `native-image --help`
 
 # Build dependencies
 
+WARNING: Do NOT use graal VM to build the dependencies, use JDK21 when building the dependencies.
+
 * clone this branch : https://github.com/jfdenise/wildfly-graal/tree/archive-io-elytron-undertow-starting
 * cd wildfly-graal
 * clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath
@@ -32,6 +34,8 @@ Test that native-image is OK, call `native-image --help`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
 # Provision a WildFly server
+
+WARNING: Do NOT use graal VM to build the server, use JDK21 when building wildfly-core and wildfly.
 
 * clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath
 * clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath
