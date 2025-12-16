@@ -133,4 +133,4 @@ JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server
 ## Run the image
 
 * `./wildfly-launcher`
-* Access the page: http://127.0.0.1:8080
+* Access the page: http://127.0.0.1:8080/helloworld/HelloWorld
