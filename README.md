@@ -1,8 +1,8 @@
 # wildfly-graal
 
 * Nothing in the classpath
-* Load what needs to be loaded at build time (in a pre-main)
-* Then run the server in main.
+* Start the server suspended at build time. Capture what we can.
+* Then run the server at runtime.
 
 # Install latest graalvm (JDK25)
 
@@ -19,7 +19,7 @@ Test that native-image is OK, call `native-image --help`
 
 # Build WildFly and dependencies
 
-WARNING YOU MUST USE JDK21.
+WARNING YOU MUST USE JDK17.
 
 ```
 git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly-graal
