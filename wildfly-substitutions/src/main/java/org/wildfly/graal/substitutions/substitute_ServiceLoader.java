@@ -46,9 +46,9 @@ public final class substitute_ServiceLoader {
             
             List<Object> lst = cl.getModule().getServicesFromCache(service);
             if(lst != null && !lst.isEmpty()) {
-                System.out.println("@@@@ Service " + service.getName() + " found in " + cl.getModule().getName());
-                System.out.println(lst);
-                System.out.println("@@@@");
+               // System.out.println("@@@@ Service " + service.getName() + " found in " + cl.getModule().getName());
+               // System.out.println(lst);
+               // System.out.println("@@@@");
             } else {
                 //System.out.println("@@@@ NO Service " + service.getName() + "found in " + cl.getModule().getName());
             }
@@ -180,12 +180,12 @@ public final class substitute_ServiceLoader {
     public Stream<ServiceLoader.Provider> stream() {
         if (loader instanceof ModuleClassLoader) {
             ModuleClassLoader cl = (ModuleClassLoader) loader;
-            System.out.println("SUBSTITUTE " + cl.getModule().getName());
+           // System.out.println("SUBSTITUTE " + cl.getModule().getName());
             List<Object> lst = cl.getModule().getServicesFromCache(service);
             if (lst != null && !lst.isEmpty()) {
-                System.out.println("@@@@ Service " + service.getName() + " found in " + cl.getModule().getName());
-                System.out.println(lst);
-                System.out.println("@@@@");
+               // System.out.println("@@@@ Service " + service.getName() + " found in " + cl.getModule().getName());
+               // System.out.println(lst);
+               // System.out.println("@@@@");
             } else {
                 //System.out.println("@@@@ NO Service " + service.getName() + "found in " + cl.getModule().getName());
             }
