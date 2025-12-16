@@ -2,7 +2,6 @@ package launcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -11,7 +10,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Provider;
 import java.security.Security;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,8 +21,6 @@ import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class Launcher {
 
@@ -38,9 +34,7 @@ public class Launcher {
     static Module mainModule;
 
     static {
-        new Launcher().hello();
         try {
-            //System.setProperty("org.wildfly.graal", "true");
             final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
             Iterator<Provider> iterator = providerServiceLoader.iterator();
             for (;;) {
@@ -81,28 +75,6 @@ public class Launcher {
                     if (k.equals("org.jboss.as.standalone")) {
                         mainModule = mod;
                     }
-                    if (k.equals("org.wildfly.extension.undertow")) {
-                        Class<?> clazz = mod.getClassLoader().loadClass("io.undertow.servlet.core.DeploymentManagerImpl");
-                    }
-
-                    //if(!k.equals("org.jboss.logmanager")) {
-                    //}
-//                    if (k.equals("org.wildfly.extension.io")) {
-//                        mod = loader.loadModule(k);
-//                        mod.preLoadServices();
-//                    }
-//                    if (k.equals("org.jboss.as.controller")) {
-//                        System.out.println("LOADING controller");
-//                        mod = loader.loadModule(k);
-//                        mod.getClassLoader().loadClass("org.jboss.as.controller.persistence.ConfigurationExtensionFactory");
-//                    }
-//                    if (k.equals("org.jboss.msc")) {
-//                        System.out.println("LOADING MSC 2");
-//                        mod = loader.loadModule(k);
-//                        mod.getClassLoader().loadClass("org.jboss.msc.service.ServiceContainerImpl");
-//                        Class clazz = mod.getClassLoader().loadClass("org.jboss.msc.service.ServiceLogger_$logger", false);
-//                        System.out.println("CLASS " + clazz.getCanonicalName() + " classloader " + clazz.getClassLoader());
-//                    }
                     modules.put(k, mod);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -135,100 +107,23 @@ public class Launcher {
                 }
             }
             mainModule.preRun(new String[0]);
-            Path dumpedClasses = Paths.get("jboss-modules-recorded-classes");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.servlet.JspServlet");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
             modules.get("org.wildfly.extension.undertow").addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
-            modules.get("deployment.helloworld.war").addClassToCache("jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV");
-            modules.get("deployment.helloworld.war").addClassToCache("org.jboss.as.quickstarts.helloworld.HelloWorldServlet");
-            modules.get("deployment.helloworld.war").populateClasses(dumpedClasses);
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             
-            JSONObject jo = new JSONObject(new String(Files.readAllBytes(Paths.get("reflective-dump").resolve("reachability-metadata.json"))));
-            JSONArray reflection = (JSONArray) jo.get("reflection");
-            Map<String, JSONObject> reflectionMap = new HashMap<>();
-            Iterator<?> it = reflection.iterator();
-//            while (it.hasNext()) {
-//                JSONObject obj = (JSONObject) it.next();
-//                String name = (String) obj.get("type");
-//                if (obj.has("methods")) {
-//                    reflectionMap.put(name, obj);
-//                }
-//            }
-            System.out.println(reflection.getClass());
             for (String k : modules.keySet()) {
-                if ("org.jboss.logmanager".equals(k)) {
-                    continue;
-                }
                 Module m = modules.get(k);
                 m.cleanupPermissions();
-//                if ("io.undertow.servlet".equals(k)) {
-//                    continue;
-//                }
-//                
-//                if ("org.wildfly.transaction.client".equals(k)) {
-//                    continue;
-//                }
-//                if ("io.undertow.websocket".equals(k)) {
-//                    continue;
-//                }
-//                if ("org.jboss.msc".equals(k)) {
-//                    continue;
-//                }
-                Module mod = modules.get(k);
-                //mod.populateClasses(dumpedClasses);
-                
-                Set<String> set = mod.getClassesFromCache();
-                for (String clazz : set) {
-                    JSONObject reflectiveType = reflectionMap.get(clazz);
-                    if (reflectiveType != null) {
-                        //System.out.println("SPECIFIC REFLECTION FOR " + clazz);
-                        JSONArray methods = (JSONArray) reflectiveType.get("methods");
-                        if (methods != null) {
-                            Iterator<?> itMethods = methods.iterator();
-                            Class<?> loadedClass = mod.getClassFromCache(clazz);
-                            while (itMethods.hasNext()) {
-                                JSONObject method = (JSONObject) itMethods.next();
-                                String name = method.getString("name");
-                                if (name.equals("<init>")) {
-                                    JSONArray args = (JSONArray) method.get("parameterTypes");
-                                    List<Class<?>> params = new ArrayList<>();
-                                    Iterator<?> itArgs = args.iterator();
-                                    StringBuilder key = new StringBuilder();
-                                    key.append(clazz);
-                                    while (itArgs.hasNext()) {
-                                        String t = (String) itArgs.next();
-                                        params.add(mod.getClassLoader().loadClass(t));
-                                        key.append("_" + t);
-                                    }
-                                    Class<?>[] arr = new Class[params.size()];
-                                    arr = params.toArray(arr);
-                                    //System.out.println("ADD CONSTRUCTOR " + key);
-                                    try {
-                                    Constructor c = loadedClass.getConstructor(arr);
-                                    mod.addConstructorToCache(key.toString(), c);
-                                    } catch(Exception ex) {
-                                        System.out.println("ERROR Adding ctr " + ex);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    public void hello() {
-        System.out.println("ORIGINAL");
-    }
-
     public static void main(String[] args) throws Exception {
-        new Launcher().hello();
         System.setProperty("org.wildfly.graal", "true");
         System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
         System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());
