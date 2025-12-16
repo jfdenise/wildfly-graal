@@ -213,8 +213,6 @@ public class Launcher {
             if (custompackages != null) {
                 packages.append(",").append(custompackages);
             }
-            // The ones that are in the classpath
-            packages.append(",com.sun.el,jakarta.el");
             System.setProperty(SYSPROP_KEY_SYSTEM_PACKAGES, packages.toString());
 
             // Get the module loader

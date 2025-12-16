@@ -9,7 +9,6 @@ arraylength=${#array[@]}
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 wildfly-launcher \
--H:ConfigurationFileDirectories=reflective-dump \
 -Djboss.home.dir=${current_dir}/min-core-server \
 -Dlogging.configuration=file://${current_dir}/min-core-server/standalone/configuration/logging.properties \
 -Dorg.jboss.boot.log.file=${current_dir}/min-core-server/standalone/log/server.log \
@@ -165,18 +164,8 @@ org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 --trace-object-instantiation=java.io.FilePermission \
--cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar:"
+-cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar "
 
-for (( i=0; i<${arraylength}; i++ ));
-do
-  line=${array[$i]}":"
-  if [[ $line =~ "org/glassfish/expressly" ]]; then
-    cmd="$cmd$line"
-  fi
-if [[ $line =~ "jakarta/el/api" ]]; then
-    cmd="$cmd$line"
-  fi
-done
 echo "$cmd" > "./build-image.sh"
 chmod +x ./build-image.sh
 ./build-image.sh
