@@ -35,6 +35,7 @@ public class Launcher {
 
     static {
         try {
+            System.setProperty("org.wildfly.graal.build.time", "true");
             final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
             Iterator<Provider> iterator = providerServiceLoader.iterator();
             for (;;) {
@@ -120,6 +121,8 @@ public class Launcher {
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        } finally {
+            System.clearProperty("org.wildfly.graal.build.time");
         }
     }
 
