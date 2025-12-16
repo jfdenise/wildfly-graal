@@ -86,8 +86,8 @@ org.jboss.metadata.parser.util.Version,\
 org.jboss.modules,\
 org.jboss.msc.service.IdentityHashSet,\
 org.jboss.msc.service.WritableValueImpl,\
-org.jboss.msc.service.logging.ServiceLogger,\
-org.jboss.msc.service.logging.ServiceLogger_\\\$logger,\
+org.jboss.msc.service.ServiceLogger,\
+org.jboss.msc.service.ServiceLogger_\\\$logger,\
 org.jboss.msc.service.ServiceName,\
 org.jboss.msc.service.ServiceRegistrationImpl,\
 org.jboss.msc.service.Lockable,\
