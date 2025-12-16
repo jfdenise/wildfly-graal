@@ -36,6 +36,8 @@ public class Launcher {
     static {
         try {
             System.setProperty("org.wildfly.graal.build.time", "true");
+            // We want to record the classses that are loaded by the Deployment module classloader
+            System.setProperty("org.jboss.modules.record.classes.of", "deployment.helloworld.war");
             final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
             Iterator<Provider> iterator = providerServiceLoader.iterator();
             for (;;) {
@@ -108,7 +110,9 @@ public class Launcher {
                 }
             }
             mainModule.preRun(new String[0]);
+            System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            System.out.println("The classes that we add to the cache, TO SEE HOW WE CAN REMOVE THAT");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.servlet.JspServlet");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
