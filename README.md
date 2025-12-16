@@ -4,7 +4,7 @@
 * Load what needs to be loaded at build time (in a pre-main)
 * Then run the server in main.
 
-# Install graalvm
+# Install latest graalvm (JDK25)
 
 * Download from https://www.oracle.com/downloads/graalvm-downloads.html
 * Then call in the terminal:
@@ -17,30 +17,38 @@ export PATH=${GRAALVM_HOME}/bin:$PATH
 
 Test that native-image is OK, call `native-image --help`
 
-# Build dependencies
+# Build WildFly and dependencies
 
-* clone this branch : https://github.com/jfdenise/wildfly-graal/tree/remove_content_from_classpath
-* cd wildfly-graal
-* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath_cleanup
-* call: `cd jboss-modules; mvn clean install -DskipTests; cd ..`
-* clone JBoss VFS: https://github.com/jfdenise/jboss-vfs/tree/graal-poc-remove_content_from_classpath
-* call: `cd jboss-vfs; mvn clean install -DskipTests; cd ..`
-* clone XNIO: https://github.com/jfdenise/xnio/tree/3.8-graal-poc-remove_content_from_classpath_cleanup
-* call: `cd xnio; mvn clean install -DskipTests; cd ..`
-* clone undertow: https://github.com/jfdenise/undertow/tree/graal-poc-empty-classpath
-* call: `cd undertow; mvn clean install -DskipTests; cd ..`
-* call: `cd module-launcher; mvn clean install; cd ..`
+WARNING YOU MUST USE JDK21.
 
-# Build the tooling
+```
+git clone -b remove_content_from_classpath git@github.com:jfdenise/wildfly-graal
+git clone -b 2.x-graal-poc-remove_content_from_classpath_cleanup git@github.com:jfdenise/jboss-modules
+git clone -b graal-poc-remove_content_from_classpath_cleanup git@github.com:jfdenise/jboss-vfs
+git clone -b graal-poc-remove_content_from_classpath git@github.com:jfdenise/jboss-msc
+git clone -b 3.8-graal-poc-remove_content_from_classpath_cleanup git@github.com:jfdenise/xnio
+git clone -b graal-poc-empty-classpath git@github.com:jfdenise/undertow
 
-* The monitor of loaded classes and services loaders, call: `cd agent; mvn clean install; cd ..`
-* The Graal VM substituions (executed at runtime, call: `cd wildfly-substitutions;mvn clean install;cd ..`
+cd jboss-modules; mvn clean install -DskipTests; cd ..
+cd jboss-vfs; mvn clean install -DskipTests; cd ..
+cd jboss-msc; mvn clean install -DskipTests; cd ..
+cd xnio; mvn clean install -DskipTests; cd ..
+cd undertow; mvn clean install -DskipTests; cd ..
+
+git clone -b graal-poc-empty-classpath_add-deployment_cleanup git@github.com:jfdenise/wildfly-core
+git clone -b graal-poc-empty-classpath_add_deployment_cleanup git@github.com:jfdenise/wildfly
+
+cd wildfly-core; mvn clean install -DskipTests; cd ..
+cd wildfly; mvn clean install -DskipTests; cd ..
+
+cd wildfly-graal
+cd module-launcher; mvn clean install -DskipTests; cd ..
+cd agent; mvn clean install -DskipTests; cd ..
+cd wildfly-substitutions;mvn clean install -DskipTests;cd ..
+'''
 
 # Provision a WildFly server
 
- cal: `rm -rf min-core-server`
-* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath_add-deployment_cleanup
-* clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath_add_deployment_cleanup
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
 unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet --dir=min-core-server`
 
@@ -51,19 +59,13 @@ NOTE: make sure to provision the server in the wildfly-graal repo root directory
 We do:
 
 * Disable the PeriodicFile logger (incompatible with build time initialization).
+* Copy the welcome content
+* Cleanup previous session of services recording
 
 ```
 cp files/logging.properties min-core-server/standalone/configuration
 cp -r files/welcome-content min-core-server/
-rm -rf reflective-dump jboss-modules-recorded-classes jboss-modules-recorded-services/
-mkdir -p reflective-dump
-cp files/reachability-metadata.json reflective-dump
-```
-
-* Add the modularized deployment
-
-```
-cp -r deployment min-core-server/modules/system/layers/base
+rm -rf jboss-modules-recorded-services/
 ```
 
 # Deploy the deployment
@@ -114,9 +116,13 @@ Replace undertow subsystem with:
 </subsystem>
 ```
 
-## Run the agent to dump classes and service loaders
+## Run the agent to dump service loaders
 
-JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./reflective-dump -javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
+* This step will be removed possibly in a next phase.
+
+```
+JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
+```
 
 ## Build the image
 
@@ -126,38 +132,3 @@ JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./reflective-dump -jav
 
 * `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080
-
-## ISSUES
-
-* We can't substitute Constructor on the fly, Substrat VM already substitute java.lang.Class...
-So it means that we need for instances constructed with reflection (a lot in JSP, Servlet, ...) to be put in the classpath and rely on 
-dynamic feature (reflection.json file) to handle them. Problem: Too much goes into the classpath, all undertow, logging, ...
-
-To solve the issue:
-* Refactor the code to rely on pre-loaded constructors
-* Follow the future dynamic feature for custom classloader to be added to Graal.
-
-## What we can already do
-
-* Handle ServiceLoading fully (subsitution)
-* Handle class loading (substitution of ModuleClassLoader find class) to retrieve from the cache.
-
-## The approach
-
-* Run the java server to capture:
-** Loaded services
-** Loaded classes
-** Reflective metadata to retrieve constructors
-
-* Build the image
-** At build time
-*** Load all jboss modules
-*** Populate the classes, constuctors and services caches
-** Initialize a bunch of server classes (--initialize-at-build-time=)
-
-## What do we have in the classpath
-
-This implies the `com.sun.el.ExpressionFactoryImpl` constructor to be in the `reachability-metadata.json` file provided at build time.
-* org/glassfish/expressly and jakarta/el/api in classpath (doesn't require more than that). To avoid changes in jakarta.el spec.
-
-
