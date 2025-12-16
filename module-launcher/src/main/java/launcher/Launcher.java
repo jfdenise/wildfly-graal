@@ -40,7 +40,7 @@ public class Launcher {
     static {
         new Launcher().hello();
         try {
-            System.setProperty("org.wildfly.graal", "true");
+            //System.setProperty("org.wildfly.graal", "true");
             final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
             Iterator<Provider> iterator = providerServiceLoader.iterator();
             for (;;) {
@@ -128,7 +128,7 @@ public class Launcher {
                             try {
                                 mod.addServiceToCache(serviceClass);
                             } catch (Exception ex) {
-                                System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k);
+                                //System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k + "EX " + ex);
                             }
                         }
                     }
@@ -136,29 +136,55 @@ public class Launcher {
             }
             mainModule.preRun(new String[0]);
             Path dumpedClasses = Paths.get("jboss-modules-recorded-classes");
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
+            modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.servlet.JspServlet");
+            modules.get("org.wildfly.extension.undertow").addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
+            modules.get("org.wildfly.extension.undertow").addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
+            modules.get("deployment.helloworld.war").addClassToCache("jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV");
+            modules.get("deployment.helloworld.war").addClassToCache("org.jboss.as.quickstarts.helloworld.HelloWorldServlet");
+            modules.get("deployment.helloworld.war").populateClasses(dumpedClasses);
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            
             JSONObject jo = new JSONObject(new String(Files.readAllBytes(Paths.get("reflective-dump").resolve("reachability-metadata.json"))));
             JSONArray reflection = (JSONArray) jo.get("reflection");
             Map<String, JSONObject> reflectionMap = new HashMap<>();
             Iterator<?> it = reflection.iterator();
-            while (it.hasNext()) {
-                JSONObject obj = (JSONObject) it.next();
-                String name = (String) obj.get("type");
-                if (obj.has("methods")) {
-                    reflectionMap.put(name, obj);
-                }
-            }
+//            while (it.hasNext()) {
+//                JSONObject obj = (JSONObject) it.next();
+//                String name = (String) obj.get("type");
+//                if (obj.has("methods")) {
+//                    reflectionMap.put(name, obj);
+//                }
+//            }
             System.out.println(reflection.getClass());
             for (String k : modules.keySet()) {
                 if ("org.jboss.logmanager".equals(k)) {
                     continue;
                 }
+                Module m = modules.get(k);
+                m.cleanupPermissions();
+//                if ("io.undertow.servlet".equals(k)) {
+//                    continue;
+//                }
+//                
+//                if ("org.wildfly.transaction.client".equals(k)) {
+//                    continue;
+//                }
+//                if ("io.undertow.websocket".equals(k)) {
+//                    continue;
+//                }
+//                if ("org.jboss.msc".equals(k)) {
+//                    continue;
+//                }
                 Module mod = modules.get(k);
-                mod.populateClasses(dumpedClasses);
+                //mod.populateClasses(dumpedClasses);
+                
                 Set<String> set = mod.getClassesFromCache();
                 for (String clazz : set) {
                     JSONObject reflectiveType = reflectionMap.get(clazz);
                     if (reflectiveType != null) {
-                        System.out.println("SPECIFIC REFLECTION FOR " + clazz);
+                        //System.out.println("SPECIFIC REFLECTION FOR " + clazz);
                         JSONArray methods = (JSONArray) reflectiveType.get("methods");
                         if (methods != null) {
                             Iterator<?> itMethods = methods.iterator();
@@ -179,9 +205,13 @@ public class Launcher {
                                     }
                                     Class<?>[] arr = new Class[params.size()];
                                     arr = params.toArray(arr);
-                                    System.out.println("ADD CONSTRUCTOR " + key);
+                                    //System.out.println("ADD CONSTRUCTOR " + key);
+                                    try {
                                     Constructor c = loadedClass.getConstructor(arr);
                                     mod.addConstructorToCache(key.toString(), c);
+                                    } catch(Exception ex) {
+                                        System.out.println("ERROR Adding ctr " + ex);
+                                    }
                                 }
                             }
                         }
@@ -204,6 +234,10 @@ public class Launcher {
         System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());
         System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
         System.out.println("Running Main entry point");
+        for (String k : modules.keySet()) {
+            Module m = modules.get(k);
+            m.restorePermissions();
+        }
         mainModule.run(args);
     }
 

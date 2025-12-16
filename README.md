@@ -21,22 +21,28 @@ Test that native-image is OK, call `native-image --help`
 
 * clone this branch : https://github.com/jfdenise/wildfly-graal/tree/remove_content_from_classpath
 * cd wildfly-graal
-* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath
+* clone JBoss Modules:  https://github.com/jfdenise/jboss-modules/tree/2.x-graal-poc-remove_content_from_classpath_cleanup
 * call: `cd jboss-modules; mvn clean install -DskipTests; cd ..`
 * clone JBoss VFS: https://github.com/jfdenise/jboss-vfs/tree/graal-poc-remove_content_from_classpath
 * call: `cd jboss-vfs; mvn clean install -DskipTests; cd ..`
-* clone XNIO: https://github.com/jfdenise/xnio/tree/3.8-graal-poc-remove_content_from_classpath
+* clone XNIO: https://github.com/jfdenise/xnio/tree/3.8-graal-poc-remove_content_from_classpath_cleanup
 * call: `cd xnio; mvn clean install -DskipTests; cd ..`
 * clone undertow: https://github.com/jfdenise/undertow/tree/graal-poc-empty-classpath
 * call: `cd undertow; mvn clean install -DskipTests; cd ..`
 * call: `cd module-launcher; mvn clean install; cd ..`
 
+# Build the tooling
+
+* The monitor of loaded classes and services loaders, call: `cd agent; mvn clean install; cd ..`
+* The Graal VM substituions (executed at runtime, call: `cd wildfly-substitutions;mvn clean install;cd ..`
+
 # Provision a WildFly server
 
-* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath_add-deployment
-* clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath_add_deployment
+ cal: `rm -rf min-core-server`
+* clone and build: https://github.com/jfdenise/wildfly-core/tree/graal-poc-empty-classpath_add-deployment_cleanup
+* clone and build: https://github.com/jfdenise/wildfly/tree/graal-poc-empty-classpath_add_deployment_cleanup
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,management --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -49,18 +55,29 @@ We do:
 ```
 cp files/logging.properties min-core-server/standalone/configuration
 cp -r files/welcome-content min-core-server/
+rm -rf reflective-dump jboss-modules-recorded-classes jboss-modules-recorded-services/
+mkdir -p reflective-dump
+cp files/reachability-metadata.json reflective-dump
 ```
 
 * Add the modularized deployment
 
 ```
-cp -r deployment min-core-server/system/layers/base
+cp -r deployment min-core-server/modules/system/layers/base
 ```
 
 # Deploy the deployment
 
 That is a hack for now to have an event at boot to deploy something....
-Use Java server and deploy using WildFly CLI... To be documented.
+Add to standalone.xml:
+
+```
+    <deployments>
+        <deployment name="helloworld.war" runtime-name="helloworld.war">
+            <fs-exploded path="/Users/jdenise/workspaces/graal/wildfly-graal/deployment/helloworld/war/main/" />
+        </deployment>
+    </deployments>
+```
 
 ## Remove content from the server config
 
@@ -97,17 +114,9 @@ Replace undertow subsystem with:
 </subsystem>
 ```
 
-## Run the agent to dup service loaders
+## Run the agent to dump classes and service loaders
 
 JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=./reflective-dump -javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
-
-## Build the substitutions
-
-We do redefine the ServliLoader to route loading to the static context
-
-```
-cd wildfly-substitutions;mvn clean install;cd ..
-```
 
 ## Build the image
 
@@ -146,5 +155,9 @@ To solve the issue:
 *** Populate the classes, constuctors and services caches
 ** Initialize a bunch of server classes (--initialize-at-build-time=)
 
-We currently have org/glassfish/expressly and jakarta/el/api in classpath (doesn't require more than that).
+## What do we have in the classpath
+
+This implies the `com.sun.el.ExpressionFactoryImpl` constructor to be in the `reachability-metadata.json` file provided at build time.
+* org/glassfish/expressly and jakarta/el/api in classpath (doesn't require more than that). To avoid changes in jakarta.el spec.
+
 
