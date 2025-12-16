@@ -71,7 +71,8 @@ rm -rf jboss-modules-recorded-services/
 
 # Deploy the deployment
 
-That is a hack for now to have an event at boot to deploy something....
+* WRNING: REPLACE WITH YOUR ABSOLUTE PATH (TO be cleaned with relative to).
+
 Add to standalone.xml:
 
 ```
