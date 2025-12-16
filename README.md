@@ -22,12 +22,12 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK21.
 
 ```
-git clone -b remove_content_from_classpath git@github.com:jfdenise/wildfly-graal
-git clone -b 2.x-graal-poc-remove_content_from_classpath_cleanup git@github.com:jfdenise/jboss-modules
-git clone -b graal-poc-remove_content_from_classpath_cleanup git@github.com:jfdenise/jboss-vfs
-git clone -b graal-poc-remove_content_from_classpath git@github.com:jfdenise/jboss-msc
-git clone -b 3.8-graal-poc-remove_content_from_classpath_cleanup git@github.com:jfdenise/xnio
-git clone -b graal-poc-empty-classpath git@github.com:jfdenise/undertow
+git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly-graal
+git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-modules
+git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
+git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
+git clone -b archive_servlet_starting git@github.com:jfdenise/xnio
+git clone -b archive_servlet_starting git@github.com:jfdenise/undertow
 
 cd jboss-modules; mvn clean install -DskipTests; cd ..
 cd jboss-vfs; mvn clean install -DskipTests; cd ..
@@ -35,8 +35,8 @@ cd jboss-msc; mvn clean install -DskipTests; cd ..
 cd xnio; mvn clean install -DskipTests; cd ..
 cd undertow; mvn clean install -DskipTests; cd ..
 
-git clone -b graal-poc-empty-classpath_add-deployment_cleanup git@github.com:jfdenise/wildfly-core
-git clone -b graal-poc-empty-classpath_add_deployment_cleanup git@github.com:jfdenise/wildfly
+git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly-core
+git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
