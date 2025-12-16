@@ -45,7 +45,8 @@ cd wildfly-graal
 cd module-launcher; mvn clean install -DskipTests; cd ..
 cd agent; mvn clean install -DskipTests; cd ..
 cd wildfly-substitutions;mvn clean install -DskipTests;cd ..
-'''
+
+```
 
 # Provision a WildFly server
 
