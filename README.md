@@ -134,3 +134,25 @@ JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server
 
 * `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080/helloworld/HelloWorld
+* Access the pre-compiled JSP: http://127.0.0.1:8080/helloworld/simple.jsp
+
+## How the jsp has been precompiled?
+
+The deploymenty contains a WEB-INF/lib/precompiled-jsp.jar file
+NOTE: Our potential future tooling will integrate pre-processing of the deployment to produce pre-compiled jsp.
+
+To build it:
+
+```
+git clone https://github.com/rmartinc/jspc
+cd jspc; mvn clean install -DskipTests; cd ..
+cd jspc/tool
+mkdir -p precompiled/classes/META-INF
+mvn exec:java -Dexec.args="-v -p pre.compiled.jsps -d  precompiled/classes -webapp ../../deployment/helloworld/war/main -webfrg  precompiled/classes/META-INF/web-fragment.xml"
+cd precompiled/classes
+jar cvf precompiled-jsp.jar *
+cp precompiled-jsp.jar ../../../../deployment/helloworld/war/main/WEB-INF/lib
+cd ../../../..
+``
+
+
