@@ -71,7 +71,7 @@ rm -rf jboss-modules-recorded-services/
 
 # Deploy the deployment
 
-* WRNING: REPLACE WITH YOUR ABSOLUTE PATH (TO be cleaned with relative to).
+* WARNING: REPLACE WITH YOUR ABSOLUTE PATH (TO be cleaned with relative to).
 
 Add to standalone.xml:
 

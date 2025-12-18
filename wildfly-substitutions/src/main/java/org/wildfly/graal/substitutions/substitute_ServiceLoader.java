@@ -44,7 +44,7 @@ public final class substitute_ServiceLoader {
         if (loader instanceof ModuleClassLoader) {
             ModuleClassLoader cl = (ModuleClassLoader) loader;
             
-            List<Object> lst = cl.getModule().getServicesFromCache(service);
+            List<Object> lst = cl.getModule().getCache().getServicesFromCache(service);
             if(lst != null && !lst.isEmpty()) {
                // System.out.println("@@@@ Service " + service.getName() + " found in " + cl.getModule().getName());
                // System.out.println(lst);
@@ -181,7 +181,7 @@ public final class substitute_ServiceLoader {
         if (loader instanceof ModuleClassLoader) {
             ModuleClassLoader cl = (ModuleClassLoader) loader;
            // System.out.println("SUBSTITUTE " + cl.getModule().getName());
-            List<Object> lst = cl.getModule().getServicesFromCache(service);
+            List<Object> lst = cl.getModule().getCache().getServicesFromCache(service);
             if (lst != null && !lst.isEmpty()) {
                // System.out.println("@@@@ Service " + service.getName() + " found in " + cl.getModule().getName());
                // System.out.println(lst);

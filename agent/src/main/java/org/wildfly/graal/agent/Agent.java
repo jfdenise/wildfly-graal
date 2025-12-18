@@ -29,6 +29,7 @@ public class Agent {
                                             java.util.regex.Pattern ppp = java.util.regex.Pattern.compile("ModuleClassLoader for Module \\\"(.*)\\\" .*");
                                             java.util.regex.Matcher mmm = ppp.matcher(loader.toString());
                                             if(mmm.matches()) {
+                                                synchronized(this) {
                                                 String mmmoduleName = mmm.group(1);
                                                 System.out.println("We have a module " + mmmoduleName);
                                                 String rootDir = "jboss-modules-recorded-services/" + mmmoduleName;
@@ -41,7 +42,8 @@ public class Agent {
                                                 writer.write(content);
                                                 writer.close();
                                                 w.close();
-                                                s.close();               
+                                                s.close();
+                                                }
                                             } else {
                                                System.out.println("No match for " + service.getName());
                                                String rootDir = "jboss-modules-recorded-services/";

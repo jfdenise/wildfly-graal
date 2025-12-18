@@ -64,7 +64,7 @@ public class Launcher {
             System.setProperty("logging.configuration", p.toUri().toString());
             System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
             System.setProperty("jboss.server.base.dir", Paths.get("min-core-server/standalone").toAbsolutePath().toString());
-
+            System.setProperty("org.wildfly.graal.cache.class", "launcher.Cache");
             Path modulesDir = Paths.get("min-core-server/modules").toAbsolutePath();
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
 
@@ -76,6 +76,8 @@ public class Launcher {
                 System.out.println("Load module " + k);
                 try {
                     Module mod = loader.loadModule(k);
+                    Cache classCache = new Cache();
+                    mod.setClassCache(classCache);
                     if (k.equals("org.jboss.as.standalone")) {
                         mainModule = mod;
                     }
@@ -102,7 +104,7 @@ public class Launcher {
                         seen.add(serviceClass);
                         if (!serviceClass.startsWith("java.lang.")) {
                             try {
-                                mod.addServiceToCache(serviceClass);
+                                mod.getCache().addServiceToCache(serviceClass);
                             } catch (Exception ex) {
                                 //System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k + "EX " + ex);
                             }
@@ -128,6 +130,7 @@ public class Launcher {
                         builder.append(serviceClass);
                     }
                 }
+                System.out.println("SERVICES THAT THE DEPLOYMENT  MODULE MUS LOAD " + builder);
                 System.setProperty("org.wildfly.graal.deployment.services", builder.toString());
             }
             
@@ -135,16 +138,16 @@ public class Launcher {
             System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             System.out.println("The classes that we add to the cache");
-            modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
-            modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.servlet.JspServlet");
-            modules.get("org.wildfly.extension.undertow").addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
-            modules.get("org.wildfly.extension.undertow").addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
+            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
+            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
+            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
+            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
             
-            modules.get("io.undertow.websocket").addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
-            modules.get("io.undertow.websocket").addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
-            modules.get("io.undertow.websocket").addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
+            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
+            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
+            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
             
-            modules.get("io.undertow.core").addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
+            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             
             for (String k : modules.keySet()) {
@@ -248,6 +251,7 @@ public class Launcher {
             if (custompackages != null) {
                 packages.append(",").append(custompackages);
             }
+            packages.append(",launcher");
             System.setProperty(SYSPROP_KEY_SYSTEM_PACKAGES, packages.toString());
 
             // Get the module loader

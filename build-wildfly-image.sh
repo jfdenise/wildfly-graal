@@ -66,6 +66,7 @@ jakarta.websocket.OnClose,\
 java.lang.annotation.Annotation,\
 java.util.EventListener,\
 launcher.Launcher,\
+launcher.Cache,\
 org.apache.jasper.compiler.JspRuntimeContext,\
 org.apache.jasper.runtime.JspApplicationContextImpl,\
 org.apache.jasper.runtime.JspFactoryImpl,\
