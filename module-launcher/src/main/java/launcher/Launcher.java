@@ -35,9 +35,10 @@ public class Launcher {
 
     static {
         try {
+            String deploymentModule = System.getProperty("org.wildfly.graal.deployment.module");
             System.setProperty("org.wildfly.graal.build.time", "true");
             // We want to record the classses that are loaded by the Deployment module classloader
-            System.setProperty("org.jboss.modules.record.classes.of", "deployment.helloworld.war");
+            System.setProperty("org.jboss.modules.record.classes.of", deploymentModule);
             final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
             Iterator<Provider> iterator = providerServiceLoader.iterator();
             for (;;) {
@@ -109,14 +110,41 @@ public class Launcher {
                     }
                 }
             }
+            // Advertise deployment content
+            Path services = dumpedServices.resolve(deploymentModule).resolve("services.txt");
+            if (Files.exists(services)) {
+                StringBuilder builder = new StringBuilder();
+                List<String> lst = Files.readAllLines(services);
+                Set<String> seen = new HashSet<>();
+                for (String serviceClass : lst) {
+                    if (seen.contains(serviceClass)) {
+                        continue;
+                    }
+                    seen.add(serviceClass);
+                    if (!serviceClass.startsWith("java.lang.")) {
+                        if(!builder.isEmpty()) {
+                            builder.append(",");
+                        }
+                        builder.append(serviceClass);
+                    }
+                }
+                System.setProperty("org.wildfly.graal.deployment.services", builder.toString());
+            }
+            
             mainModule.preRun(new String[0]);
             System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("The classes that we add to the cache, TO SEE HOW WE CAN REMOVE THAT");
+            System.out.println("The classes that we add to the cache");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.apache.jasper.servlet.JspServlet");
             modules.get("org.wildfly.extension.undertow").addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
             modules.get("org.wildfly.extension.undertow").addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
+            
+            modules.get("io.undertow.websocket").addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
+            modules.get("io.undertow.websocket").addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
+            modules.get("io.undertow.websocket").addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
+            
+            modules.get("io.undertow.core").addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             
             for (String k : modules.keySet()) {

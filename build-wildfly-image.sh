@@ -9,6 +9,7 @@ arraylength=${#array[@]}
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 wildfly-launcher \
+-Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \
 -Djboss.home.dir=${current_dir}/min-core-server \
 -Dlogging.configuration=file://${current_dir}/min-core-server/standalone/configuration/logging.properties \
 -Dorg.jboss.boot.log.file=${current_dir}/min-core-server/standalone/log/server.log \
@@ -21,28 +22,49 @@ io.smallrye.common.expression,\
 io.smallrye.common.expression.Expression\\\$Flag,\
 io.undertow.UndertowLogger,\
 io.undertow.UndertowLogger_\\\$logger,\
-io.undertow.servlet.core.ServletContainerImpl,\
+io.undertow.Version,\
+io.undertow.server.DirectByteBufferDeallocator,\
+io.undertow.server.protocol.http.ServiceLoaderInitializer,\
 io.undertow.servlet.UndertowServletMessages,\
 io.undertow.servlet.UndertowServletMessages_\\\$bundle,\
-io.undertow.servlet.sse.ServerSentEventSCI,\
-io.undertow.Version,\
-io.undertow.servlet.api.ListenerInfo,\
-io.undertow.servlet.api.ServletInfo,\
-io.undertow.server.protocol.http.ServiceLoaderInitializer,\
 io.undertow.servlet.api.ServletStackTraces,\
+io.undertow.servlet.sse.ServerSentEventSCI,\
+io.undertow.servlet.util.ConstructorInstanceFactory,\
 io.undertow.util.AttachmentKey,\
 io.undertow.util.ConcurrentDirectDeque,\
-io.undertow.servlet.util.ConstructorInstanceFactory,\
 io.undertow.util.FastConcurrentDirectDeque,\
 io.undertow.util,\
 io.undertow.util.SimpleAttachmentKey,\
+io.undertow.websockets.core.WebSocketMessages,\
+io.undertow.websockets.core.WebSocketMessages_\\\$logger,\
+io.undertow.websockets.core.WebSocketMessages_\\\$bundle,\
+io.undertow.websockets.core.WebSocketLogger,\
+io.undertow.websockets.core.WebSocketLogger_\\\$logger,\
+io.undertow.websockets.jsr.Bootstrap,\
+io.undertow.websockets.jsr.Bootstrap\\\$1,\
+io.undertow.websockets.jsr.Bootstrap\\\$WebSocketListener,\
+io.undertow.websockets.jsr.DefaultWebSocketClientSslProvider,\
+io.undertow.websockets.jsr.JsrWebSocketFilter\\\$LogoutListener,\
 io.undertow.websockets.jsr.WebSocketDeploymentInfo,\
 io.undertow.websockets.jsr.WebSocketDeploymentInfo\\\$2,\
+io.undertow.websockets.jsr.JsrWebSocketLogger,\
+io.undertow.websockets.jsr.JsrWebSocketLogger_\\\$logger,\
+io.undertow.websockets.jsr.JsrWebSocketMessages,\
+io.undertow.websockets.jsr.JsrWebSocketMessages_\\\$bundle,\
 jakarta.el,\
 jakarta.json,\
+jakarta.servlet.annotation.WebServlet,\
+jakarta.servlet.http.HttpSessionListener,\
+jakarta.servlet.ServletContextListener,\
 jakarta.servlet.jsp.JspApplicationContext,\
 jakarta.servlet.jsp.JspFactory,\
 jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV,\
+jakarta.websocket.server.ServerEndpoint,\
+jakarta.websocket.OnMessage,\
+jakarta.websocket.OnOpen,\
+jakarta.websocket.OnClose,\
+java.lang.annotation.Annotation,\
+java.util.EventListener,\
 launcher.Launcher,\
 org.apache.jasper.compiler.JspRuntimeContext,\
 org.apache.jasper.runtime.JspApplicationContextImpl,\

@@ -22,12 +22,12 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK17.
 
 ```
-git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly-graal
-git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-modules
+git clone -b archive_servlet_starting_continuing git@github.com:jfdenise/wildfly-graal
+git clone -b archive_servlet_starting_continuing git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
 git clone -b archive_servlet_starting git@github.com:jfdenise/xnio
-git clone -b archive_servlet_starting git@github.com:jfdenise/undertow
+git clone -b archive_servlet_starting_continuing git@github.com:jfdenise/undertow
 
 cd jboss-modules; mvn clean install -DskipTests; cd ..
 cd jboss-vfs; mvn clean install -DskipTests; cd ..
@@ -35,8 +35,8 @@ cd jboss-msc; mvn clean install -DskipTests; cd ..
 cd xnio; mvn clean install -DskipTests; cd ..
 cd undertow; mvn clean install -DskipTests; cd ..
 
-git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly-core
-git clone -b archive_servlet_starting git@github.com:jfdenise/wildfly
+git clone -b archive_servlet_starting_continuing git@github.com:jfdenise/wildfly-core
+git clone -b archive_servlet_starting_continuing git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
@@ -135,6 +135,7 @@ JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server
 * `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080/helloworld/HelloWorld
 * Access the pre-compiled JSP: http://127.0.0.1:8080/helloworld/simple.jsp
+* Access the websocket: http://127.0.0.1:8080/helloworld/websocket.html
 
 ## How the jsp has been precompiled?
 
