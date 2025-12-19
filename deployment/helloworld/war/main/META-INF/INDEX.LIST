@@ -9,5 +9,7 @@ WEB-INF/classes/org/jboss
 WEB-INF/classes/org/jboss/as
 WEB-INF/classes/org/jboss/as/quickstarts
 WEB-INF/classes/org/jboss/as/quickstarts/helloworld
+WEB-INF/classes/org/jboss/as/quickstarts/websocket
+WEB-INF/classes/org/jboss/as/quickstarts/websocket/model
 index.html
 

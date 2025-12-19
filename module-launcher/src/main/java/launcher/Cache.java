@@ -12,7 +12,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import org.jboss.modules.ClassCache;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.Module;
 
 /**
  *
@@ -21,6 +20,7 @@ import org.jboss.modules.Module;
 public class Cache extends ClassCache {
 
     private final static Set<String> RECORDED_MODULES = new HashSet<>();
+    private final static Set<String> RECORDED_CLASSES = new HashSet<>();
 
     static {
         String mods = System.getProperty("org.jboss.modules.record.classes.of");
@@ -30,6 +30,16 @@ public class Cache extends ClassCache {
                 s = s.trim();
                 if (!s.isEmpty()) {
                     RECORDED_MODULES.add(s);
+                }
+            }
+        }
+        String classes = System.getProperty("org.jboss.modules.record.classes");
+        if (classes != null) {
+            String[] split = classes.split(",");
+            for (String s : split) {
+                s = s.trim();
+                if (!s.isEmpty()) {
+                    RECORDED_CLASSES.add(s);
                 }
             }
         }
@@ -72,11 +82,14 @@ public class Cache extends ClassCache {
             List<Object> services = new ArrayList<>();
             for (Object service : sl) {
                 if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
+                    //System.out.println("CACHE SERVICE " + service + " of type " + clazz);
                     services.add(service);
                 }
             }
             if (!services.isEmpty()) {
                 SERVICES.put(clazz, services);
+            } else {
+                //System.out.print("!!!!!!!!!!!! NO SERVICE TO CACHE FOR " + className);
             }
         }
     }
@@ -136,7 +149,8 @@ public class Cache extends ClassCache {
                 if (className.startsWith("java.") || CACHE.containsKey(className)) {
                     return;
                 }
-                if (RECORDED_MODULES.contains(getModule().getName())) {
+                if (RECORDED_MODULES.contains(getModule().getName()) && RECORDED_CLASSES.contains(clazz.getPackageName())) {
+
                     System.out.println(getModule().getName() + " module, recording class: " + className);
                     CACHE.put(className, clazz);
                     // Add default constructor if it exists
@@ -148,7 +162,7 @@ public class Cache extends ClassCache {
                     Map<Class<?>, Annotation> map = new HashMap<>();
                     for (Annotation a : clazz.getAnnotations()) {
                         Class<? extends Annotation> type = a.annotationType();
-                        System.out.println("Adding annotation " + type + " for annotation " + a);
+                        //System.out.println("Adding annotation " + type + " for annotation " + a);
                         map.put(type, a);
                     }
                     if (!map.isEmpty()) {
@@ -159,7 +173,7 @@ public class Cache extends ClassCache {
                         for (final Method method : clazz.getDeclaredMethods()) {
                             Map<Class<?>, Annotation> ma = new HashMap<>();
                             for (Annotation a : method.getDeclaredAnnotations()) {
-                                System.out.println("Adding Method annotation " + a + " on " + method.getName());
+                                //System.out.println("Adding Method annotation " + a + " on " + method.getName());
                                 ma.put(a.annotationType(), a);
                             }
                             if (!ma.isEmpty()) {
@@ -182,8 +196,36 @@ public class Cache extends ClassCache {
                             mp.put(method, arr);
                         }
                     }
+                    //System.out.println("END RECORDING " + clazz);
                 }
             }
         }
+    }
+
+    @Override
+    public Method getMethod(Class<?> clazz, String name, Class<?>[] params) throws NoSuchMethodException {
+        Method[] methods = METHODS.get(clazz);
+        if (methods != null) {
+            for (Method m : methods) {
+                if (m.isBridge()) {
+                    continue;
+                }
+                if (m.getName().equals(name)) {
+                    if (params.length == m.getParameterCount()) {
+                        boolean eq = true;
+                        for (int i = 0; i < params.length; i++) {
+                            if (!params[i].equals(m.getParameterTypes()[i])) {
+                                eq = false;
+                                break;
+                            }
+                        }
+                        if (eq) {
+                            return m;
+                        }
+                    }
+                }
+            }
+        }
+        throw new NoSuchMethodException("No such method " + name);
     }
 }

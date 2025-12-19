@@ -36,6 +36,31 @@ public class Launcher {
     static {
         try {
             String deploymentModule = System.getProperty("org.wildfly.graal.deployment.module");
+
+            // XXX Those classes would have to be discovered by a previous phase (e.g: dumped in a file that this loauncher would read.
+            // We add them here because they are not recorded with the internal run at build time, not seen by Graal compiler. 
+            // They are classes loaded on receive of an async event, so nothing links to them.
+            // Other classes are recorded at build time thanks to the org.jboss.modules.record.classes that defines the deployment packages to be recorded
+            // All the recording and these classes should be removed once we have the tool that discover the application classes.
+            String[] depClasses = {
+                "org.jboss.quickstarts.websocket.model.Bid",
+                "org.jboss.quickstarts.websocket.model.BidStatus",
+                "org.jboss.quickstarts.websocket.model.Bidding",
+                "org.jboss.quickstarts.websocket.model.Bidding$1",
+                "org.jboss.quickstarts.websocket.model.BiddingFactory",
+                "org.jboss.quickstarts.websocket.model.Item"
+            };
+            StringBuilder classesBuilder = new StringBuilder();
+            for (String s : depClasses) {
+                if (!classesBuilder.isEmpty()) {
+                    classesBuilder.append(",");
+                }
+                classesBuilder.append(s);
+
+            }
+            // Will be consumed by the created Deployment Module
+            System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
+
             System.setProperty("org.wildfly.graal.build.time", "true");
             // We want to record the classses that are loaded by the Deployment module classloader
             System.setProperty("org.jboss.modules.record.classes.of", deploymentModule);
@@ -114,8 +139,9 @@ public class Launcher {
             }
             // Advertise deployment content
             Path services = dumpedServices.resolve(deploymentModule).resolve("services.txt");
+            StringBuilder servicesBuilder = new StringBuilder();
             if (Files.exists(services)) {
-                StringBuilder builder = new StringBuilder();
+
                 List<String> lst = Files.readAllLines(services);
                 Set<String> seen = new HashSet<>();
                 for (String serviceClass : lst) {
@@ -124,16 +150,24 @@ public class Launcher {
                     }
                     seen.add(serviceClass);
                     if (!serviceClass.startsWith("java.lang.")) {
-                        if(!builder.isEmpty()) {
-                            builder.append(",");
+                        if (!servicesBuilder.isEmpty()) {
+                            servicesBuilder.append(",");
                         }
-                        builder.append(serviceClass);
+                        servicesBuilder.append(serviceClass);
                     }
                 }
-                System.out.println("SERVICES THAT THE DEPLOYMENT  MODULE MUS LOAD " + builder);
-                System.setProperty("org.wildfly.graal.deployment.services", builder.toString());
             }
-            
+            // Advertise the services that have not been seen during the hot run.
+            // We should discover them statically instead of doing the run...
+            // This should be done once the module has been created at build time in ModuleLoadService
+
+            // This one is not properly defined in the module.xml of org.eclipse.parrson
+            // ASK If we could add it?
+            servicesBuilder.append(",jakarta.json.spi.JsonProvider");
+
+            System.out.println("SERVICES THAT THE DEPLOYMENT  MODULE MUST LOAD " + servicesBuilder);
+
+            System.setProperty("org.wildfly.graal.deployment.services", servicesBuilder.toString());
             mainModule.preRun(new String[0]);
             System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -142,14 +176,14 @@ public class Launcher {
             modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
             modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
             modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
-            
+
             modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
             modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
             modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
-            
+
             modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            
+
             for (String k : modules.keySet()) {
                 Module m = modules.get(k);
                 m.cleanupPermissions();
