@@ -10,6 +10,7 @@ cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 wildfly-launcher \
 -Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \
+-Dorg.jboss.modules.record.classes=pre.compiled.jsps,org.jboss.as.quickstarts.helloworld,org.jboss.quickstarts.websocket,org.jboss.as.quickstarts.websocket_hello \
 -Djboss.home.dir=${current_dir}/min-core-server \
 -Dlogging.configuration=file://${current_dir}/min-core-server/standalone/configuration/logging.properties \
 -Dorg.jboss.boot.log.file=${current_dir}/min-core-server/standalone/log/server.log \
@@ -51,6 +52,7 @@ io.undertow.websockets.jsr.JsrWebSocketLogger,\
 io.undertow.websockets.jsr.JsrWebSocketLogger_\\\$logger,\
 io.undertow.websockets.jsr.JsrWebSocketMessages,\
 io.undertow.websockets.jsr.JsrWebSocketMessages_\\\$bundle,\
+jakarta.annotation.PostConstruct,\
 jakarta.el,\
 jakarta.json,\
 jakarta.servlet.annotation.WebServlet,\
@@ -63,6 +65,7 @@ jakarta.websocket.server.ServerEndpoint,\
 jakarta.websocket.OnMessage,\
 jakarta.websocket.OnOpen,\
 jakarta.websocket.OnClose,\
+jakarta.websocket.OnError,\
 java.lang.annotation.Annotation,\
 java.util.EventListener,\
 launcher.Launcher,\

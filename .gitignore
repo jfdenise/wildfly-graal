@@ -39,3 +39,4 @@ jboss-modules-recorded-services
 jboss-modules-recorded-classes/
 reflective-dump/
 reports/
+/deployment-src/target/

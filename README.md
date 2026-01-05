@@ -71,14 +71,36 @@ rm -rf jboss-modules-recorded-services/
 
 # Deploy the deployment
 
-* WARNING: REPLACE WITH YOUR ABSOLUTE PATH (TO be cleaned with relative to).
+
+## Build and explode the deployment
+
+```
+cd deployment-src;mvn clean install;cd ..
+rm -rf deployment-exploded
+unzip deployment-src/target/helloworld.war -d min-core-server/deployment-exploded
+```
+
+## Pre-compile the jsp and install it in the exploded deployment
+
+```
+git clone https://github.com/rmartinc/jspc
+cd jspc; mvn clean install -DskipTests; cd ..
+cd jspc/tool
+mkdir -p precompiled/classes/META-INF
+mvn exec:java -Dexec.args="-v -p pre.compiled.jsps -d  precompiled/classes -webapp ../../min-core-server/deployment-exploded -webfrg  precompiled/classes/META-INF/web-fragment.xml"
+cd precompiled/classes
+jar cvf precompiled-jsp.jar *
+mkdir -p ../../../../min-core-server/deployment-exploded/WEB-INF/lib
+cp precompiled-jsp.jar ../../../../min-core-server/deployment-exploded/WEB-INF/lib
+cd ../../../..
+``
 
 Add to standalone.xml:
 
 ```
     <deployments>
         <deployment name="helloworld.war" runtime-name="helloworld.war">
-            <fs-exploded path="/Users/jdenise/workspaces/graal/wildfly-graal/deployment/helloworld/war/main/" />
+            <fs-exploded path="deployment-exploded" relative-to="jboss.home.dir"/>
         </deployment>
     </deployments>
 ```
@@ -137,24 +159,3 @@ JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server
 * Access the pre-compiled JSP: http://127.0.0.1:8080/helloworld/simple.jsp
 * Access the websocket 1: http://127.0.0.1:8080/helloworld/websocket.html
 * Access the websocket 2 (with encoding/decoding): http://127.0.0.1:8080/helloworld/bid.html
-
-## How the jsp has been precompiled?
-
-The deploymenty contains a WEB-INF/lib/precompiled-jsp.jar file
-NOTE: Our potential future tooling will integrate pre-processing of the deployment to produce pre-compiled jsp.
-
-To build it:
-
-```
-git clone https://github.com/rmartinc/jspc
-cd jspc; mvn clean install -DskipTests; cd ..
-cd jspc/tool
-mkdir -p precompiled/classes/META-INF
-mvn exec:java -Dexec.args="-v -p pre.compiled.jsps -d  precompiled/classes -webapp ../../deployment/helloworld/war/main -webfrg  precompiled/classes/META-INF/web-fragment.xml"
-cd precompiled/classes
-jar cvf precompiled-jsp.jar *
-cp precompiled-jsp.jar ../../../../deployment/helloworld/war/main/WEB-INF/lib
-cd ../../../..
-``
-
-
