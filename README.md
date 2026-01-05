@@ -76,7 +76,7 @@ rm -rf jboss-modules-recorded-services/
 
 ```
 cd deployment-src;mvn clean install;cd ..
-rm -rf deployment-exploded
+rm -rf min-core-server/deployment-exploded
 unzip deployment-src/target/helloworld.war -d min-core-server/deployment-exploded
 ```
 
@@ -93,7 +93,7 @@ jar cvf precompiled-jsp.jar *
 mkdir -p ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cp precompiled-jsp.jar ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cd ../../../..
-``
+```
 
 Add to standalone.xml:
 
