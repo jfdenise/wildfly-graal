@@ -22,21 +22,25 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK17.
 
 ```
-git clone -b webscoket_continuing git@github.com:jfdenise/wildfly-graal
-git clone -b webscoket_continuing git@github.com:jfdenise/jboss-modules
+git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-graal
+git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
 git clone -b archive_servlet_starting git@github.com:jfdenise/xnio
-git clone -b webscoket_continuing git@github.com:jfdenise/undertow
+git clone -b websocket_continuing git@github.com:jfdenise/undertow
+git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-elytron
+git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
 
 cd jboss-modules; mvn clean install -DskipTests; cd ..
 cd jboss-vfs; mvn clean install -DskipTests; cd ..
 cd jboss-msc; mvn clean install -DskipTests; cd ..
 cd xnio; mvn clean install -DskipTests; cd ..
 cd undertow; mvn clean install -DskipTests; cd ..
+cd wildfly-elytron; mvn clean install -DskipTests; cd ..
+cd jboss-remoting; mvn clean install -DskipTests; cd ..
 
-git clone -b webscoket_continuing git@github.com:jfdenise/wildfly-core
-git clone -b webscoket_continuing git@github.com:jfdenise/wildfly
+git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-core
+git clone -b websocket_continuing git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
@@ -51,7 +55,7 @@ cd wildfly-substitutions;mvn clean install -DskipTests;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,core-tools --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -66,7 +70,12 @@ We do:
 ```
 cp files/logging.properties min-core-server/standalone/configuration
 cp -r files/welcome-content min-core-server/
-rm -rf jboss-modules-recorded-services/
+```
+
+# Create the authenticated user
+
+```
+min-core-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1!' -g Users
 ```
 
 # Deploy the deployment
@@ -75,9 +84,9 @@ rm -rf jboss-modules-recorded-services/
 ## Build and explode the deployment
 
 ```
-cd deployment-src;mvn clean install;cd ..
+cd deployment-src/helloworld;mvn clean install;cd ../..
 rm -rf min-core-server/deployment-exploded
-unzip deployment-src/target/helloworld.war -d min-core-server/deployment-exploded
+unzip deployment-src/helloworld/target/helloworld.war -d min-core-server/deployment-exploded
 ```
 
 ## Pre-compile the jsp and install it in the exploded deployment
@@ -93,6 +102,12 @@ jar cvf precompiled-jsp.jar *
 mkdir -p ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cp precompiled-jsp.jar ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cd ../../../..
+```
+
+## Build the custom auth module
+
+```
+cd deployment-src/custom-module;mvn clean install;cd ../..
 ```
 
 Add to standalone.xml:
@@ -140,14 +155,26 @@ Replace undertow subsystem with:
 </subsystem>
 ```
 
+## Use WildFly CLI to update the configuration and deploy the custome auth module
+
+```
+sh ./min-core-server/bin/standalone.sh &
+cd deployment-src
+../min-core-server/bin/jboss-cli.sh --file=add-custom-module.cli
+../min-core-server/bin/jboss-cli.sh -c --file=configure-elytron.cli
+cd ..
+```
+
+Kill the server.
+
 ## Run the agent to dump service loaders
 
 * This step will be removed possibly in a next phase.
 
 ```
+rm -rf jboss-modules-recorded-services
 JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
 ```
-
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
@@ -159,3 +186,4 @@ JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server
 * Access the pre-compiled JSP: http://127.0.0.1:8080/helloworld/simple.jsp
 * Access the websocket 1: http://127.0.0.1:8080/helloworld/websocket.html
 * Access the websocket 2 (with encoding/decoding): http://127.0.0.1:8080/helloworld/bid.html
+* Access the secured servlet: `curl -v http://localhost:8080/helloworld/secured -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:password"`
