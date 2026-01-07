@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
@@ -99,8 +100,9 @@ public class Launcher {
             Map<String, Path> all = new HashMap<>();
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
+            Set<String> allLoadedServices = new TreeSet<>();
             for (String k : all.keySet()) {
-                System.out.println("Load module " + k);
+                //System.out.println("Load module " + k);
                 try {
                     Module mod = loader.loadModule(k);
                     Cache classCache = new Cache();
@@ -108,37 +110,48 @@ public class Launcher {
                     if (k.equals("org.jboss.as.standalone")) {
                         mainModule = mod;
                     }
+                    for (String serviceClass : mod.getServices()) {
+                        if (!serviceClass.startsWith("java.lang.")) {
+                           allLoadedServices.addAll(mod.getCache().addServiceToCache(serviceClass));
+                        }
+                    }
                     modules.put(k, mod);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("EX " + ex);
                 }
             }
-            Path dumpedServices = Paths.get("jboss-modules-recorded-services");
-            for (String k : modules.keySet()) {
-                if ("org.jboss.logmanager".equals(k)) {
-                    continue;
-                }
-                Module mod = modules.get(k);
-                Path services = dumpedServices.resolve(k).resolve("services.txt");
-                if (Files.exists(services)) {
-                    List<String> lst = Files.readAllLines(services);
-                    Set<String> seen = new HashSet<>();
-                    for (String serviceClass : lst) {
-                        if (seen.contains(serviceClass)) {
-                            continue;
-                        }
-                        seen.add(serviceClass);
-                        if (!serviceClass.startsWith("java.lang.")) {
-                            try {
-                                mod.getCache().addServiceToCache(serviceClass);
-                            } catch (Exception ex) {
-                                //System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k + "EX " + ex);
-                            }
-                        }
-                    }
-                }
+            System.out.println("ALL LOADED SERVICES TO BE INIT AT BUILD TIME, SHOULD BE RUN IN JAVA IN A PREVIOUS RUN");
+            for(String s : allLoadedServices) {
+                s = s.replace("$", "\\\\\\$");
+                System.out.println(s+",\\");
             }
+            System.out.println("DONE");
+            Path dumpedServices = Paths.get("jboss-modules-recorded-services");
+//            for (String k : modules.keySet()) {
+//                if ("org.jboss.logmanager".equals(k)) {
+//                    continue;
+//                }
+//                Module mod = modules.get(k);
+//                Path services = dumpedServices.resolve(k).resolve("services.txt");
+//                if (Files.exists(services)) {
+//                    List<String> lst = Files.readAllLines(services);
+//                    Set<String> seen = new HashSet<>();
+//                    for (String serviceClass : lst) {
+//                        if (seen.contains(serviceClass)) {
+//                            continue;
+//                        }
+//                        seen.add(serviceClass);
+//                        if (!serviceClass.startsWith("java.lang.")) {
+//                            try {
+//                                mod.getCache().addServiceToCache(serviceClass);
+//                            } catch (Exception ex) {
+//                                //System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k + "EX " + ex);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
             // Advertise deployment content
             Path services = dumpedServices.resolve(deploymentModule).resolve("services.txt");
             StringBuilder servicesBuilder = new StringBuilder();

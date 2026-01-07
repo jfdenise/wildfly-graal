@@ -113,33 +113,78 @@ public class Cache extends ClassCache {
         return ctr;
     }
 
-    public void addServiceToCache(String className) throws Exception {
-        Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
-        if (!SERVICES.containsKey(clazz)) {
-            ClassLoader orig = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(getModule().getClassLoader());
-            try {
-                ServiceLoader<?> sl = ServiceLoader.load(clazz, getModule().getClassLoader());
-                List<Object> services = new ArrayList<>();
-                for (Object service : sl) {
-                    if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
-                        //System.out.println("CACHE SERVICE " + service + " of type " + clazz);
-                        services.add(service);
-                    }
-                }
-                if (!services.isEmpty()) {
-                    SERVICES.put(clazz, services);
-                } else {
-                    //System.out.print("!!!!!!!!!!!! NO SERVICE TO CACHE FOR " + className);
-                }
-            } finally {
-                Thread.currentThread().setContextClassLoader(orig);
-            }
+    private static Set<String> getInheritedClasses(Class clazz) {
+        Set<String> classes = new HashSet<>();
+        for(Class i : clazz.getInterfaces()) {
+            classes.add(i.getName());
+            classes.addAll(getInheritedClasses(i));
         }
+        Class superClass = clazz.getSuperclass();
+        if (superClass != null) {
+            classes.add(superClass.getName());
+            classes.addAll(getInheritedClasses(superClass));
+        }
+        return classes;
+    }
+    public Set<String> addServiceToCache(String className) throws Exception {
+        Set<String> ret = new HashSet<>();
+        try {
+            Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
+            if (!SERVICES.containsKey(clazz)) {
+                ClassLoader orig = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(getModule().getClassLoader());
+                try {
+                    ServiceLoader<?> sl = ServiceLoader.load(clazz, getModule().getClassLoader());
+                    List<Object> services = new ArrayList<>();
+                    for (Object service : sl) {
+                        if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
+                            System.out.println(service.getClass().getName()+",\\");
+                            services.add(service);
+                            ret.add(service.getClass().getName());
+                            ret.addAll(getInheritedClasses(service.getClass()));
+                        }
+                    }
+                    if (!services.isEmpty()) {
+                        SERVICES.put(clazz, services);
+                    } else {
+                        //System.out.print("!!!!!!!!!!!! NO SERVICE TO CACHE FOR " + className);
+                    }
+                } finally {
+                    Thread.currentThread().setContextClassLoader(orig);
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR ADDING " + className + " service: " + ex);
+        }
+        return ret;
     }
 
     public List<Object> getServicesFromCache(Class<?> type) {
-        return SERVICES.get(type);
+        System.out.println("GET SERVICE " + type + " FROM CACHE");
+        List<Object> services = SERVICES.get(type);
+        if (services == null) {
+            for (DependencySpec spec : getModule().getDependencies()) {
+                if (spec instanceof ModuleDependencySpec) {
+                    ModuleDependencySpec md = (ModuleDependencySpec) spec;
+                    try {
+                        // Can be null for java.base, ...
+                        if (md.getModuleLoader() != null) {
+                            Module m = md.getModuleLoader().loadModule(md.getName());
+                            services = m.getCache().getServicesFromCache(type);
+                            if (services != null) {
+                                break;
+                            }
+                        }
+                    } catch (ModuleLoadException ex) {
+                        // Ok, not found
+                    }
+                }
+            }
+        }
+        if(services != null) {
+            System.out.println("SUCCESS SERVICES FOUND IN " + getModule().getName());
+        }
+        return services;
     }
 
     public Class<?> getClassFromCache(String className) {

@@ -167,7 +167,7 @@ cd ..
 
 Kill the server.
 
-## Run the agent to dump service loaders
+## Run the agent to dump service loaders used by the deployment ONLY, others are discovered at build time.
 
 * This step will be removed possibly in a next phase.
 
@@ -187,3 +187,4 @@ JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server
 * Access the websocket 1: http://127.0.0.1:8080/helloworld/websocket.html
 * Access the websocket 2 (with encoding/decoding): http://127.0.0.1:8080/helloworld/bid.html
 * Access the secured servlet: `curl -v http://localhost:8080/helloworld/secured -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:password"`
+* Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
