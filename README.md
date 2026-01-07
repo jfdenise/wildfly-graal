@@ -22,12 +22,12 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK17.
 
 ```
-git clone -b webscoket_continuing git@github.com:jfdenise/wildfly-graal
-git clone -b webscoket_continuing git@github.com:jfdenise/jboss-modules
+git clone -b websocket_continuing git@github.com:jfdenise/wildfly-graal
+git clone -b websocket_continuing git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
 git clone -b archive_servlet_starting git@github.com:jfdenise/xnio
-git clone -b webscoket_continuing git@github.com:jfdenise/undertow
+git clone -b websocket_continuing git@github.com:jfdenise/undertow
 
 cd jboss-modules; mvn clean install -DskipTests; cd ..
 cd jboss-vfs; mvn clean install -DskipTests; cd ..
@@ -35,8 +35,8 @@ cd jboss-msc; mvn clean install -DskipTests; cd ..
 cd xnio; mvn clean install -DskipTests; cd ..
 cd undertow; mvn clean install -DskipTests; cd ..
 
-git clone -b webscoket_continuing git@github.com:jfdenise/wildfly-core
-git clone -b webscoket_continuing git@github.com:jfdenise/wildfly
+git clone -b websocket_continuing git@github.com:jfdenise/wildfly-core
+git clone -b websocket_continuing git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
