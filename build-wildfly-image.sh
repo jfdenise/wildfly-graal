@@ -10,7 +10,7 @@ cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \
 wildfly-launcher \
 -Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \
--Dorg.jboss.modules.record.classes=pre.compiled.jsps,org.jboss.as.quickstarts.helloworld,org.jboss.quickstarts.websocket,org.jboss.as.quickstarts.websocket_hello \
+-Dorg.jboss.modules.record.classes=pre.compiled.jsps,org.jboss.as.quickstarts.helloworld,org.jboss.quickstarts.websocket,org.jboss.as.quickstarts.websocket_hello,org.jboss.as.quickstart.http_custom_mechanism \
 -Djboss.home.dir=${current_dir}/min-core-server \
 -Dlogging.configuration=file://${current_dir}/min-core-server/standalone/configuration/logging.properties \
 -Dorg.jboss.boot.log.file=${current_dir}/min-core-server/standalone/log/server.log \
@@ -18,14 +18,20 @@ wildfly-launcher \
 -Djboss.server.base.dir=${current_dir}/min-core-server/standalone \
 -H:+PrintClassInitialization \
 --initialize-at-build-time=\
+org.jboss.as.quickstart.http_custom_mechanism.CustomMechanismFactory,\
 com.sun.el.ExpressionFactoryImpl,\
 io.smallrye.common.expression,\
 io.smallrye.common.expression.Expression\\\$Flag,\
 io.undertow.UndertowLogger,\
 io.undertow.UndertowLogger_\\\$logger,\
+io.undertow.UndertowMessages,\
+io.undertow.UndertowMessages_\\\$bundle,\
 io.undertow.Version,\
+io.undertow.attribute,\
 io.undertow.server.DirectByteBufferDeallocator,\
 io.undertow.server.protocol.http.ServiceLoaderInitializer,\
+io.undertow.servlet.UndertowServletLogger,\
+io.undertow.servlet.UndertowServletLogger_\\\$logger,\
 io.undertow.servlet.UndertowServletMessages,\
 io.undertow.servlet.UndertowServletMessages_\\\$bundle,\
 io.undertow.servlet.api.ServletStackTraces,\
@@ -55,7 +61,7 @@ io.undertow.websockets.jsr.JsrWebSocketMessages_\\\$bundle,\
 jakarta.annotation.PostConstruct,\
 jakarta.el,\
 jakarta.json,\
-jakarta.servlet.annotation.WebServlet,\
+jakarta.servlet.annotation,\
 jakarta.servlet.http.HttpSessionListener,\
 jakarta.servlet.ServletContextListener,\
 jakarta.servlet.jsp.JspApplicationContext,\
@@ -84,6 +90,8 @@ org.jboss.as.controller.ResourceDefinition\\\$MinimalResourceDefinition,\
 org.jboss.as.controller.xml,\
 org.jboss.as.controller.persistence,\
 org.jboss.as.controller.persistence.xml,\
+org.jboss.as.domain.http.server.logging.HttpServerLogger,\
+org.jboss.as.domain.http.server.logging.HttpServerLogger_\\\$logger,\
 org.jboss.as.ee.component.ComponentRegistry,\
 org.jboss.as.ee.logging,\
 org.jboss.as.ee.concurrent.AbstractConcurrencyImplementation,\
@@ -121,6 +129,11 @@ org.jboss.msc.service.Dependency,\
 org.jboss.msc.value.Value,\
 org.jboss.msc.service.ReadableValueImpl,\
 org.jboss.msc.value,\
+org.jboss.as.remoting.logging.RemotingLogger,\
+org.jboss.as.remoting.logging.RemotingLogger_\\\$logger,\
+org.jboss.remoting3.Version,\
+org.jboss.remoting3._private.Messages,\
+org.jboss.remoting3._private.Messages_\\\$logger,\
 org.jboss.staxmapper,\
 org.jboss.threads.Messages,\
 org.jboss.threads.Messages_\\\$logger,\
@@ -189,7 +202,7 @@ org.jboss.as.server.DomainServerCommunicationServices,\
 org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
---trace-object-instantiation=java.io.FilePermission \
+--trace-object-instantiation=com.sun.jmx.mbeanserver.JmxMBeanServer \
 -cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar "
 
 echo "$cmd" > "./build-image.sh"

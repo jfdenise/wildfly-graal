@@ -39,4 +39,5 @@ jboss-modules-recorded-services
 jboss-modules-recorded-classes/
 reflective-dump/
 reports/
-/deployment-src/target/
+/deployment-src/helloworld/target/
+/deployment-src/custom-module/target/

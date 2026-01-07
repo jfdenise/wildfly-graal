@@ -11,7 +11,11 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import org.jboss.modules.ClassCache;
+import org.jboss.modules.DependencySpec;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleDependencySpec;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  *
@@ -54,12 +58,22 @@ public class Cache extends ClassCache {
     private final Map<Class<?>, Method[]> METHODS = new HashMap<>();
 
     public void addClassToCache(String className) throws Exception {
+        addClassToCache(className, null);
+    }
+
+    public void addClassToCache(String className, Class<?>... parameterTypes) throws Exception {
         if (!CACHE.containsKey(className)) {
-            System.out.println("Adding to cache: " + className);
+            System.out.println("Adding to cache: " + className + " in module " + getModule().getName());
             Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
             CACHE.put(className, clazz);
             try {
-                CONSTRUCTORS.put(className, clazz.getConstructor());
+                Constructor ctr = null;
+                if (parameterTypes == null || parameterTypes.length == 0) {
+                    ctr = clazz.getConstructor();
+                } else {
+                    ctr = clazz.getConstructor(parameterTypes);
+                }
+                CONSTRUCTORS.put(className, ctr);
             } catch (Exception ex) {
                 // OK
             }
@@ -69,27 +83,57 @@ public class Cache extends ClassCache {
     public Constructor getConstructorFromCache(String className, Class<?>... parameterTypes) {
         StringBuilder key = new StringBuilder();
         key.append(className);
-        for (Class<?> type : parameterTypes) {
-            key.append("_" + type.getName());
+        if (parameterTypes != null) {
+            for (Class<?> type : parameterTypes) {
+                key.append("_" + type.getName());
+            }
         }
-        return CONSTRUCTORS.get(key.toString());
+        Constructor ctr = CONSTRUCTORS.get(key.toString());
+        if (ctr == null) {
+            for (DependencySpec spec : getModule().getDependencies()) {
+                if (spec instanceof ModuleDependencySpec) {
+                    ModuleDependencySpec md = (ModuleDependencySpec) spec;
+                    try {
+                        // Can be null for java.base, ...
+                        if (md.getModuleLoader() != null) {
+                            Module m = md.getModuleLoader().loadModule(md.getName());
+                            ctr = m.getCache().getConstructorFromCache(className, parameterTypes);
+                            if (ctr != null) {
+                                break;
+                            }
+                        }
+                    } catch (ModuleLoadException ex) {
+                        // Ok, not found
+                    }
+                }
+            }
+        } else {
+            System.out.println("SUCCESS, FOUND CONSTRUCTOR IN " + getModule().getName());
+        }
+        return ctr;
     }
 
     public void addServiceToCache(String className) throws Exception {
         Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
         if (!SERVICES.containsKey(clazz)) {
-            ServiceLoader<?> sl = ServiceLoader.load(clazz, getModule().getClassLoader());
-            List<Object> services = new ArrayList<>();
-            for (Object service : sl) {
-                if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
-                    //System.out.println("CACHE SERVICE " + service + " of type " + clazz);
-                    services.add(service);
+            ClassLoader orig = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(getModule().getClassLoader());
+            try {
+                ServiceLoader<?> sl = ServiceLoader.load(clazz, getModule().getClassLoader());
+                List<Object> services = new ArrayList<>();
+                for (Object service : sl) {
+                    if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
+                        //System.out.println("CACHE SERVICE " + service + " of type " + clazz);
+                        services.add(service);
+                    }
                 }
-            }
-            if (!services.isEmpty()) {
-                SERVICES.put(clazz, services);
-            } else {
-                //System.out.print("!!!!!!!!!!!! NO SERVICE TO CACHE FOR " + className);
+                if (!services.isEmpty()) {
+                    SERVICES.put(clazz, services);
+                } else {
+                    //System.out.print("!!!!!!!!!!!! NO SERVICE TO CACHE FOR " + className);
+                }
+            } finally {
+                Thread.currentThread().setContextClassLoader(orig);
             }
         }
     }
