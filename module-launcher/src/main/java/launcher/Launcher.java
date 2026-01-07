@@ -121,68 +121,6 @@ public class Launcher {
                     System.out.println("EX " + ex);
                 }
             }
-            System.out.println("ALL LOADED SERVICES TO BE INIT AT BUILD TIME, SHOULD BE RUN IN JAVA IN A PREVIOUS RUN");
-            for(String s : allLoadedServices) {
-                s = s.replace("$", "\\\\\\$");
-                System.out.println(s+",\\");
-            }
-            System.out.println("DONE");
-            Path dumpedServices = Paths.get("jboss-modules-recorded-services");
-//            for (String k : modules.keySet()) {
-//                if ("org.jboss.logmanager".equals(k)) {
-//                    continue;
-//                }
-//                Module mod = modules.get(k);
-//                Path services = dumpedServices.resolve(k).resolve("services.txt");
-//                if (Files.exists(services)) {
-//                    List<String> lst = Files.readAllLines(services);
-//                    Set<String> seen = new HashSet<>();
-//                    for (String serviceClass : lst) {
-//                        if (seen.contains(serviceClass)) {
-//                            continue;
-//                        }
-//                        seen.add(serviceClass);
-//                        if (!serviceClass.startsWith("java.lang.")) {
-//                            try {
-//                                mod.getCache().addServiceToCache(serviceClass);
-//                            } catch (Exception ex) {
-//                                //System.out.println("ERROR ADD SERVICE " + serviceClass + " for " + k + "EX " + ex);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-            // Advertise deployment content
-            Path services = dumpedServices.resolve(deploymentModule).resolve("services.txt");
-            StringBuilder servicesBuilder = new StringBuilder();
-            if (Files.exists(services)) {
-
-                List<String> lst = Files.readAllLines(services);
-                Set<String> seen = new HashSet<>();
-                for (String serviceClass : lst) {
-                    if (seen.contains(serviceClass)) {
-                        continue;
-                    }
-                    seen.add(serviceClass);
-                    if (!serviceClass.startsWith("java.lang.")) {
-                        if (!servicesBuilder.isEmpty()) {
-                            servicesBuilder.append(",");
-                        }
-                        servicesBuilder.append(serviceClass);
-                    }
-                }
-            }
-            // Advertise the services that have not been seen during the hot run.
-            // We should discover them statically instead of doing the run...
-            // This should be done once the module has been created at build time in ModuleLoadService
-
-            // This one is not properly defined in the module.xml of org.eclipse.parrson
-            // ASK If we could add it?
-            servicesBuilder.append(",jakarta.json.spi.JsonProvider");
-
-            System.out.println("SERVICES THAT THE DEPLOYMENT  MODULE MUST LOAD " + servicesBuilder);
-
-            System.setProperty("org.wildfly.graal.deployment.services", servicesBuilder.toString());
             mainModule.preRun(new String[0]);
             System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");

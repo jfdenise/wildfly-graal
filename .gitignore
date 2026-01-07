@@ -34,9 +34,7 @@ simple-modules/mod1_v1/target/
 simple-modules/mod1_v2/target/
 /agent/target/
 /wildfly-substitutions/target/
-jboss-modules-recorded-services
 /agent/prog-test/target/
-jboss-modules-recorded-classes/
 reflective-dump/
 reports/
 /deployment-src/helloworld/target/

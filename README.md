@@ -164,17 +164,8 @@ cd deployment-src
 ../min-core-server/bin/jboss-cli.sh -c --file=configure-elytron.cli
 cd ..
 ```
-
 Kill the server.
 
-## Run the agent to dump service loaders used by the deployment ONLY, others are discovered at build time.
-
-* This step will be removed possibly in a next phase.
-
-```
-rm -rf jboss-modules-recorded-services
-JAVA_OPTS="-javaagent:agent/target/wildfly-graal-agent.jar" sh ./min-core-server/bin/standalone.sh
-```
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`

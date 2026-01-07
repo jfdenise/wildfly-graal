@@ -138,7 +138,9 @@ public class Cache extends ClassCache {
                     List<Object> services = new ArrayList<>();
                     for (Object service : sl) {
                         if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
-                            System.out.println(service.getClass().getName()+",\\");
+                            if ("jakarta.json.spi.JsonProvider".equals(className)) {
+                                System.out.println("ADDING JsonProvider service to " + getModule().getName());
+                            }
                             services.add(service);
                             ret.add(service.getClass().getName());
                             ret.addAll(getInheritedClasses(service.getClass()));
@@ -160,31 +162,47 @@ public class Cache extends ClassCache {
     }
 
     public List<Object> getServicesFromCache(Class<?> type) {
-        System.out.println("GET SERVICE " + type + " FROM CACHE");
+       // if(type.getName().equals("jakarta.json.spi.JsonProvider")) {
+            System.out.println("GET SERVICE " + type + " FROM CACHE FROM MODULE " + getModule().getName());
+       // }
+        Set<Object> allServices = new HashSet<>();
         List<Object> services = SERVICES.get(type);
-        if (services == null) {
-            for (DependencySpec spec : getModule().getDependencies()) {
-                if (spec instanceof ModuleDependencySpec) {
-                    ModuleDependencySpec md = (ModuleDependencySpec) spec;
-                    try {
-                        // Can be null for java.base, ...
-                        if (md.getModuleLoader() != null) {
-                            Module m = md.getModuleLoader().loadModule(md.getName());
-                            services = m.getCache().getServicesFromCache(type);
-                            if (services != null) {
-                                break;
+        //if(type.getName().equals("jakarta.json.spi.JsonProvider")) {
+            System.out.println("LOCAL SERVICES " + services);
+        //}
+        if(services != null) {
+            allServices.addAll(services);
+        } else {
+        for (DependencySpec spec : getModule().getDependencies()) {
+            System.out.println("DEP " + spec.toString());
+            if (spec instanceof ModuleDependencySpec) {
+                ModuleDependencySpec md = (ModuleDependencySpec) spec;
+                try {
+                    // Can be null for java.base, ...
+                    if (md.getModuleLoader() != null) {
+                        Module m = md.getModuleLoader().loadModule(md.getName());
+                        services = m.getCache().getServicesFromCache(type);
+                        if (services != null && !services.isEmpty()) {
+                            if (type.getName().equals("jakarta.json.spi.JsonProvider")) {
+                                System.out.println("FOUND SERVICES " + services + " in dep " + md.getName());
                             }
+                            allServices.addAll(services);
                         }
-                    } catch (ModuleLoadException ex) {
-                        // Ok, not found
                     }
+                } catch (ModuleLoadException ex) {
+                    // Ok, not found
                 }
             }
         }
-        if(services != null) {
-            System.out.println("SUCCESS SERVICES FOUND IN " + getModule().getName());
         }
-        return services;
+        if(!allServices.isEmpty()) {
+            System.out.println("SUCCESS SERVICES " + allServices + " FOUND IN " + getModule().getName());
+        }
+        List<Object> objects = new ArrayList<>();
+        for(Object service : allServices) {
+            objects.add(service);
+        }
+        return objects;
     }
 
     public Class<?> getClassFromCache(String className) {
