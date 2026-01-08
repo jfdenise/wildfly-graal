@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -81,6 +82,7 @@ public class Cache extends ClassCache {
     }
 
     public Constructor getConstructorFromCache(String className, Class<?>... parameterTypes) {
+        System.out.println("GET CONSTRUCTOR " + className + " FROM CACHE FROM MODULE " + getModule().getName());
         StringBuilder key = new StringBuilder();
         key.append(className);
         if (parameterTypes != null) {
@@ -99,6 +101,7 @@ public class Cache extends ClassCache {
                             Module m = md.getModuleLoader().loadModule(md.getName());
                             ctr = m.getCache().getConstructorFromCache(className, parameterTypes);
                             if (ctr != null) {
+                                System.out.println("FOUND CTR IN " + m.getName());
                                 break;
                             }
                         }
@@ -113,19 +116,20 @@ public class Cache extends ClassCache {
         return ctr;
     }
 
-    private static Set<String> getInheritedClasses(Class clazz) {
+    private static Set<String> getClassesTree(Class clazz) {
+        if (clazz.getSuperclass() == null) {
+            return Collections.emptySet();
+        }
         Set<String> classes = new HashSet<>();
-        for(Class i : clazz.getInterfaces()) {
+        classes.add(clazz.getName());
+        for (Class i : clazz.getInterfaces()) {
             classes.add(i.getName());
-            classes.addAll(getInheritedClasses(i));
+            classes.addAll(getClassesTree(i));
         }
-        Class superClass = clazz.getSuperclass();
-        if (superClass != null) {
-            classes.add(superClass.getName());
-            classes.addAll(getInheritedClasses(superClass));
-        }
+        classes.addAll(getClassesTree(clazz.getSuperclass()));
         return classes;
     }
+
     public Set<String> addServiceToCache(String className) throws Exception {
         Set<String> ret = new HashSet<>();
         try {
@@ -138,12 +142,8 @@ public class Cache extends ClassCache {
                     List<Object> services = new ArrayList<>();
                     for (Object service : sl) {
                         if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
-                            if ("jakarta.json.spi.JsonProvider".equals(className)) {
-                                System.out.println("ADDING JsonProvider service to " + getModule().getName());
-                            }
                             services.add(service);
-                            ret.add(service.getClass().getName());
-                            ret.addAll(getInheritedClasses(service.getClass()));
+                            ret.addAll(getClassesTree(service.getClass()));
                         }
                     }
                     if (!services.isEmpty()) {
@@ -162,47 +162,11 @@ public class Cache extends ClassCache {
     }
 
     public List<Object> getServicesFromCache(Class<?> type) {
-       // if(type.getName().equals("jakarta.json.spi.JsonProvider")) {
-            System.out.println("GET SERVICE " + type + " FROM CACHE FROM MODULE " + getModule().getName());
-       // }
-        Set<Object> allServices = new HashSet<>();
         List<Object> services = SERVICES.get(type);
-        //if(type.getName().equals("jakarta.json.spi.JsonProvider")) {
-            System.out.println("LOCAL SERVICES " + services);
-        //}
-        if(services != null) {
-            allServices.addAll(services);
-        } else {
-        for (DependencySpec spec : getModule().getDependencies()) {
-            System.out.println("DEP " + spec.toString());
-            if (spec instanceof ModuleDependencySpec) {
-                ModuleDependencySpec md = (ModuleDependencySpec) spec;
-                try {
-                    // Can be null for java.base, ...
-                    if (md.getModuleLoader() != null) {
-                        Module m = md.getModuleLoader().loadModule(md.getName());
-                        services = m.getCache().getServicesFromCache(type);
-                        if (services != null && !services.isEmpty()) {
-                            if (type.getName().equals("jakarta.json.spi.JsonProvider")) {
-                                System.out.println("FOUND SERVICES " + services + " in dep " + md.getName());
-                            }
-                            allServices.addAll(services);
-                        }
-                    }
-                } catch (ModuleLoadException ex) {
-                    // Ok, not found
-                }
-            }
+        if(services != null && !services.isEmpty()) {
+            System.out.println("SUCCESS, found service " + type + " impl " + services + " from module " + getModule().getName());
         }
-        }
-        if(!allServices.isEmpty()) {
-            System.out.println("SUCCESS SERVICES " + allServices + " FOUND IN " + getModule().getName());
-        }
-        List<Object> objects = new ArrayList<>();
-        for(Object service : allServices) {
-            objects.add(service);
-        }
-        return objects;
+        return services;
     }
 
     public Class<?> getClassFromCache(String className) {

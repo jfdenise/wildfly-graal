@@ -100,7 +100,7 @@ public class Launcher {
             Map<String, Path> all = new HashMap<>();
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
-            Set<String> allLoadedServices = new TreeSet<>();
+            System.setProperty("org.wildfly.graal.build.time.load.modules", "true");
             for (String k : all.keySet()) {
                 //System.out.println("Load module " + k);
                 try {
@@ -112,7 +112,7 @@ public class Launcher {
                     }
                     for (String serviceClass : mod.getServices()) {
                         if (!serviceClass.startsWith("java.lang.")) {
-                           allLoadedServices.addAll(mod.getCache().addServiceToCache(serviceClass));
+                           mod.getCache().addServiceToCache(serviceClass);
                         }
                     }
                     modules.put(k, mod);
@@ -121,6 +121,7 @@ public class Launcher {
                     System.out.println("EX " + ex);
                 }
             }
+            System.clearProperty("org.wildfly.graal.build.time.load.modules");
             mainModule.preRun(new String[0]);
             System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
