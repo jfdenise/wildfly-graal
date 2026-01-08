@@ -11,13 +11,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Provider;
 import java.security.Security;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
@@ -121,7 +117,6 @@ public class Launcher {
                     System.out.println("EX " + ex);
                 }
             }
-            System.clearProperty("org.wildfly.graal.build.time.load.modules");
             mainModule.preRun(new String[0]);
             System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -144,12 +139,11 @@ public class Launcher {
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
-        } finally {
-            System.clearProperty("org.wildfly.graal.build.time");
         }
     }
 
     public static void main(String[] args) throws Exception {
+        System.clearProperty("org.wildfly.graal.build.time");
         System.setProperty("org.wildfly.graal", "true");
         System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
         System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());

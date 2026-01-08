@@ -569,7 +569,7 @@ org.jboss.as.server.DomainServerCommunicationServices,\
 org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
---trace-object-instantiation=com.sun.jmx.mbeanserver.JmxMBeanServer \
+--trace-object-instantiation=java.lang.ref.Cleaner \
 -cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar "
 
 echo "$cmd" > "./build-image.sh"
