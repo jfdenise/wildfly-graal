@@ -151,7 +151,6 @@ Add to standalone.xml:
                     <!--<handler name="FILE"/>-->
                 </handlers>
             </root-logger>
--->
 ```
 ## Add the welcome content to the server config
 
