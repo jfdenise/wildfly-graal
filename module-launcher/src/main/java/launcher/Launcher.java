@@ -84,9 +84,6 @@ public class Launcher {
                 }
             }
             System.setProperty("org.jboss.boot.log.file", Paths.get("min-core-server/standalone/log/server.log").toAbsolutePath().toString());
-            Path p = Paths.get("min-core-server/standalone/configuration/logging.properties");
-            //System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
-            System.setProperty("logging.configuration", p.toUri().toString());
             System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
             System.setProperty("jboss.server.base.dir", Paths.get("min-core-server/standalone").toAbsolutePath().toString());
             System.setProperty("org.wildfly.graal.cache.class", "launcher.Cache");
@@ -245,7 +242,7 @@ public class Launcher {
             if (custompackages != null) {
                 packages.append(",").append(custompackages);
             }
-            packages.append(",launcher");
+            packages.append(",launcher,org.jboss.logmanager");
             System.setProperty(SYSPROP_KEY_SYSTEM_PACKAGES, packages.toString());
 
             // Get the module loader

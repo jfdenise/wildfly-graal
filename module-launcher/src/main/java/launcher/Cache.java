@@ -64,7 +64,7 @@ public class Cache extends ClassCache {
 
     public void addClassToCache(String className, Class<?>... parameterTypes) throws Exception {
         if (!CACHE.containsKey(className)) {
-            System.out.println("Adding to cache: " + className + " in module " + getModule().getName());
+            //System.out.println("Adding to cache: " + className + " in module " + getModule().getName());
             Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
             CACHE.put(className, clazz);
             try {
@@ -156,7 +156,7 @@ public class Cache extends ClassCache {
                 }
             }
         } catch (Exception ex) {
-            System.out.println("ERROR ADDING " + className + " service: " + ex);
+            //System.out.println("ERROR ADDING " + className + " service: " + ex);
         }
         return ret;
     }

@@ -23,7 +23,7 @@ WARNING YOU MUST USE JDK17.
 
 ```
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-graal
-git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-modules
+git clone -b 2.1-wildfly_graal_elytron_services git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
 git clone -b archive_servlet_starting git@github.com:jfdenise/xnio

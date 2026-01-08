@@ -12,7 +12,8 @@ wildfly-launcher \
 -Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \
 -Dorg.jboss.modules.record.classes=pre.compiled.jsps,org.jboss.as.quickstarts.helloworld,org.jboss.quickstarts.websocket,org.jboss.as.quickstarts.websocket_hello,org.jboss.as.quickstart.http_custom_mechanism \
 -Djboss.home.dir=${current_dir}/min-core-server \
--Dlogging.configuration=file://${current_dir}/min-core-server/standalone/configuration/logging.properties \
+-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+-Dlogging.configuration=file:${current_dir}/min-core-server/standalone/configuration/logging.properties \
 -Dorg.jboss.boot.log.file=${current_dir}/min-core-server/standalone/log/server.log \
 -Duser.home==/Users/foo \
 -Djboss.server.base.dir=${current_dir}/min-core-server/standalone \
@@ -570,7 +571,30 @@ org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 --trace-object-instantiation=java.lang.ref.Cleaner \
--cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar "
+-cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar"
+
+for (( i=0; i<${arraylength}; i++ ));
+do
+  line=${array[$i]}":"
+  if [[ $line =~ "org/jboss/logmanager/" ]]; then
+    cmd="$cmd:$line"
+  fi
+  if [[ $line =~ "org/wildfly/common" ]]; then
+    cmd="$cmd:$line"
+  fi
+  if [[ $line =~ "io/smallrye/common/cpu" ]]; then
+    cmd="$cmd:$line"
+  fi
+  if [[ $line =~ "io/smallrye/common/net" ]]; then
+    cmd="$cmd:$line"
+  fi
+if [[ $line =~ "io/smallrye/common/os" ]]; then
+    cmd="$cmd:$line"
+  fi
+if [[ $line =~ "io/smallrye/common/expression" ]]; then
+    cmd="$cmd:$line"
+  fi
+done
 
 echo "$cmd" > "./build-image.sh"
 chmod +x ./build-image.sh
