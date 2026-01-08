@@ -1,12 +1,75 @@
 {
   "reflection": [
     {
-      "type": "com.sun.el.ExpressionFactoryImpl",
+      "type": "org.jboss.logmanager.formatters.PatternFormatter",
       "methods": [
         {
           "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPattern",
+          "parameterTypes": []
+        },
+        {
+          "name": "setPattern",
           "parameterTypes": [
-            "java.util.Properties"
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setColors",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getColors",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.jboss.logmanager.CopyOnWriteMap"
+    },
+    {
+      "type": "org.jboss.logmanager.ExtHandler",
+      "methods": [
+        {
+          "name": "setAutoFlush",
+          "parameterTypes": [
+            "boolean"
+          ]
+        }
+      ]
+    },{
+      "type": "org.jboss.logmanager.JBossLoggerFinder"
+    },
+    {
+      "type": "org.jboss.logmanager.LogContext"
+    },
+    {
+      "type": "org.jboss.logmanager.LogManager"
+    },
+    {
+      "type": "org.jboss.logmanager.Logger$AttachmentKey"
+    },
+    {
+      "type": "org.jboss.logmanager.LoggerNode"
+    },
+    {
+      "type": "org.jboss.logmanager.StandardOutputStreams"
+    },{
+      "type": "org.jboss.logmanager.handlers.ConsoleHandler",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setTarget",
+          "parameterTypes": [
+            "org.jboss.logmanager.handlers.ConsoleHandler$Target"
           ]
         }
       ]

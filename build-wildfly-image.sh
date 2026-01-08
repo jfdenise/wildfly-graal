@@ -40,6 +40,13 @@ io.undertow.servlet.util,\
 org.jboss.marshalling.reflect,\
 org.jboss.marshalling,\
 org.eclipse.jgit.transport.sshd,\
+org.apache.logging.log4j.util.EnvironmentPropertySource,\
+org.apache.logging.log4j.util.PropertySource,\
+org.apache.logging.log4j.util.SystemPropertiesPropertySource,\
+org.jboss.as.logging.logmanager,\
+org.jboss.as.logging.LoggingExtension\\\$LoggingChildResourceComparator,\
+org.jboss.as.logging.stdio,\
+org.jboss.stdio,\
 ORG.FOO.CLASSES.DUMPED.BY.SERVICES.DISCOVERY,\
 io.undertow.attribute.AuthenticationTypeExchangeAttribute\\\$Builder,\
 io.undertow.attribute.BytesSentAttribute\\\$Builder,\
@@ -246,6 +253,8 @@ org.jboss.as.host.controller.embedded.HostEmbeddedProcessBootstrap,\
 org.jboss.as.jmx.JMXExtension,\
 org.jboss.as.jmx.PluggableMBeanServerBuilder,\
 org.jboss.as.jmx.model.ManagementModelIntegration,\
+org.jboss.as.logging.LoggingExtension,\
+org.jboss.as.logging.LoggingExtension\\\$TransformerRegistration,\
 org.jboss.as.naming.subsystem.NamingExtension,\
 org.jboss.as.quickstart.http_custom_mechanism.CustomMechanismFactory,\
 org.jboss.as.remoting.RemotingExtension,\
@@ -465,6 +474,8 @@ org.jboss.as.ee.concurrent.ConcurrencyImplementation,\
 org.jboss.as.ee.concurrent.ConcurrencyImplementation30,\
 org.jboss.as.ee.subsystem.EeExtension,\
 org.jboss.as.jmx.model.ManagementModelIntegration,\
+org.jboss.as.logging.logging.LoggingLogger,\
+org.jboss.as.logging.logging.LoggingLogger_\\\$logger,\
 org.jboss.as.naming,\
 org.jboss.as.naming.context.ObjectFactoryBuilder,\
 org.jboss.as.naming.deployment.JdkDependenciesProcessor,\
@@ -483,6 +494,7 @@ org.jboss.jandex.DotName,\
 org.jboss.jandex.DotName\\\$1,\
 org.jboss.logging,\
 org.jboss.logmanager,\
+org.jboss.logmanager.config,\
 org.jboss.metadata.parser.servlet.Version,\
 org.jboss.metadata.parser.util.Version,\
 org.jboss.modules,\
@@ -570,6 +582,7 @@ org.jboss.as.server.DomainServerCommunicationServices,\
 org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
+-H:ConfigurationFileDirectories=files \
 --trace-object-instantiation=java.lang.ref.Cleaner \
 -cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar"
 
@@ -592,6 +605,9 @@ if [[ $line =~ "io/smallrye/common/os" ]]; then
     cmd="$cmd:$line"
   fi
 if [[ $line =~ "io/smallrye/common/expression" ]]; then
+    cmd="$cmd:$line"
+  fi
+if [[ $line =~ "org/jboss/logging/" ]]; then
     cmd="$cmd:$line"
   fi
 done

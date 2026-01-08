@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
@@ -95,7 +96,7 @@ public class Launcher {
             handleModules(modulesDir, all);
             System.setProperty("org.wildfly.graal.build.time.load.modules", "true");
             for (String k : all.keySet()) {
-                //System.out.println("Load module " + k);
+                System.out.println("Load module " + k);
                 try {
                     Module mod = loader.loadModule(k);
                     Cache classCache = new Cache();
@@ -105,13 +106,20 @@ public class Launcher {
                     }
                     for (String serviceClass : mod.getServices()) {
                         if (!serviceClass.startsWith("java.lang.")) {
-                           mod.getCache().addServiceToCache(serviceClass);
+                           Set<String> classes = mod.getCache().addServiceToCache(serviceClass);
+                           if(k.equals("org.jboss.as.logging")) {
+                               for(String c : classes) {
+                                   c = c.replace("$", "\\\\\\$");
+                                   System.out.println(c+"\\,");
+                               }
+                           }
                         }
                     }
                     modules.put(k, mod);
-                } catch (Exception ex) {
+                } catch (Throwable ex) {
                     ex.printStackTrace();
                     System.out.println("EX " + ex);
+                    throw ex;
                 }
             }
             mainModule.preRun(new String[0]);
@@ -242,7 +250,7 @@ public class Launcher {
             if (custompackages != null) {
                 packages.append(",").append(custompackages);
             }
-            packages.append(",launcher,org.jboss.logmanager");
+            packages.append(",launcher,org.jboss.logmanager,org.jboss.logging");
             System.setProperty(SYSPROP_KEY_SYSTEM_PACKAGES, packages.toString());
 
             // Get the module loader

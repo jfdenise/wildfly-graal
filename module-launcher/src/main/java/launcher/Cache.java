@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import org.jboss.logging.Logger;
 import org.jboss.modules.ClassCache;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -26,7 +27,7 @@ public class Cache extends ClassCache {
 
     private final static Set<String> RECORDED_MODULES = new HashSet<>();
     private final static Set<String> RECORDED_CLASSES = new HashSet<>();
-
+    Logger LOGGER = Logger.getLogger("org.wildfly.graal");
     static {
         String mods = System.getProperty("org.jboss.modules.record.classes.of");
         if (mods != null) {
@@ -65,6 +66,7 @@ public class Cache extends ClassCache {
     public void addClassToCache(String className, Class<?>... parameterTypes) throws Exception {
         if (!CACHE.containsKey(className)) {
             //System.out.println("Adding to cache: " + className + " in module " + getModule().getName());
+            LOGGER.debug("Adding to cache: " + className + " in module " + getModule().getName());
             Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
             CACHE.put(className, clazz);
             try {
@@ -82,7 +84,8 @@ public class Cache extends ClassCache {
     }
 
     public Constructor getConstructorFromCache(String className, Class<?>... parameterTypes) {
-        System.out.println("GET CONSTRUCTOR " + className + " FROM CACHE FROM MODULE " + getModule().getName());
+        //System.out.println("GET CONSTRUCTOR " + className + " FROM CACHE FROM MODULE " + getModule().getName());
+        LOGGER.debug("GET CONSTRUCTOR " + className + " FROM CACHE FROM MODULE " + getModule().getName());
         StringBuilder key = new StringBuilder();
         key.append(className);
         if (parameterTypes != null) {
@@ -111,7 +114,8 @@ public class Cache extends ClassCache {
                 }
             }
         } else {
-            System.out.println("SUCCESS, FOUND CONSTRUCTOR IN " + getModule().getName());
+            //System.out.println("SUCCESS, FOUND CONSTRUCTOR IN " + getModule().getName());
+            LOGGER.debug("SUCCESS, FOUND CONSTRUCTOR IN " + getModule().getName());
         }
         return ctr;
     }
@@ -155,7 +159,7 @@ public class Cache extends ClassCache {
                     Thread.currentThread().setContextClassLoader(orig);
                 }
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             //System.out.println("ERROR ADDING " + className + " service: " + ex);
         }
         return ret;
@@ -164,7 +168,8 @@ public class Cache extends ClassCache {
     public List<Object> getServicesFromCache(Class<?> type) {
         List<Object> services = SERVICES.get(type);
         if(services != null && !services.isEmpty()) {
-            System.out.println("SUCCESS, found service " + type + " impl " + services + " from module " + getModule().getName());
+            //System.out.println("SUCCESS, found services " + type + " from module " + getModule().getName());
+            LOGGER.debug("SUCCESS, found services " + type + " impl " + services + " from module " + getModule().getName());
         }
         return services;
     }

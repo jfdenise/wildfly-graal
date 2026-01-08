@@ -20,6 +20,12 @@
       <version>2.1.7.Final-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+      <version>3.6.1.Final</version>
+      <type>jar</type>
+    </dependency>
     <!-- Not used by WildFly -->
     <dependency>
       <groupId>org.json</groupId>
