@@ -1793,37 +1793,39 @@ org.yaml.snakeyaml.serializer,\
 org.yaml.snakeyaml.tokens,\
 org.yaml.snakeyaml.util,\
 proto.generated \
---initialize-at-run-time=org.jboss.as.server.services.net,\
+--initialize-at-run-time=\
 io.smallrye.common.os.Process,\
+io.smallrye.common.net.CidrAddress,\
+io.smallrye.common.net.Inet,\
+io.undertow.security.impl.SimpleNonceManager,\
+io.undertow.server.handlers.resource.DirectoryUtils\\\$Blobs,\
 io.undertow.server.protocol.ajp.AjpServerResponseConduit,\
 io.undertow.server.protocol.ajp.AjpServerRequestConduit,\
-io.undertow.server.handlers.resource.DirectoryUtils\\\$Blobs,\
-org.jboss.msc.service.ServiceContainer\\\$Factory,\
-org.wildfly.common.net,\
-org.wildfly.httpclient.common.PoolAuthenticationContext,\
-org.wildfly.httpclient.common.WildflyHttpContext,\
-org.wildfly.httpclient.common.HttpContextGetterHolder,\
-org.wildfly.httpclient.common.ConfigurationHttpContextSupplier,\
-org.xnio.nio.WorkerThread,\
-org.xnio.DefaultXnioWorkerHolder,\
-org.xnio.channels.Channels,\
 org.eclipse.jgit.util.FileUtils,\
 org.eclipse.jgit.transport.HttpAuthMethod\\\$Digest,\
 org.eclipse.jgit.internal.storage.file.WindowCache,\
 org.eclipse.jgit.lib.RepositoryCache,\
 org.eclipse.jgit.lib.internal.WorkQueue,\
-org.jboss.remoting3.remote.RemoteConnection,\
-io.smallrye.common.net.Inet,\
-io.smallrye.common.net.CidrAddress,\
-org.jboss.as.domain.http.server,\
+org.jboss.as.domain.http.server.ManagementHttpServer,\
+org.jboss.as.server.DomainServerCommunicationServices,\
+org.jboss.as.server.deployment.module.TempFileProviderService,\
+org.jboss.as.server.operations.NativeManagementServices,\
+org.jboss.as.server.services.net.BindingAddHandler,\
+org.jboss.as.server.services.net.SocketBindingResourceDefinition,\
+org.jboss.classfilewriter.DefaultClassFactory,\
+org.jboss.msc.service.ServiceContainer\\\$Factory,\
 org.jboss.remoting3.ConfigurationEndpointSupplier\\\$Holder,\
 org.jboss.remoting3.ConnectionInfo,\
+org.jboss.remoting3.remote.RemoteConnection,\
 org.jboss.remoting3.remote.MessageReader,\
-io.undertow.security.impl.SimpleNonceManager,\
-org.jboss.classfilewriter.DefaultClassFactory,\
-org.jboss.as.server.deployment.module.TempFileProviderService,\
-org.jboss.as.server.DomainServerCommunicationServices,\
-org.jboss.as.server.operations.NativeManagementServices \
+org.wildfly.common.net,\
+org.wildfly.httpclient.common.ConfigurationHttpContextSupplier,\
+org.wildfly.httpclient.common.HttpContextGetterHolder,\
+org.wildfly.httpclient.common.PoolAuthenticationContext,\
+org.wildfly.httpclient.common.WildflyHttpContext,\
+org.xnio.DefaultXnioWorkerHolder,\
+org.xnio.channels.Channels,\
+org.xnio.nio.WorkerThread \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 -H:ConfigurationFileDirectories=files \

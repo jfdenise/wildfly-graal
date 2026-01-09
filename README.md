@@ -39,7 +39,7 @@ cd undertow; mvn clean install -DskipTests; cd ..
 cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 
-git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-core
+git clone -b all_classes_init_at_build_time git@github.com:jfdenise/wildfly-core
 git clone -b websocket_continuing git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
