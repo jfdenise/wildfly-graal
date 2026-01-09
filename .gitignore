@@ -39,3 +39,5 @@ reflective-dump/
 reports/
 /deployment-src/helloworld/target/
 /deployment-src/custom-module/target/
+/analyzer/target/
+/analyzer/allPackages.txt

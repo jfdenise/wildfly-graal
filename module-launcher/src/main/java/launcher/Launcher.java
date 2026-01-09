@@ -24,7 +24,6 @@ public class Launcher {
 
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
-    private static final String SYSPROP_KEY_SYSTEM_PACKAGES = "jboss.modules.system.pkgs";
     // Those maps are used by WildFLy to resolve modules at runtime,
     // We don't have JBoss Modules classloaders at execution time.
     // Hack to be properly integrated.
@@ -142,7 +141,7 @@ public class Launcher {
                 Module m = modules.get(k);
                 m.cleanupPermissions();
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -244,15 +243,6 @@ public class Launcher {
             // Set up sysprop env
             System.clearProperty(SYSPROP_KEY_CLASS_PATH);
             System.setProperty(SYSPROP_KEY_MODULE_PATH, modulePath);
-
-            final StringBuilder packages = new StringBuilder("org.jboss.modules");
-            String custompackages = System.getProperty(SYSPROP_KEY_SYSTEM_PACKAGES);
-            if (custompackages != null) {
-                packages.append(",").append(custompackages);
-            }
-            packages.append(",launcher,org.jboss.logmanager,org.jboss.logging");
-            System.setProperty(SYSPROP_KEY_SYSTEM_PACKAGES, packages.toString());
-
             // Get the module loader
             return Module.getBootModuleLoader();
         } finally {

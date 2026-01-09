@@ -1,4 +1,4 @@
-package launcher;
+package org.wildfly.graal;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,158 +7,59 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.Provider;
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
-public class Launcher {
+public class Analyzer {
 
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
     private static final String SYSPROP_KEY_SYSTEM_PACKAGES = "jboss.modules.system.pkgs";
-    // Those maps are used by WildFLy to resolve modules at runtime,
-    // We don't have JBoss Modules classloaders at execution time.
-    // Hack to be properly integrated.
-    public static Map<String, Module> modules = new HashMap<>();
-    static Module mainModule;
-
-    static {
-        try {
-            String deploymentModule = System.getProperty("org.wildfly.graal.deployment.module");
-
-            // No more needed, although how the classes are seen is not understood.
-            // XXX Those classes would have to be discovered by a previous phase (e.g: dumped in a file that this loauncher would read.
-            // We add them here because they are not recorded with the internal run at build time, not seen by Graal compiler. 
-            // They are classes loaded on receive of an async event, so nothing links to them.
-            // Other classes are recorded at build time thanks to the org.jboss.modules.record.classes that defines the deployment packages to be recorded
-            // All the recording and these classes should be removed once we have the tool that discover the application classes.
-            String[] depClasses = {
-                "org.jboss.quickstarts.websocket.model.Bid",
-                "org.jboss.quickstarts.websocket.model.BidStatus",
-                "org.jboss.quickstarts.websocket.model.Bidding",
-                "org.jboss.quickstarts.websocket.model.Bidding$1",
-                "org.jboss.quickstarts.websocket.model.BiddingFactory",
-                "org.jboss.quickstarts.websocket.model.Item"
-            };
-            StringBuilder classesBuilder = new StringBuilder();
-            for (String s : depClasses) {
-                if (!classesBuilder.isEmpty()) {
-                    classesBuilder.append(",");
-                }
-                classesBuilder.append(s);
-
-            }
-            // Will be consumed by the created Deployment Module
-            // This appears to be no more required...All classes are seen,
-            // root cause not understood!
-            //System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
-
-            System.setProperty("org.wildfly.graal.build.time", "true");
-            // We want to record the classses that are loaded by the Deployment module classloader
-            System.setProperty("org.jboss.modules.record.classes.of", deploymentModule);
-            final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-            Iterator<Provider> iterator = providerServiceLoader.iterator();
-            for (;;) {
-                if (!(iterator.hasNext())) {
-                    break;
-                }
-                try {
-                    final Provider provider = iterator.next();
-
-                    if (!provider.getClass().getName().contains("org.bouncycastle")) {
-                        System.out.println(provider.getClass().getName());
-                        Security.addProvider(provider);
-                    } else {
-                        System.out.println("DO NOT register " + provider.getClass().getName());
-                    }
-                } catch (Throwable ex) {
-                    System.out.println("ERROR LOADING Provider " + ex);
-                }
-            }
-            System.setProperty("org.jboss.boot.log.file", Paths.get("min-core-server/standalone/log/server.log").toAbsolutePath().toString());
-            System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
-            System.setProperty("jboss.server.base.dir", Paths.get("min-core-server/standalone").toAbsolutePath().toString());
-            System.setProperty("org.wildfly.graal.cache.class", "launcher.Cache");
-            Path modulesDir = Paths.get("min-core-server/modules").toAbsolutePath();
-            LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
-
-            Map<String, Path> all = new HashMap<>();
-            // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
-            handleModules(modulesDir, all);
-            System.setProperty("org.wildfly.graal.build.time.load.modules", "true");
-            for (String k : all.keySet()) {
-                System.out.println("Load module " + k);
-                try {
-                    Module mod = loader.loadModule(k);
-                    Cache classCache = new Cache();
-                    mod.setClassCache(classCache);
-                    if (k.equals("org.jboss.as.standalone")) {
-                        mainModule = mod;
-                    }
-                    for (String serviceClass : mod.getServices()) {
-                        if (!serviceClass.startsWith("java.lang.")) {
-                           Set<String> classes = mod.getCache().addServiceToCache(serviceClass);
-                           if(k.equals("org.jboss.as.logging")) {
-                               for(String c : classes) {
-                                   c = c.replace("$", "\\\\\\$");
-                                   System.out.println(c+"\\,");
-                               }
-                           }
-                        }
-                    }
-                    modules.put(k, mod);
-                } catch (Throwable ex) {
-                    ex.printStackTrace();
-                    System.out.println("EX " + ex);
-                    throw ex;
-                }
-            }
-            mainModule.preRun(new String[0]);
-            System.clearProperty("org.jboss.modules.record.classes.of");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("The classes that we add to the cache");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
-
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
-
-            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-
-            for (String k : modules.keySet()) {
-                Module m = modules.get(k);
-                m.cleanupPermissions();
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     public static void main(String[] args) throws Exception {
-        System.clearProperty("org.wildfly.graal.build.time");
-        System.setProperty("org.wildfly.graal", "true");
-        System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
-        System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());
-        System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
-        System.out.println("Running Main entry point");
-        for (String k : modules.keySet()) {
-            Module m = modules.get(k);
-            m.restorePermissions();
+        Map<String, Path> all = new HashMap<>();
+        Path modulesDir = Paths.get("../min-core-server/modules").toAbsolutePath();
+        LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
+        handleModules(modulesDir, all);
+        StringBuilder paths = new StringBuilder();
+        Set<String> sorted = new TreeSet<>();
+        Path allPackages = Paths.get("allPackages.txt");
+        for (String k : all.keySet()) {
+            //System.out.println("Load module " + k);
+            Module m = loader.loadModule(k);
+            Set<String> p = m.getClassLoader().getLocalPaths();
+            sorted.addAll(p);
         }
-        mainModule.run(args);
+        sorted = cleanupSet(sorted);
+        Files.deleteIfExists(allPackages);
+        for (String s : sorted) {
+            System.out.println(s);
+        }
+        Files.write(allPackages, sorted, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+        System.out.println(sorted.size());
+
+    }
+
+    private static Set<String> cleanupSet(Set<String> set) {
+        Set<String> sorted = new TreeSet<>();
+        for (String s : set) {
+            if (s.startsWith("META-INF") || s.startsWith("OSGI-INF") || !s.contains("/")) {
+                continue;
+            }
+            s = s.replaceAll("/", ".");
+            sorted.add(s+",\\");
+        }
+        return sorted;
     }
 
     static void handleModules(Path modulesDir, Map<String, Path> moduleXmlByPkgName) throws IOException {
