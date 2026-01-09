@@ -1759,36 +1759,17 @@ org.wildfly.unstable.api.annotation.classpath,\
 org.wildfly.unstable.api.annotation.classpath.index,\
 org.wildfly.unstable.api.annotation.classpath.runtime,\
 org.wildfly.unstable.api.annotation.classpath.runtime.bytecode,\
-org.xnio.FileAccess,\
-org.xnio.LocalSocketAddress,\
-org.xnio.Option,\
-org.xnio.Option\\\$1,\
-org.xnio.Option\\\$2,\
-org.xnio.Option\\\$3,\
-org.xnio.Option\\\$4,\
-org.xnio.Option\\\$5,\
-org.xnio.Option\\\$6,\
-org.xnio.Option\\\$7,\
-org.xnio.Option\\\$8,\
-org.xnio.Option\\\$9,\
-org.xnio.Option\\\$10,\
-org.xnio.OptionMap,\
-org.xnio.SequenceOption,\
-org.xnio.SingleOption,\
-org.xnio.SslClientAuthMode,\
-org.xnio.Version,\
-org.xnio._private.Messages,\
-org.xnio._private.Messages_\\\$logger,\
-org.xnio.Xnio,\
-org.xnio.Xnio\\\$1,\
-org.xnio.nio.Log,\
-org.xnio.nio.Log_\\\$logger,\
-org.xnio.nio.NioXnio\\\$DefaultSelectorCreator,\
-org.xnio.nio.NioXnio\\\$4,\
-org.xnio.nio.NioXnio,\
-org.xnio.nio.NioXnioProvider,\
-org.xnio.sasl.SaslQop,\
+org.wildfly.unstable,\
+org.xnio,\
+org.xnio._private,\
+org.xnio.channels,\
+org.xnio.conduits,\
+org.xnio.http,\
+org.xnio.management,\
+org.xnio.nio,\
 org.xnio.sasl,\
+org.xnio.ssl,\
+org.xnio.streams,\
 org.yaml,\
 org.yaml.snakeyaml,\
 org.yaml.snakeyaml.comments,\
@@ -1854,7 +1835,7 @@ org.jboss.as.server.operations.NativeManagementServices \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 -H:ConfigurationFileDirectories=files \
---trace-object-instantiation=java.beans.Introspector\\\$1,java.lang.Thread,org.wildfly.common.net.CidrAddressTable,org.xnio.nio.WorkerThread,java.net.Inet6Address,java.lang.ref.Cleaner,java.lang.ProcessHandleImpl,org.xnio.Buffers\\\$5,org.jboss.remoting3.ConnectionInfo\\\$EmptyIoFuture,java.net.Inet4Address,java.security.SecureRandom,java.util.Random,org.jboss.ejb.client.EJBClientContext,org.wildfly.security.auth.client.AuthenticationContext,org.wildfly.common.context.ContextManager,sun.nio.ch.FileChannelImpl,org.wildfly.httpclient.common.WildflyHttpContext,org.xnio.nio.NioXnioWorker,java.io.FilePermission,org.xnio.ByteBufferSlicePool,java.nio.DirectByteBuffer \
+--trace-object-instantiation=org.eclipse.jgit.util.FS_POSIX,java.beans.Introspector\\\$1,java.lang.Thread,org.wildfly.common.net.CidrAddressTable,org.xnio.nio.WorkerThread,java.net.Inet6Address,java.lang.ref.Cleaner,java.lang.ProcessHandleImpl,org.xnio.Buffers\\\$5,org.jboss.remoting3.ConnectionInfo\\\$EmptyIoFuture,java.net.Inet4Address,java.security.SecureRandom,java.util.Random,org.jboss.ejb.client.EJBClientContext,org.wildfly.security.auth.client.AuthenticationContext,org.wildfly.common.context.ContextManager,sun.nio.ch.FileChannelImpl,org.wildfly.httpclient.common.WildflyHttpContext,org.xnio.nio.NioXnioWorker,java.io.FilePermission,org.xnio.ByteBufferSlicePool,java.nio.DirectByteBuffer \
 -cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar"
 
 for (( i=0; i<${arraylength}; i++ ));
