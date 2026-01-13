@@ -21,12 +21,11 @@ import org.jboss.modules.ModuleLoader;
 public class Launcher {
 
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
-    // Those maps are used by WildFLy to resolve modules at runtime,
-    // We don't have JBoss Modules classloaders at execution time.
-    // Hack to be properly integrated.
-    public static Map<String, Module> modules = new HashMap<>();
-    static Module mainModule;
 
+    // We keep a map of all modules to be able to restore permissions
+    private static final Map<String, Module> modules = new HashMap<>();
+    private static Module mainModule;
+    private static final String JBOSS_HOME = System.getProperty("jboss.home.dir");
     static {
         try {
             // No more needed, although how the classes are seen is not understood.
@@ -45,14 +44,14 @@ public class Launcher {
             System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
             System.setProperty("org.wildfly.graal.build.time", "true");
             System.setProperty("org.wildfly.graal.cache.class", "launcher.Cache");
-            Path modulesDir = Paths.get("min-core-server/modules").toAbsolutePath();
+            Path modulesDir = Paths.get(JBOSS_HOME + "/modules").toAbsolutePath();
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
 
             Map<String, Path> all = new HashMap<>();
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
             for (String k : all.keySet()) {
-                System.out.println("Load module " + k);
+                //System.out.println("Load module " + k);
                 try {
                     Module mod = loader.loadModule(k);
                     Cache classCache = new Cache();
@@ -62,13 +61,7 @@ public class Launcher {
                     }
                     for (String serviceClass : mod.getServices()) {
                         if (!serviceClass.startsWith("java.lang.")) {
-                            Set<String> classes = mod.getCache().addServiceToCache(serviceClass);
-                            if (k.equals("org.jboss.as.logging")) {
-                                for (String c : classes) {
-                                    c = c.replace("$", "\\\\\\$");
-                                    System.out.println(c + "\\,");
-                                }
-                            }
+                            mod.getCache().addServiceToCache(serviceClass);
                         }
                     }
                     modules.put(k, mod);
@@ -105,9 +98,7 @@ public class Launcher {
     public static void main(String[] args) throws Exception {
         System.clearProperty("org.wildfly.graal.build.time");
         System.setProperty("org.wildfly.graal", "true");
-        System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
-        System.setProperty("user.home", Paths.get("/users/foo").toAbsolutePath().toString());
-        System.setProperty("java.home", Paths.get("/tmp/java").toAbsolutePath().toString());
+        System.setProperty("jboss.home.dir", JBOSS_HOME);
         System.out.println("Running Main entry point");
         for (String k : modules.keySet()) {
             Module m = modules.get(k);

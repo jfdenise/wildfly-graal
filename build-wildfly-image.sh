@@ -1,19 +1,24 @@
 current_dir=$(pwd)
+JBOSS_HOME=${current_dir}/min-core-server
 
 IFS=$'\n'
-array=($(find ./min-core-server/modules/system/layers/base/ -name \*.jar))
+array=($(find ${JBOSS_HOME}/modules/system/layers/base/ -name \*.jar))
 unset IFS
 
 arraylength=${#array[@]}
+
+
+echo "Analyzing the server and deployment"
+java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/helloworld.war
 
 cmd="
 native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
 -Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \\
--Djboss.home.dir=${current_dir}/min-core-server \\
+-Djboss.home.dir=${JBOSS_HOME} \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
 -Djboss.modules.system.pkgs=org.jboss.modules,launcher,org.jboss.logmanager,org.jboss.logging \\
--Dlogging.configuration=file:${current_dir}/min-core-server/standalone/configuration/logging.properties \\
+-Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
 -H:+PrintClassInitialization \\
 --initialize-at-build-time=\\"
 
@@ -74,7 +79,7 @@ cmd="$cmd
 -H:ConfigurationFileDirectories=files \\
 --enable-sbom=false \\
 -cp \\
-${current_dir}/min-core-server/jboss-modules.jar:\\
+$JBOSS_HOME/jboss-modules.jar:\\
 wildfly-substitutions/target/wildfly-substitutions.jar:\\"
 
 # Finally build the classpath

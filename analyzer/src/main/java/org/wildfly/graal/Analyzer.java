@@ -42,12 +42,13 @@ public class Analyzer {
         }
         sorted = cleanupSet(sorted);
         Files.deleteIfExists(allPackages);
-        for (String s : sorted) {
-            System.out.println(s);
-        }
+//        for (String s : sorted) {
+//            System.out.println(s);
+//        }
+        System.out.println("Server classes packages name stored in " + allPackages);
         Files.write(allPackages, sorted, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 
-        System.out.println(sorted.size());
+        //System.out.println(sorted.size());
         // Discover deployment classes
         String deployment = args[1];
         Path deploymentPath = Paths.get(deployment).toAbsolutePath();
@@ -56,9 +57,10 @@ public class Analyzer {
         scanner.scan(allClasses);
         Path deploymentClasses = Paths.get("allDeploymentClasses.txt");
         Files.deleteIfExists(deploymentClasses);
-        for (String s : allClasses) {
-            System.out.println(s);
-        }
+//        for (String s : allClasses) {
+//            System.out.println(s);
+//        }
+        System.out.println("Deployment classe names stored in " + deploymentClasses);
         Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 

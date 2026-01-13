@@ -39,7 +39,7 @@ cd undertow; mvn clean install -DskipTests; cd ..
 cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 
-git clone -b all_classes_init_at_build_time git@github.com:jfdenise/wildfly-core
+git clone -b automated_server_deployment_discovery git@github.com:jfdenise/wildfly-core
 git clone -b websocket_continuing git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
@@ -49,6 +49,7 @@ cd wildfly-graal
 cd module-launcher; mvn clean install -DskipTests; cd ..
 cd agent; mvn clean install -DskipTests; cd ..
 cd wildfly-substitutions;mvn clean install -DskipTests;cd ..
+cd analyzer;mvn clean install;cd ..
 
 ```
 
@@ -105,15 +106,6 @@ cd ../../../..
 cd min-core-server/deployment-exploded
 zip ../helloworld.war * */**/*
 cd ../..
-```
-
-## Analyze the server and the deployment
-
-* We will use that later to load all the deployment classes and put all the server classes in the "init at build time" set
-
-```
-cd analyzer;mvn clean install;cd ..
-java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar min-core-server min-core-server/helloworld.war
 ```
 
 ## Build the custom auth module
