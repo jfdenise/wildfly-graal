@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,12 +28,12 @@ public class Analyzer {
 
     public static void main(String[] args) throws Exception {
         Map<String, Path> all = new HashMap<>();
-        Path modulesDir = Paths.get("../min-core-server/modules").toAbsolutePath();
+        String server = args[0];
+        Path modulesDir = Paths.get(server).resolve("modules").toAbsolutePath();
         LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
         handleModules(modulesDir, all);
-        StringBuilder paths = new StringBuilder();
         Set<String> sorted = new TreeSet<>();
-        Path allPackages = Paths.get("allPackages.txt");
+        Path allPackages = Paths.get("allServerPackages.txt");
         for (String k : all.keySet()) {
             //System.out.println("Load module " + k);
             Module m = loader.loadModule(k);
@@ -47,7 +48,18 @@ public class Analyzer {
         Files.write(allPackages, sorted, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 
         System.out.println(sorted.size());
-
+        // Discover deployment classes
+        String deployment = args[1];
+        Path deploymentPath = Paths.get(deployment).toAbsolutePath();
+        DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet());
+        Set<String> allClasses = new TreeSet<>();
+        scanner.scan(allClasses);
+        Path deploymentClasses = Paths.get("allDeploymentClasses.txt");
+        Files.deleteIfExists(deploymentClasses);
+        for (String s : allClasses) {
+            System.out.println(s);
+        }
+        Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
     private static Set<String> cleanupSet(Set<String> set) {
@@ -57,7 +69,7 @@ public class Analyzer {
                 continue;
             }
             s = s.replaceAll("/", ".");
-            sorted.add(s+",\\");
+            sorted.add(s);
         }
         return sorted;
     }

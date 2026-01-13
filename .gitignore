@@ -40,4 +40,5 @@ reports/
 /deployment-src/helloworld/target/
 /deployment-src/custom-module/target/
 /analyzer/target/
-/analyzer/allPackages.txt
+allServerPackages.txt
+allDeploymentClasses.txt

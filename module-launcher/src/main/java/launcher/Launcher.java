@@ -8,12 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.Provider;
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
@@ -22,7 +20,6 @@ import org.jboss.modules.ModuleLoader;
 
 public class Launcher {
 
-    private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
     // Those maps are used by WildFLy to resolve modules at runtime,
     // We don't have JBoss Modules classloaders at execution time.
@@ -32,22 +29,8 @@ public class Launcher {
 
     static {
         try {
-            String deploymentModule = System.getProperty("org.wildfly.graal.deployment.module");
-
             // No more needed, although how the classes are seen is not understood.
-            // XXX Those classes would have to be discovered by a previous phase (e.g: dumped in a file that this loauncher would read.
-            // We add them here because they are not recorded with the internal run at build time, not seen by Graal compiler. 
-            // They are classes loaded on receive of an async event, so nothing links to them.
-            // Other classes are recorded at build time thanks to the org.jboss.modules.record.classes that defines the deployment packages to be recorded
-            // All the recording and these classes should be removed once we have the tool that discover the application classes.
-            String[] depClasses = {
-                "org.jboss.quickstarts.websocket.model.Bid",
-                "org.jboss.quickstarts.websocket.model.BidStatus",
-                "org.jboss.quickstarts.websocket.model.Bidding",
-                "org.jboss.quickstarts.websocket.model.Bidding$1",
-                "org.jboss.quickstarts.websocket.model.BiddingFactory",
-                "org.jboss.quickstarts.websocket.model.Item"
-            };
+            List<String> depClasses = Files.readAllLines(Paths.get("allDeploymentClasses.txt"));
             StringBuilder classesBuilder = new StringBuilder();
             for (String s : depClasses) {
                 if (!classesBuilder.isEmpty()) {
@@ -59,33 +42,8 @@ public class Launcher {
             // Will be consumed by the created Deployment Module
             // This appears to be no more required...All classes are seen,
             // root cause not understood!
-            //System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
-
+            System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
             System.setProperty("org.wildfly.graal.build.time", "true");
-            // We want to record the classses that are loaded by the Deployment module classloader
-            System.setProperty("org.jboss.modules.record.classes.of", deploymentModule);
-            final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class);
-            Iterator<Provider> iterator = providerServiceLoader.iterator();
-            for (;;) {
-                if (!(iterator.hasNext())) {
-                    break;
-                }
-                try {
-                    final Provider provider = iterator.next();
-
-                    if (!provider.getClass().getName().contains("org.bouncycastle")) {
-                        System.out.println(provider.getClass().getName());
-                        Security.addProvider(provider);
-                    } else {
-                        System.out.println("DO NOT register " + provider.getClass().getName());
-                    }
-                } catch (Throwable ex) {
-                    System.out.println("ERROR LOADING Provider " + ex);
-                }
-            }
-            System.setProperty("org.jboss.boot.log.file", Paths.get("min-core-server/standalone/log/server.log").toAbsolutePath().toString());
-            System.setProperty("jboss.home.dir", Paths.get("min-core-server").toAbsolutePath().toString());
-            System.setProperty("jboss.server.base.dir", Paths.get("min-core-server/standalone").toAbsolutePath().toString());
             System.setProperty("org.wildfly.graal.cache.class", "launcher.Cache");
             Path modulesDir = Paths.get("min-core-server/modules").toAbsolutePath();
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
@@ -93,7 +51,6 @@ public class Launcher {
             Map<String, Path> all = new HashMap<>();
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
-            System.setProperty("org.wildfly.graal.build.time.load.modules", "true");
             for (String k : all.keySet()) {
                 System.out.println("Load module " + k);
                 try {
@@ -105,13 +62,13 @@ public class Launcher {
                     }
                     for (String serviceClass : mod.getServices()) {
                         if (!serviceClass.startsWith("java.lang.")) {
-                           Set<String> classes = mod.getCache().addServiceToCache(serviceClass);
-                           if(k.equals("org.jboss.as.logging")) {
-                               for(String c : classes) {
-                                   c = c.replace("$", "\\\\\\$");
-                                   System.out.println(c+"\\,");
-                               }
-                           }
+                            Set<String> classes = mod.getCache().addServiceToCache(serviceClass);
+                            if (k.equals("org.jboss.as.logging")) {
+                                for (String c : classes) {
+                                    c = c.replace("$", "\\\\\\$");
+                                    System.out.println(c + "\\,");
+                                }
+                            }
                         }
                     }
                     modules.put(k, mod);
@@ -122,9 +79,8 @@ public class Launcher {
                 }
             }
             mainModule.preRun(new String[0]);
-            System.clearProperty("org.jboss.modules.record.classes.of");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("The classes that we add to the cache");
+            System.out.println("The server classes that we add to the cache");
             modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
             modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
             modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
@@ -238,18 +194,10 @@ public class Launcher {
             throw new RuntimeException("The first directory of the specified module path " + modulePath + " is invalid or does not exist.");
         }
 
-        final String classPath = System.getProperty(SYSPROP_KEY_CLASS_PATH);
-        try {
-            // Set up sysprop env
-            System.clearProperty(SYSPROP_KEY_CLASS_PATH);
-            System.setProperty(SYSPROP_KEY_MODULE_PATH, modulePath);
-            // Get the module loader
-            return Module.getBootModuleLoader();
-        } finally {
-            // Return to previous state for classpath prop
-            if (classPath != null) {
-                System.setProperty(SYSPROP_KEY_CLASS_PATH, classPath);
-            }
-        }
+        // Set up sysprop env
+        System.setProperty(SYSPROP_KEY_MODULE_PATH, modulePath);
+        // Get the module loader
+        return Module.getBootModuleLoader();
+
     }
 }

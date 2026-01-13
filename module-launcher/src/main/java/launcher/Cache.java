@@ -25,31 +25,7 @@ import org.jboss.modules.ModuleLoadException;
  */
 public class Cache extends ClassCache {
 
-    private final static Set<String> RECORDED_MODULES = new HashSet<>();
-    private final static Set<String> RECORDED_CLASSES = new HashSet<>();
     Logger LOGGER = Logger.getLogger("org.wildfly.graal");
-    static {
-        String mods = System.getProperty("org.jboss.modules.record.classes.of");
-        if (mods != null) {
-            String[] split = mods.split(",");
-            for (String s : split) {
-                s = s.trim();
-                if (!s.isEmpty()) {
-                    RECORDED_MODULES.add(s);
-                }
-            }
-        }
-        String classes = System.getProperty("org.jboss.modules.record.classes");
-        if (classes != null) {
-            String[] split = classes.split(",");
-            for (String s : split) {
-                s = s.trim();
-                if (!s.isEmpty()) {
-                    RECORDED_CLASSES.add(s);
-                }
-            }
-        }
-    }
 
     private final Map<String, Class<?>> CACHE = new HashMap<>();
     private final Map<Class<?>, List<Object>> SERVICES = new HashMap<>();
@@ -79,6 +55,43 @@ public class Cache extends ClassCache {
                 CONSTRUCTORS.put(className, ctr);
             } catch (Exception ex) {
                 // OK
+            }
+            Map<Class<?>, Annotation> map = new HashMap<>();
+            for (Annotation a : clazz.getAnnotations()) {
+                Class<? extends Annotation> type = a.annotationType();
+                //System.out.println("Adding annotation " + type + " for annotation " + a);
+                map.put(type, a);
+            }
+            if (!map.isEmpty()) {
+                ANNOTATIONS.put(clazz, map);
+            }
+            if (clazz.getDeclaredMethods().length != 0) {
+                METHODS.put(clazz, clazz.getDeclaredMethods());
+                for (final Method method : clazz.getDeclaredMethods()) {
+                    Map<Class<?>, Annotation> ma = new HashMap<>();
+                    for (Annotation a : method.getDeclaredAnnotations()) {
+                        //System.out.println("Adding Method annotation " + a + " on " + method.getName());
+                        ma.put(a.annotationType(), a);
+                    }
+                    if (!ma.isEmpty()) {
+                        Map<Method, Map<Class<?>, Annotation>> m = METHOD_ANNOTATIONS.get(clazz);
+                        if (m == null) {
+                            m = new HashMap<>();
+                            METHOD_ANNOTATIONS.put(clazz, m);
+                        }
+                        m.put(method, ma);
+                    }
+                    Annotation[][] arr = method.getParameterAnnotations();
+                    if (arr.length == 0) {
+                        arr = new Annotation[0][0];
+                    }
+                    Map<Method, Annotation[][]> mp = PARAMETERS_ANNOTATIONS.get(clazz);
+                    if (mp == null) {
+                        mp = new HashMap<>();
+                        PARAMETERS_ANNOTATIONS.put(clazz, mp);
+                    }
+                    mp.put(method, arr);
+                }
             }
         }
     }
@@ -167,7 +180,7 @@ public class Cache extends ClassCache {
 
     public List<Object> getServicesFromCache(Class<?> type) {
         List<Object> services = SERVICES.get(type);
-        if(services != null && !services.isEmpty()) {
+        if (services != null && !services.isEmpty()) {
             //System.out.println("SUCCESS, found services " + type + " from module " + getModule().getName());
             LOGGER.debug("SUCCESS, found services " + type + " impl " + services + " from module " + getModule().getName());
         }
@@ -216,66 +229,6 @@ public class Cache extends ClassCache {
             methods = new Method[0];
         }
         return methods;
-    }
-
-    public void recordClass(Class clazz) {
-        synchronized (this) {
-            if (!RECORDED_MODULES.isEmpty()) {
-                String className = clazz.getName();
-                if (className.startsWith("java.") || CACHE.containsKey(className)) {
-                    return;
-                }
-                if (RECORDED_MODULES.contains(getModule().getName()) && RECORDED_CLASSES.contains(clazz.getPackageName())) {
-
-                    System.out.println(getModule().getName() + " module, recording class: " + className);
-                    CACHE.put(className, clazz);
-                    // Add default constructor if it exists
-                    try {
-                        CONSTRUCTORS.put(className, clazz.getConstructor());
-                    } catch (Exception ex) {
-                        // OK
-                    }
-                    Map<Class<?>, Annotation> map = new HashMap<>();
-                    for (Annotation a : clazz.getAnnotations()) {
-                        Class<? extends Annotation> type = a.annotationType();
-                        //System.out.println("Adding annotation " + type + " for annotation " + a);
-                        map.put(type, a);
-                    }
-                    if (!map.isEmpty()) {
-                        ANNOTATIONS.put(clazz, map);
-                    }
-                    if (clazz.getDeclaredMethods().length != 0) {
-                        METHODS.put(clazz, clazz.getDeclaredMethods());
-                        for (final Method method : clazz.getDeclaredMethods()) {
-                            Map<Class<?>, Annotation> ma = new HashMap<>();
-                            for (Annotation a : method.getDeclaredAnnotations()) {
-                                //System.out.println("Adding Method annotation " + a + " on " + method.getName());
-                                ma.put(a.annotationType(), a);
-                            }
-                            if (!ma.isEmpty()) {
-                                Map<Method, Map<Class<?>, Annotation>> m = METHOD_ANNOTATIONS.get(clazz);
-                                if (m == null) {
-                                    m = new HashMap<>();
-                                    METHOD_ANNOTATIONS.put(clazz, m);
-                                }
-                                m.put(method, ma);
-                            }
-                            Annotation[][] arr = method.getParameterAnnotations();
-                            if (arr.length == 0) {
-                                arr = new Annotation[0][0];
-                            }
-                            Map<Method, Annotation[][]> mp = PARAMETERS_ANNOTATIONS.get(clazz);
-                            if (mp == null) {
-                                mp = new HashMap<>();
-                                PARAMETERS_ANNOTATIONS.put(clazz, mp);
-                            }
-                            mp.put(method, arr);
-                        }
-                    }
-                    //System.out.println("END RECORDING " + clazz);
-                }
-            }
-        }
     }
 
     @Override

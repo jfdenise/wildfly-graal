@@ -22,8 +22,8 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK17.
 
 ```
-git clone -b all_classes_init_at_build_time git@github.com:jfdenise/wildfly-graal
-git clone -b 2.1-wildfly_graal_elytron_services git@github.com:jfdenise/jboss-modules
+git clone -b automated_server_deployment_discovery git@github.com:jfdenise/wildfly-graal
+git clone -b 2.1-remove-recording git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
 git clone -b all_classes_init_at_build_time git@github.com:jfdenise/xnio
@@ -89,7 +89,7 @@ rm -rf min-core-server/deployment-exploded
 unzip deployment-src/helloworld/target/helloworld.war -d min-core-server/deployment-exploded
 ```
 
-## Pre-compile the jsp and install it in the exploded deployment
+## Pre-compile the jsp, install it in the exploded deployment and rezip
 
 ```
 git clone https://github.com/rmartinc/jspc
@@ -102,6 +102,18 @@ jar cvf precompiled-jsp.jar *
 mkdir -p ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cp precompiled-jsp.jar ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cd ../../../..
+cd min-core-server/deployment-exploded
+zip ../helloworld.war * */**/*
+cd ../..
+```
+
+## Analyze the server and the deployment
+
+* We will use that later to load all the deployment classes and put all the server classes in the "init at build time" set
+
+```
+cd analyzer;mvn clean install;cd ..
+java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar min-core-server min-core-server/helloworld.war
 ```
 
 ## Build the custom auth module
@@ -115,7 +127,7 @@ Add to standalone.xml:
 ```
     <deployments>
         <deployment name="helloworld.war" runtime-name="helloworld.war">
-            <fs-exploded path="deployment-exploded" relative-to="jboss.home.dir"/>
+            <fs-archive path="helloworld.war" relative-to="jboss.home.dir"/>
         </deployment>
     </deployments>
 ```
