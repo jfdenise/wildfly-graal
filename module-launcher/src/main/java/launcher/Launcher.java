@@ -29,7 +29,7 @@ public class Launcher {
     // Hack to be properly integrated.
     public static Map<String, Module> modules = new HashMap<>();
     static Module mainModule;
-
+    private static Provider[] providers;
     static {
         try {
             String deploymentModule = System.getProperty("org.wildfly.graal.deployment.module");
@@ -123,24 +123,31 @@ public class Launcher {
             }
             mainModule.preRun(new String[0]);
             System.clearProperty("org.jboss.modules.record.classes.of");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("The classes that we add to the cache");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
-
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
-
-            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+//            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+//            System.out.println("The classes that we add to the cache");
+//            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
+//            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
+//            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
+//            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
+//
+//            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
+//            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
+//            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
+//
+//            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
+//            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
             for (String k : modules.keySet()) {
                 Module m = modules.get(k);
                 m.cleanupPermissions();
             }
+             for (Provider p : Security.getProviders()) {
+            System.out.println("END OF BUILD PROVIDER " + p.getClass());
+            for (Provider.Service s : p.getServices()) {
+                System.out.println("SERVICE " + s.getClassName());
+            }
+        }
+             providers = Security.getProviders();
         } catch (Throwable ex) {
             throw new RuntimeException(ex);
         }
@@ -157,6 +164,10 @@ public class Launcher {
             Module m = modules.get(k);
             m.restorePermissions();
         }
+        for (Provider p : providers) {
+            Security.addProvider(p);
+        }
+        
         mainModule.run(args);
     }
 

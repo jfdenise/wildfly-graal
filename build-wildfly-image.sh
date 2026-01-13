@@ -219,6 +219,8 @@ jakarta.servlet.resources,\
 jakarta.transaction,\
 jakarta.websocket,\
 jakarta.websocket.server,\
+java.security,\
+sun.security.jca.Providers,\
 javax.json,\
 javax.json.spi,\
 javax.json.stream,\
@@ -1806,12 +1808,9 @@ org.eclipse.jgit.transport.HttpAuthMethod\\\$Digest,\
 org.eclipse.jgit.internal.storage.file.WindowCache,\
 org.eclipse.jgit.lib.RepositoryCache,\
 org.eclipse.jgit.lib.internal.WorkQueue,\
-org.jboss.as.domain.http.server.ManagementHttpServer,\
 org.jboss.as.server.DomainServerCommunicationServices,\
 org.jboss.as.server.deployment.module.TempFileProviderService,\
 org.jboss.as.server.operations.NativeManagementServices,\
-org.jboss.as.server.services.net.BindingAddHandler,\
-org.jboss.as.server.services.net.SocketBindingResourceDefinition,\
 org.jboss.classfilewriter.DefaultClassFactory,\
 org.jboss.msc.service.ServiceContainer\\\$Factory,\
 org.jboss.remoting3.ConfigurationEndpointSupplier\\\$Holder,\
@@ -1824,12 +1823,11 @@ org.wildfly.httpclient.common.HttpContextGetterHolder,\
 org.wildfly.httpclient.common.PoolAuthenticationContext,\
 org.wildfly.httpclient.common.WildflyHttpContext,\
 org.xnio.DefaultXnioWorkerHolder,\
-org.xnio.channels.Channels,\
-org.xnio.nio.WorkerThread \
+org.xnio.channels.Channels \
 --enable-url-protocols=jar,data \
 --enable-sbom=false \
 -H:ConfigurationFileDirectories=files \
---trace-object-instantiation=org.eclipse.jgit.util.FS_POSIX,java.beans.Introspector\\\$1,java.lang.Thread,org.wildfly.common.net.CidrAddressTable,org.xnio.nio.WorkerThread,java.net.Inet6Address,java.lang.ref.Cleaner,java.lang.ProcessHandleImpl,org.xnio.Buffers\\\$5,org.jboss.remoting3.ConnectionInfo\\\$EmptyIoFuture,java.net.Inet4Address,java.security.SecureRandom,java.util.Random,org.jboss.ejb.client.EJBClientContext,org.wildfly.security.auth.client.AuthenticationContext,org.wildfly.common.context.ContextManager,sun.nio.ch.FileChannelImpl,org.wildfly.httpclient.common.WildflyHttpContext,org.xnio.nio.NioXnioWorker,java.io.FilePermission,org.xnio.ByteBufferSlicePool,java.nio.DirectByteBuffer \
+--trace-object-instantiation=org.wildfly.security.ssl.DelegatingSSLContext,org.eclipse.jgit.util.FS_POSIX,java.beans.Introspector\\\$1,java.lang.Thread,org.wildfly.common.net.CidrAddressTable,org.xnio.nio.WorkerThread,java.net.Inet6Address,java.lang.ref.Cleaner,java.lang.ProcessHandleImpl,org.xnio.Buffers\\\$5,org.jboss.remoting3.ConnectionInfo\\\$EmptyIoFuture,java.net.Inet4Address,java.security.SecureRandom,java.util.Random,org.jboss.ejb.client.EJBClientContext,org.wildfly.security.auth.client.AuthenticationContext,org.wildfly.common.context.ContextManager,sun.nio.ch.FileChannelImpl,org.wildfly.httpclient.common.WildflyHttpContext,org.xnio.nio.NioXnioWorker,java.io.FilePermission,org.xnio.ByteBufferSlicePool,java.nio.DirectByteBuffer \
 -cp ${current_dir}/min-core-server/jboss-modules.jar:wildfly-substitutions/target/wildfly-substitutions.jar"
 
 for (( i=0; i<${arraylength}; i++ ));

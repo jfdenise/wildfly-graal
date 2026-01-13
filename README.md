@@ -22,12 +22,12 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK17.
 
 ```
-git clone -b all_classes_init_at_build_time git@github.com:jfdenise/wildfly-graal
+git clone -b attempt_start_server_fully_build_time git@github.com:jfdenise/wildfly-graal
 git clone -b 2.1-wildfly_graal_elytron_services git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
-git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
+git clone -b attempt_start_server_fully_build_time git@github.com:jfdenise/jboss-msc
 git clone -b all_classes_init_at_build_time git@github.com:jfdenise/xnio
-git clone -b websocket_continuing git@github.com:jfdenise/undertow
+git clone -b attempt_start_server_fully_build_time git@github.com:jfdenise/undertow
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-elytron
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
 
@@ -39,7 +39,7 @@ cd undertow; mvn clean install -DskipTests; cd ..
 cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 
-git clone -b all_classes_init_at_build_time git@github.com:jfdenise/wildfly-core
+git clone -b attempt_start_server_fully_build_time git@github.com:jfdenise/wildfly-core
 git clone -b websocket_continuing git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
@@ -55,7 +55,7 @@ cd wildfly-substitutions;mvn clean install -DskipTests;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,logging,core-tools --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,management --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -212,3 +212,5 @@ Then access again to http://127.0.0.1:8080/helloworld/bid.html You will see trac
 # Some notes
 
 * If we don't specify the packages to load at build time, _logger are not found at runtime. So we need to build the list of all packages to put in the script.
+
+* We can't start the server fully, because we would need to introduce new phases in MSC to passivate and resume, the resume should follow the order of start. That creates a huge complexity.
