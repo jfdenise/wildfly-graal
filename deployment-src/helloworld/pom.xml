@@ -87,7 +87,11 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Import the EJB API, we use provided scope as the API is included in
             JBoss EAP -->
         <dependency>

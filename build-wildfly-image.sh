@@ -20,12 +20,16 @@ wildfly-launcher \\
 -Djboss.modules.system.pkgs=org.jboss.modules,launcher,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
 -H:+PrintClassInitialization \\
+--trace-object-instantiation=java.lang.ref.Cleaner \\
 --initialize-at-build-time=\\"
 
 # Classes hard coded, not discovered but needed
 cmd="$cmd
 launcher,\\
 java.beans,\\
+java.awt.color,\\
+sun.java2d.cmm,\\
+org.xml.sax,\\
 sun.security.jgss.GSSManagerImpl"
 
 # All server discovered classes
@@ -64,6 +68,8 @@ org.jboss.remoting3.ConfigurationEndpointSupplier\\\$Holder,\\
 org.jboss.remoting3.ConnectionInfo,\\
 org.jboss.remoting3.remote.RemoteConnection,\\
 org.jboss.remoting3.remote.MessageReader,\\
+org.jboss.resteasy.spi.ResourceCleaner,\\
+org.bouncycastle.mail.smime.SMIMESignedGenerator,\\
 org.wildfly.common.net,\\
 org.wildfly.httpclient.common.ConfigurationHttpContextSupplier,\\
 org.wildfly.httpclient.common.HttpContextGetterHolder,\\

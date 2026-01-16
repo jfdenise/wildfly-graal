@@ -30,6 +30,7 @@ git clone -b all_classes_init_at_build_time git@github.com:jfdenise/xnio
 git clone -b websocket_continuing git@github.com:jfdenise/undertow
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/wildfly-elytron
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
+git clone -b 6.2-jaxrs-graal git@github.com:jfdenise/resteasy
 
 cd jboss-modules; mvn clean install -DskipTests; cd ..
 cd jboss-vfs; mvn clean install -DskipTests; cd ..
@@ -38,9 +39,10 @@ cd xnio; mvn clean install -DskipTests; cd ..
 cd undertow; mvn clean install -DskipTests; cd ..
 cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
+cd resteasy; mvn clean install -DskipTests; cd ..
 
 git clone -b automated_server_deployment_discovery git@github.com:jfdenise/wildfly-core
-git clone -b websocket_continuing git@github.com:jfdenise/wildfly
+git clone -b jaxrs-initial-support git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
@@ -56,7 +58,7 @@ cd analyzer;mvn clean install;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,logging,core-tools --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,logging,core-tools,jaxrs --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -201,9 +203,12 @@ Kill the server.
 * `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080/helloworld/HelloWorld
 * Access the pre-compiled JSP: http://127.0.0.1:8080/helloworld/simple.jsp
+* Servlet filter: http://127.0.0.1:8080/helloworld/FilterExample
 * Access the websocket 1: http://127.0.0.1:8080/helloworld/websocket.html
 * Access the websocket 2 (with encoding/decoding): http://127.0.0.1:8080/helloworld/bid.html
 * Access the secured servlet: `curl -v http://localhost:8080/helloworld/secured -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:password"`
+* Access the REST1: http://127.0.0.1:8080/helloworld/rest/HelloWorld?from=100&to=200&orderBy=age&orderBy=FOO
+* Access the REST2: http://127.0.0.1:8080/helloworld/rest2/HelloWorld2?from=100&to=200&orderBy=age&orderBy=name
 * Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
 (NOTE: It seems that we have a race condition in remoting. If you exit the CLI then you will need multiple attempt to reconnect. NEED INVESTIGATIONS)
 * In the CLI call:

@@ -42,3 +42,5 @@ reports/
 /analyzer/target/
 allServerPackages.txt
 allDeploymentClasses.txt
+deployment-src/helloworld/nb-configuration.xml
+jspc/
