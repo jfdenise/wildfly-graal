@@ -12,12 +12,12 @@ echo "Analyzing the server and deployment"
 java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/helloworld.war
 
 cmd="
-native-image -jar module-launcher/target/ModuleLauncher-1.0-SNAPSHOT.jar \\
+native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
 -Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \\
 -Djboss.home.dir=${JBOSS_HOME} \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
--Djboss.modules.system.pkgs=org.jboss.modules,launcher,org.jboss.logmanager,org.jboss.logging \\
+-Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
 -H:+PrintClassInitialization \\
 --trace-object-instantiation=java.lang.ref.Cleaner \\
@@ -86,6 +86,7 @@ cmd="$cmd
 --enable-sbom=false \\
 -cp \\
 $JBOSS_HOME/jboss-modules.jar:\\
+runtime/target/wildfly-graal-runtime-1.0-SNAPSHOT.jar:\\
 wildfly-substitutions/target/wildfly-substitutions.jar:\\"
 
 # Finally build the classpath

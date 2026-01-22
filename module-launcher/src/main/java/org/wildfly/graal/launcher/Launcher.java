@@ -1,4 +1,4 @@
-package launcher;
+package org.wildfly.graal.launcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,7 +162,7 @@ public class Launcher {
             // root cause not understood!
             System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
             System.setProperty("org.wildfly.graal.build.time", "true");
-            System.setProperty("org.wildfly.graal.cache.class", "launcher.Cache");
+            System.setProperty("org.wildfly.graal.cache.class", "org.wildfly.graal.launcher.Cache");
             Path modulesDir = Paths.get(JBOSS_HOME + "/modules").toAbsolutePath();
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
 

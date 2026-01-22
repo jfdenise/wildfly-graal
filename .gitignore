@@ -44,3 +44,4 @@ allServerPackages.txt
 allDeploymentClasses.txt
 deployment-src/helloworld/nb-configuration.xml
 jspc/
+/runtime/target/

@@ -1,4 +1,4 @@
-package launcher;
+package org.wildfly.graal.launcher;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -36,10 +36,6 @@ public class Cache extends ClassCache {
     private final Map<Class<?>, Method[]> METHODS = new HashMap<>();
 
     public void addClassToCache(String className) throws Exception {
-        addClassToCache(className, null);
-    }
-
-    public void addClassToCache(String className, Class<?>... parameterTypes) throws Exception {
         if (!CACHE.containsKey(className)) {
             //System.out.println("Adding to cache: " + className + " in module " + getModule().getName());
             LOGGER.debug("Adding to cache: " + className + " in module " + getModule().getName());
@@ -117,7 +113,9 @@ public class Cache extends ClassCache {
         key.append(clazz.getName());
         if (parameterTypes != null) {
             for (Class<?> type : parameterTypes) {
-                key.append("_" + type.getName());
+                if(type != null) {
+                    key.append("_" + type.getName());
+                }
             }
         }
         Constructor ctr = constructors.get(key.toString());
