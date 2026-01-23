@@ -22,15 +22,17 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK17.
 
 ```
-git clone -b automated_server_deployment_discovery git@github.com:jfdenise/wildfly-graal
-git clone -b 2.1-remove-recording git@github.com:jfdenise/jboss-modules
+git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-graal
+git clone -b wildfly_graal_runtime git@github.com:jfdenise/jboss-modules
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
 git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
-git clone -b all_classes_init_at_build_time git@github.com:jfdenise/xnio
+git clone -b wildfly_graal_2026_01_22 git@github.com:jfdenise/xnio
 git clone -b websocket_continuing git@github.com:jfdenise/undertow
-git clone -b automated_server_deployment_discovery git@github.com:jfdenise/wildfly-elytron
+git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-elytron
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
 git clone -b 6.2-jaxrs-graal git@github.com:jfdenise/resteasy
+
+cd wildfly-graal/runtime;mvn clean install;cd ../..
 
 cd jboss-modules; mvn clean install -DskipTests; cd ..
 cd jboss-vfs; mvn clean install -DskipTests; cd ..
@@ -41,7 +43,7 @@ cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd 
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 cd resteasy; mvn clean install -DskipTests; cd ..
 
-git clone -b automated_server_deployment_discovery git@github.com:jfdenise/wildfly-core
+git clone -b wildfly_core_wildfly_graal_2026_01_22 git@github.com:jfdenise/wildfly-core
 git clone -b jaxrs-initial-support git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..

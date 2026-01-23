@@ -15,12 +15,13 @@ cmd="
 native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
 -Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \\
+-Dorg.wildfly.graal.build.time=true \\
 -Djboss.home.dir=${JBOSS_HOME} \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
 -Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
 -H:+PrintClassInitialization \\
---trace-object-instantiation=java.lang.ref.Cleaner \\
+--trace-object-instantiation=com.sun.jmx.mbeanserver.JmxMBeanServer \\
 --initialize-at-build-time=\\"
 
 # Classes hard coded, not discovered but needed

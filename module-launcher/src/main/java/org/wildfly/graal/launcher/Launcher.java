@@ -8,17 +8,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoader;
+import org.wildfly.graal.runtime.WildFlyGraalSetup;
 
 public class Launcher {
 
@@ -28,141 +27,28 @@ public class Launcher {
     private static final Map<String, Module> modules = new HashMap<>();
     private static Module mainModule;
     private static final String JBOSS_HOME = System.getProperty("jboss.home.dir");
-
+    private static final List<String> DEPLOYMENT_WELL_KNOWN_CLASSES = new ArrayList<>();
+    
+    static {
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.ScriptFreeTLV");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.fasterxml.jackson.databind.type.TypeFactory");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher");
+        // Required by QueryInjector resteasy
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.ArrayList");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.TreeSet");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.HashSet");
+    }
     static {
         try {
-            // No more needed, although how the classes are seen is not understood.
+            List<String> allDeploymentClasses = new ArrayList<>();
+            
             List<String> depClasses = Files.readAllLines(Paths.get("allDeploymentClasses.txt"));
-            StringBuilder classesBuilder = new StringBuilder();
-            for (String s : depClasses) {
-                if (!classesBuilder.isEmpty()) {
-                    classesBuilder.append(",");
-                }
-                classesBuilder.append(s);
+            allDeploymentClasses.addAll(depClasses);
+            allDeploymentClasses.addAll(DEPLOYMENT_WELL_KNOWN_CLASSES);
 
-            }
-            // JAX-RS
-            // This should be made conditional to the presence of modules.
-            String resteasyProviders = 
-                    //"org.jboss.resteasy.plugins.providers.jaxb.fastinfoset.FastinfoSetJAXBContextFinder,"
-                   // + "org.jboss.resteasy.plugins.providers.jaxb.fastinfoset.FastinfoSetElementProvider,"
-                    //+ "org.jboss.resteasy.plugins.providers.jaxb.fastinfoset.FastinfoSetXmlRootElementProvider,"
-                    //+ "org.jboss.resteasy.plugins.providers.jaxb.fastinfoset.FastinfoSetXmlSeeAlsoProvider,"
-                    //+ "org.jboss.resteasy.plugins.providers.jaxb.fastinfoset.FastinfoSetXmlTypeProvider,"
-                    "org.jboss.resteasy.plugins.providers.jackson.ResteasyJackson2Provider,"
-                    + "org.jboss.resteasy.plugins.providers.jackson.PatchMethodFilter,"
-                    + "org.jboss.resteasy.plugins.providers.jackson.JsonProcessingExceptionMapper,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlSeeAlsoProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlRootElementProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.JAXBElementProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlTypeProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.CollectionProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.MapProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jaxb.XmlJAXBContextFinder,"
-                    + "org.jboss.resteasy.plugins.providers.jsonb.JsonBindingProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jsonp.JsonArrayProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jsonp.JsonStructureProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jsonp.JsonObjectProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jsonp.JsonValueProvider,"
-                    + "org.jboss.resteasy.plugins.providers.jsonp.JsonpPatchMethodFilter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartEntityPartWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartEntityPartReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.ListMultipartReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.ListMultipartWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MapMultipartFormDataWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MultipartFormAnnotationWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.MimeMultipartProvider,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedReader,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.XopWithMultipartRelatedWriter,"
-                    + "org.jboss.resteasy.plugins.providers.multipart.EntityPartFilter,"
-                    + "org.jboss.resteasy.plugins.providers.atom.AtomFeedProvider,"
-                    + "org.jboss.resteasy.plugins.providers.atom.AtomEntryProvider,"
-                    //+ "org.jboss.resteasy.plugins.providers.html.HtmlRenderableWriter,"
-                   // + "org.jboss.resteasy.plugins.validation.ValidatorContextResolver,"
-                    //+ "org.jboss.resteasy.plugins.validation.ValidatorContextResolverCDI,"
-                    //+ "org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionMapper,"
-                    + "org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider,"
-                    + "org.jboss.resteasy.plugins.providers.AsyncStreamingOutputProvider,"
-                    + "org.jboss.resteasy.plugins.providers.DataSourceProvider,"
-                    + "org.jboss.resteasy.plugins.providers.DocumentProvider,"
-                    + "org.jboss.resteasy.plugins.providers.DefaultTextPlain,"
-                    + "org.jboss.resteasy.plugins.providers.DefaultNumberWriter,"
-                    + "org.jboss.resteasy.plugins.providers.DefaultBooleanWriter,"
-                    + "org.jboss.resteasy.plugins.providers.StringTextStar,"
-                    + "org.jboss.resteasy.plugins.providers.SourceProvider,"
-                    + "org.jboss.resteasy.plugins.providers.InputStreamProvider,"
-                    + "org.jboss.resteasy.plugins.providers.ReaderProvider,"
-                    + "org.jboss.resteasy.plugins.providers.ByteArrayProvider,"
-                    + "org.jboss.resteasy.plugins.providers.FormUrlEncodedProvider,"
-                    + "org.jboss.resteasy.plugins.providers.JaxrsFormProvider,"
-                    + "org.jboss.resteasy.plugins.providers.CompletionStageProvider,"
-                    + "org.jboss.resteasy.plugins.providers.ReactiveStreamProvider,"
-                    + "org.jboss.resteasy.plugins.providers.FileProvider,"
-                    + "org.jboss.resteasy.plugins.providers.FileRangeWriter,"
-                    + "org.jboss.resteasy.plugins.providers.StreamingOutputProvider,"
-                    + "org.jboss.resteasy.plugins.providers.IIOImageProvider,"
-                    + "org.jboss.resteasy.plugins.providers.MultiValuedParamConverterProvider,"
-                    + "org.jboss.resteasy.plugins.interceptors.CacheControlFeature,"
-                    + "org.jboss.resteasy.plugins.interceptors.ClientContentEncodingAnnotationFeature,"
-                    + "org.jboss.resteasy.plugins.interceptors.ServerContentEncodingAnnotationFeature,"
-                    + "org.jboss.resteasy.plugins.interceptors.MessageSanitizerContainerResponseFilter,"
-                    + "org.jboss.resteasy.plugins.providers.sse.SseEventProvider,"
-                    + "org.jboss.resteasy.plugins.providers.sse.SseEventSinkInterceptor,"
-                    //+ "org.jboss.resteasy.reactor.MonoProvider,"
-                    //+ "org.jboss.resteasy.reactor.MonoRxInvokerImpl,"
-                    //+ "org.jboss.resteasy.reactor.MonoRxInvokerProvider,"
-                    //+ "org.jboss.resteasy.reactor.FluxProvider,"
-                    //+ "org.jboss.resteasy.reactor.FluxRxInvokerImpl,"
-                    //+ "org.jboss.resteasy.reactor.FluxRxInvokerProvider,"
-//                    + "org.jboss.resteasy.rxjava2.SingleProvider,"
-//                    + "org.jboss.resteasy.rxjava2.SingleRxInvokerImpl,"
-//                    + "org.jboss.resteasy.rxjava2.SingleRxInvokerProvider,"
-//                    + "org.jboss.resteasy.rxjava2.ObservableProvider,"
-//                    + "org.jboss.resteasy.rxjava2.ObservableRxInvokerImpl,"
-//                    + "org.jboss.resteasy.rxjava2.ObservableRxInvokerProvider,"
-//                    + "org.jboss.resteasy.rxjava2.FlowableProvider,"
-//                    + "org.jboss.resteasy.rxjava2.FlowableRxInvokerImpl,"
-//                    + "org.jboss.resteasy.rxjava2.FlowableRxInvokerProvider,"
-//                    + "org.jboss.resteasy.rxjava2.propagation.RxJava2ContextPropagator,"
-                    + "org.jboss.resteasy.security.doseta.ServerDigitalSigningHeaderDecoratorFeature,"
-                    + "org.jboss.resteasy.security.doseta.ClientDigitalSigningHeaderDecoratorFeature,"
-                    + "org.jboss.resteasy.security.doseta.ClientDigitalVerificationHeaderDecoratorFeature,"
-                    + "org.jboss.resteasy.security.doseta.ServerDigitalVerificationHeaderDecoratorFeature,"
-                    + "org.jboss.resteasy.security.doseta.DigitalSigningInterceptor,"
-                    + "org.jboss.resteasy.security.doseta.DigitalVerificationInterceptor,"
-                    + "org.jboss.resteasy.security.smime.EnvelopedReader,"
-                    + "org.jboss.resteasy.security.smime.EnvelopedWriter,"
-                    + "org.jboss.resteasy.security.smime.MultipartSignedReader,"
-                    + "org.jboss.resteasy.security.smime.MultipartSignedWriter,"
-                    + "org.jboss.resteasy.security.smime.PKCS7SignatureWriter,"
-                    + "org.jboss.resteasy.security.smime.PKCS7SignatureTextWriter,"
-                    + "org.jboss.resteasy.security.smime.PKCS7SignatureReader,"
-                    + "org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter,"
-                    + "org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor,"
-                    + "org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor,"
-                    + "org.jboss.resteasy.plugins.providers.jackson.Jackson2JsonpInterceptor";
-                    //+ "org.jboss.resteasy.plugins.providers.SerializableProvider";
-            classesBuilder.append(",jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV,"
-                    + "jakarta.servlet.jsp.jstl.tlv.ScriptFreeTLV,"
-                    + "com.fasterxml.jackson.databind.type.TypeFactory,"
-                    + "org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher,"
-                    // Required by QueryInjector resteasy
-                    +"java.util.ArrayList,java.util.TreeSet,java.util.HashSet");
-            //classesBuilder.append(resteasyProviders);
-            // Will be consumed by the created Deployment Module
-            // This appears to be no more required...All classes are seen,
-            // root cause not understood!
-            System.setProperty("org.wildfly.graal.deployment.classes", classesBuilder.toString());
-            System.setProperty("org.wildfly.graal.build.time", "true");
-            System.setProperty("org.wildfly.graal.cache.class", "org.wildfly.graal.launcher.Cache");
+            WildFlyGraalSetup.setDeploymentSetup(allDeploymentClasses, Cache.class);
+
             Path modulesDir = Paths.get(JBOSS_HOME + "/modules").toAbsolutePath();
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
 
@@ -216,8 +102,9 @@ public class Launcher {
             modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
 
             modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
+            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-
+            WildFlyGraalSetup.buildtimeStaticInitEnded();
             for (String k : modules.keySet()) {
                 Module m = modules.get(k);
                 m.cleanupPermissions();
@@ -228,8 +115,8 @@ public class Launcher {
     }
 
     public static void main(String[] args) throws Exception {
-        System.clearProperty("org.wildfly.graal.build.time");
-        System.setProperty("org.wildfly.graal", "true");
+        WildFlyGraalSetup.buildtimeEnded();
+        WildFlyGraalSetup.runtimeStarted();
         System.setProperty("jboss.home.dir", JBOSS_HOME);
         System.out.println("Running Main entry point");
         for (String k : modules.keySet()) {
