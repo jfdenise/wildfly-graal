@@ -35,11 +35,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.ParameterizedType;
+import org.jboss.jandex.Type;
+import java.util.List;
 
 public class DeploymentScanner implements AutoCloseable {
 
+    private static final String IGNORE_RESPONSE_PROPERTIES = "json.ignore.responses";
+    private static final String ADDITIONL_JSON_CLASSES = "json.additional.classes";
     private final Path binary;
     private final Path tempDirectory;
     private boolean verbose;
@@ -48,16 +59,40 @@ public class DeploymentScanner implements AutoCloseable {
     private DeploymentScanner parent;
     private final boolean isArchive;
 
-    public DeploymentScanner(Path binary, boolean verbose, Set<Pattern> excludeArchivesFromScan) throws IOException {
-        this(null, binary, verbose, excludeArchivesFromScan);
+    Set<String> ignoredJsonMethods = new HashSet<>();
+    Set<String> additionalJsonClasses = new HashSet<>();
+    private final Properties props;
+
+    public DeploymentScanner(Path binary, boolean verbose, Set<Pattern> excludeArchivesFromScan, Properties props) throws IOException {
+        this(null, binary, verbose, excludeArchivesFromScan, props);
     }
 
-    private DeploymentScanner(DeploymentScanner parent, Path binary, boolean verbose, Set<Pattern> excludeArchivesFromScan) throws IOException {
+    private DeploymentScanner(DeploymentScanner parent, Path binary, boolean verbose, Set<Pattern> excludeArchivesFromScan, Properties props) throws IOException {
         this.parent = parent;
+        this.props = props;
         this.tempDirectory = parent == null ? Files.createTempDirectory("analyzer") : parent.tempDirectory;
         this.verbose = verbose;
         this.excludeArchivesFromScan = excludeArchivesFromScan;
-
+        String ignored = props.getProperty(IGNORE_RESPONSE_PROPERTIES);
+        if (ignored != null) {
+            String[] arr = ignored.split(",");
+            for (String s : arr) {
+                s = s.trim();
+                if (!s.isEmpty()) {
+                    ignoredJsonMethods.add(s);
+                }
+            }
+        }
+        String additional = props.getProperty(ADDITIONL_JSON_CLASSES);
+        if (additional != null) {
+            String[] arr = additional.split(",");
+            for (String s : arr) {
+                s = s.trim();
+                if (!s.isEmpty()) {
+                    additionalJsonClasses.add(s);
+                }
+            }
+        }
         if (!Files.exists(binary)) {
             throw new IllegalArgumentException(binary.normalize().toAbsolutePath() + " is not an archive");
         }
@@ -90,13 +125,14 @@ public class DeploymentScanner implements AutoCloseable {
             } catch (IOException ignore) {
             }
         }
-        if(parent == null) {
+        if (parent == null) {
             IoUtils.recursiveDelete(tempDirectory);
         }
     }
 
-    public void scan(Set<String> classes) throws Exception {
-        DeploymentScanContext ctx = new DeploymentScanContext(classes);
+    public void scan(Set<String> classes, Set<String> jsonBClasses) throws Exception {
+        jsonBClasses.addAll(additionalJsonClasses);
+        DeploymentScanContext ctx = new DeploymentScanContext(classes, jsonBClasses);
         scan(ctx);
     }
 
@@ -104,13 +140,227 @@ public class DeploymentScanner implements AutoCloseable {
         scanClasses(ctx);
         FileSystem fs = isArchive ? ZipUtils.newFileSystem(binary) : binary.getFileSystem();
         try {
-        Path rootPath = isArchive ? fs.getPath("/") : binary;
-        scanTypesAndChildren(rootPath, ctx);
+            Path rootPath = isArchive ? fs.getPath("/") : binary;
+            scanTypesAndChildren(rootPath, ctx);
         } finally {
             if (isArchive) {
                 fs.close();
             }
         }
+    }
+
+    private static String formatClassName(String name) {
+        name = name.replace("/", ".");
+        name = name.replace("$", "\\$");
+        return name;
+    }
+
+    /**
+     * Extracts all JSON-mappable types from a Jandex Type, unwrapping generic wrappers.
+     * Handles CompletionStage, CompletableFuture, Uni, Multi, Collections, arrays, etc.
+     *
+     * @param type The Jandex type to extract from
+     * @param types Set to collect discovered class names
+     * @param processedTypes Set to track already processed types (prevents infinite recursion)
+     */
+    private void extractJsonTypes(Type type, Set<String> types, Set<String> processedTypes) {
+        if (type == null) {
+            return;
+        }
+
+        switch (type.kind()) {
+            case CLASS:
+                String className = formatClassName(type.asClassType().name().toString());
+
+                // Skip if already processed
+                if (processedTypes.contains(className)) {
+                    return;
+                }
+                processedTypes.add(className);
+
+                // Special handling for Response - cannot determine runtime type
+                if (className.equals("jakarta.ws.rs.core.Response")) {
+                    return; // Skip - runtime type unknown
+                }
+
+                types.add(className);
+                break;
+
+            case PARAMETERIZED_TYPE:
+                ParameterizedType paramType = type.asParameterizedType();
+                String ownerClassName = formatClassName(paramType.name().toString());
+
+                // Unwrap common async/reactive wrappers
+                if (isWrapperType(ownerClassName)) {
+                    // Extract the wrapped type(s)
+                    for (Type arg : paramType.arguments()) {
+                        extractJsonTypes(arg, types, processedTypes);
+                    }
+                } else {
+                    // For other generic types (e.g., custom generics), add the owner class
+                    if (!processedTypes.contains(ownerClassName)) {
+                        processedTypes.add(ownerClassName);
+                        types.add(ownerClassName);
+                    }
+
+                    // Also process type arguments
+                    for (Type arg : paramType.arguments()) {
+                        extractJsonTypes(arg, types, processedTypes);
+                    }
+                }
+                break;
+
+            case ARRAY:
+                // Extract the component type from arrays
+                extractJsonTypes(type.asArrayType().componentType(), types, processedTypes);
+                break;
+
+            case WILDCARD_TYPE:
+                // For wildcards like "? extends Foo", extract the bound
+                Type bound = type.asWildcardType().extendsBound();
+                if (bound != null) {
+                    extractJsonTypes(bound, types, processedTypes);
+                }
+                break;
+
+            case TYPE_VARIABLE:
+                // Type variables (T, E, etc.) - can't resolve without more context
+                // Skip for now
+                break;
+
+            case PRIMITIVE:
+            case VOID:
+                // Primitives don't need JSON mapping registration
+                break;
+
+            default:
+                // Other kinds - log if verbose
+                if (verbose) {
+                    System.out.println("Unhandled type kind: " + type.kind() + " for type: " + type);
+                }
+                break;
+        }
+    }
+
+    /**
+     * Checks if a class is a wrapper type that should be unwrapped to find the actual payload.
+     */
+    private boolean isWrapperType(String className) {
+        return className.equals("java.util.concurrent.CompletionStage")
+                || className.equals("java.util.concurrent.CompletableFuture")
+                || className.equals("io.smallrye.mutiny.Uni")
+                || className.equals("io.smallrye.mutiny.Multi")
+                || className.equals("java.util.List")
+                || className.equals("java.util.Set")
+                || className.equals("java.util.Collection")
+                || className.equals("java.util.Map")
+                || className.equals("java.util.Optional")
+                || className.equals("jakarta.ws.rs.core.GenericEntity");
+    }
+
+    /**
+     * Process @Produces or @Consumes annotation to extract JSON-mapped types.
+     *
+     * @param mi Method to analyze
+     * @param ci Containing class
+     * @param annotationName Annotation to look for (jakarta.ws.rs.Produces or jakarta.ws.rs.Consumes)
+     * @param ctx Scan context to add discovered types
+     * @param checkReturnType If true, extract from return type; if false, extract from parameters
+     */
+    private void processJsonAnnotation(MethodInfo mi, ClassInfo ci, String annotationName,
+                                       DeploymentScanContext ctx, boolean checkReturnType) {
+        AnnotationInstance instance = mi.annotation(annotationName);
+        if (instance == null) {
+            // Check class-level annotation
+            instance = ci.annotation(annotationName);
+        }
+
+        if (instance != null && hasJsonMediaType(instance)) {
+            Set<String> discoveredTypes = new HashSet<>();
+            Set<String> processedTypes = new HashSet<>();
+
+            if (checkReturnType) {
+                // For @Produces - extract from return type
+                Type returnType = mi.returnType();
+
+                // Special handling for Response type
+                if (isResponseType(returnType)) {
+                    String methodName = ci.name() + "#" + mi.name();
+                    if (!ignoredJsonMethods.contains(methodName)) {
+                        throw new RuntimeException("Found unhandled JAXRS REST method Response return type. Add the method " + methodName
+                                + " to the analyzer property " + IGNORE_RESPONSE_PROPERTIES + ". And check what java type it is hiding");
+                    }
+                    return; // Skip - cannot determine runtime type
+                }
+
+                if (verbose) {
+                    System.out.println("Processing @Produces method: " + ci.name() + "#" + mi.name()
+                            + " return type: " + returnType);
+                }
+
+                extractJsonTypes(returnType, discoveredTypes, processedTypes);
+            } else {
+                // For @Consumes - extract from method parameters
+                List<Type> parameters = mi.parameterTypes();
+                for (Type paramType : parameters) {
+                    // Skip JAX-RS framework types (Context, PathParam, QueryParam, etc. are not JSON bodies)
+                    if (!isJaxRsFrameworkType(paramType)) {
+                        if (verbose) {
+                            System.out.println("Processing @Consumes method: " + ci.name() + "#" + mi.name()
+                                    + " parameter type: " + paramType);
+                        }
+                        extractJsonTypes(paramType, discoveredTypes, processedTypes);
+                    }
+                }
+            }
+
+            // Add all discovered types to the context
+            ctx.jsonBClasses.addAll(discoveredTypes);
+
+            if (verbose && !discoveredTypes.isEmpty()) {
+                System.out.println("Discovered JSON types from " + ci.name() + "#" + mi.name() + ": " + discoveredTypes);
+            }
+        }
+    }
+
+    /**
+     * Check if the annotation specifies application/json media type.
+     */
+    private boolean hasJsonMediaType(AnnotationInstance annotation) {
+        for (AnnotationValue v : annotation.values()) {
+            for (AnnotationValue vv : v.asArrayList()) {
+                String[] mediaTypes = vv.asString().split(",");
+                for (String mediaType : mediaTypes) {
+                    if (mediaType.trim().equals("application/json")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if type is jakarta.ws.rs.core.Response (which hides the actual type).
+     */
+    private boolean isResponseType(Type type) {
+        if (type.kind() == Type.Kind.CLASS) {
+            return type.asClassType().name().equals(DotName.createSimple("jakarta.ws.rs.core.Response"));
+        }
+        return false;
+    }
+
+    /**
+     * Check if type is a JAX-RS framework type that won't be JSON-serialized.
+     */
+    private boolean isJaxRsFrameworkType(Type type) {
+        if (type.kind() == Type.Kind.CLASS) {
+            String className = type.asClassType().name().toString();
+            return className.startsWith("jakarta.ws.rs.core.")
+                    || className.startsWith("jakarta.ws.rs.container.")
+                    || className.startsWith("jakarta.servlet.");
+        }
+        return false;
     }
 
     private void scanClasses(DeploymentScanContext ctx) throws IOException {
@@ -119,7 +369,14 @@ public class DeploymentScanner implements AutoCloseable {
                 indexer, false, true, false).getIndex()
                 : DirectoryIndexer.indexDirectory(binary.toFile(), indexer);
         for (ClassInfo ci : index.getKnownClasses()) {
-            ctx.classes.add(ci.name().toString());
+            ctx.classes.add(formatClassName(ci.name().toString()));
+            for (MethodInfo mi : ci.methods()) {
+                // Process @Produces (response types)
+                processJsonAnnotation(mi, ci, "jakarta.ws.rs.Produces", ctx, true);
+
+                // Process @Consumes (request types)
+                processJsonAnnotation(mi, ci, "jakarta.ws.rs.Consumes", ctx, false);
+            }
         }
         int i = binary.toFile().getName().lastIndexOf(".");
         String ext = binary.toFile().getName().substring(i + 1);
@@ -174,7 +431,7 @@ public class DeploymentScanner implements AutoCloseable {
             }
         }
 
-        try (DeploymentScanner nestedScanner = new DeploymentScanner(DeploymentScanner.this, file, verbose, excludeArchivesFromScan)) {
+        try (DeploymentScanner nestedScanner = new DeploymentScanner(DeploymentScanner.this, file, verbose, excludeArchivesFromScan, props)) {
             try {
                 nestedScanner.scan(ctx);
             } catch (RuntimeException | IOException e) {
@@ -189,7 +446,7 @@ public class DeploymentScanner implements AutoCloseable {
         byte[] content = Files.readAllBytes(file);
         DataInput in = ByteBufferDataInput.wrap(content);
         ClassFile clazz = ClassFile.parseClassFile(in);
-        ctx.classes.add(clazz.this_class.replaceAll("/", "."));
+        ctx.classes.add(formatClassName(clazz.this_class));
     }
 
     private static class FileNameParts {
@@ -305,9 +562,11 @@ public class DeploymentScanner implements AutoCloseable {
     static class DeploymentScanContext {
 
         private final Set<String> classes;
+        private final Set<String> jsonBClasses;
 
-        private DeploymentScanContext(Set<String> classes) {
+        private DeploymentScanContext(Set<String> classes, Set<String> jsonBClasses) {
             this.classes = classes;
+            this.jsonBClasses = jsonBClasses;
         }
     }
 }

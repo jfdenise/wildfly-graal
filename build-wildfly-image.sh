@@ -1,3 +1,4 @@
+set -e
 current_dir=$(pwd)
 JBOSS_HOME=${current_dir}/min-core-server
 
@@ -9,8 +10,15 @@ arraylength=${#array[@]}
 
 
 echo "Analyzing the server and deployment"
-java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/helloworld.war
+java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/helloworld.war analyzer.properties
 
+# JSONB discovered classes
+if [ -f analyzer-output/allJsonBindingClasses.txt ]; then
+  while read -r line; do
+    jsonbClasses="$jsonbClasses$line,"
+  done < "analyzer-output/allJsonBindingClasses.txt"
+fi
+echo "JSON Binding configured classes $jsonbClasses"
 cmd="
 native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
@@ -20,6 +28,7 @@ wildfly-launcher \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
 -Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
+-Dorg.wildfly.graal.deployment.json.binding.classes=$jsonbClasses \\
 -H:+PrintClassInitialization \\
 --trace-object-instantiation=com.sun.jmx.mbeanserver.JmxMBeanServer \\
 --initialize-at-build-time=\\"
@@ -38,7 +47,15 @@ while read -r line; do
     name="$line"
     cmd="$cmd,\\
 $name"
-done < "allServerPackages.txt"
+done < "analyzer-output/allServerPackages.txt"
+
+# All deployment discovered classes
+while read -r line; do
+    name="$line"
+    cmd="$cmd,\\
+$name"
+done < "analyzer-output/allDeploymentClasses.txt"
+
 cmd="$cmd \\"
 
 # All classes that can't be init at build time
@@ -57,6 +74,7 @@ org.eclipse.jgit.transport.HttpAuthMethod\\\$Digest,\\
 org.eclipse.jgit.internal.storage.file.WindowCache,\\
 org.eclipse.jgit.lib.RepositoryCache,\\
 org.eclipse.jgit.lib.internal.WorkQueue,\\
+org.eclipse.yasson.internal.ClassMultiReleaseExtension,\\
 org.jboss.as.domain.http.server.ManagementHttpServer,\\
 org.jboss.as.server.DomainServerCommunicationServices,\\
 org.jboss.as.server.deployment.module.TempFileProviderService,\\

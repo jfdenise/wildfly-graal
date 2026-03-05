@@ -1,6 +1,7 @@
 package org.wildfly.graal;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -13,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
@@ -33,7 +35,9 @@ public class Analyzer {
         LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
         handleModules(modulesDir, all);
         Set<String> sorted = new TreeSet<>();
-        Path allPackages = Paths.get("allServerPackages.txt");
+        Path output = Paths.get("analyzer-output");
+        Files.createDirectories(output);
+        Path allPackages = output.resolve("allServerPackages.txt");
         for (String k : all.keySet()) {
             //System.out.println("Load module " + k);
             Module m = loader.loadModule(k);
@@ -51,17 +55,29 @@ public class Analyzer {
         //System.out.println(sorted.size());
         // Discover deployment classes
         String deployment = args[1];
+        Path properties = Paths.get(args[2]);
+        Properties props = new Properties();
+        try(FileInputStream stream = new FileInputStream(properties.toFile())) {
+            props.load(stream);
+        }
         Path deploymentPath = Paths.get(deployment).toAbsolutePath();
-        DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet());
+        DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet(), props);
         Set<String> allClasses = new TreeSet<>();
-        scanner.scan(allClasses);
-        Path deploymentClasses = Paths.get("allDeploymentClasses.txt");
+        Set<String> jsonBClasses = new TreeSet<>();
+        scanner.scan(allClasses, jsonBClasses);
+        Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
         Files.deleteIfExists(deploymentClasses);
 //        for (String s : allClasses) {
 //            System.out.println(s);
 //        }
-        System.out.println("Deployment classe names stored in " + deploymentClasses);
+        System.out.println("Deployment class names stored in " + deploymentClasses);
         Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        if (!jsonBClasses.isEmpty()) {
+            Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
+            Files.deleteIfExists(jsonClasses);
+            System.out.println("JSON Binding class names stored in " + jsonClasses);
+            Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }
     }
 
     private static Set<String> cleanupSet(Set<String> set) {

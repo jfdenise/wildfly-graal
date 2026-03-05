@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
@@ -43,7 +44,7 @@ public class Launcher {
         try {
             List<String> allDeploymentClasses = new ArrayList<>();
             
-            List<String> depClasses = Files.readAllLines(Paths.get("allDeploymentClasses.txt"));
+            List<String> depClasses = Files.readAllLines(Paths.get("analyzer-output/allDeploymentClasses.txt"));
             allDeploymentClasses.addAll(depClasses);
             allDeploymentClasses.addAll(DEPLOYMENT_WELL_KNOWN_CLASSES);
 
@@ -55,6 +56,7 @@ public class Launcher {
             Map<String, Path> all = new HashMap<>();
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
+            StringBuilder services = new StringBuilder();
             for (String k : all.keySet()) {
                 //System.out.println("Load module " + k);
                 try {
@@ -77,9 +79,15 @@ public class Launcher {
 //                            }
 //                        }
 //                    }
+services.append("MODULE : " + mod.getName() + "\n");
                     for (String serviceClass : mod.getServices()) {
                         if (!serviceClass.startsWith("java.lang.")) {
-                            mod.getCache().addServiceToCache(serviceClass);
+                            services.append("  Service : " + serviceClass + "\n");
+
+                            Set<String> servicesImpl = mod.getCache().addServiceToCache(serviceClass);
+                            for (String s : servicesImpl) {
+                                services.append("    " + s + "\n");
+                            }
                         }
                     }
                     modules.put(k, mod);
@@ -89,6 +97,7 @@ public class Launcher {
                     throw ex;
                 }
             }
+            Files.write(Paths.get("discovered-services.txt"),services.toString().getBytes());
             mainModule.preRun(new String[0]);
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             System.out.println("The server classes that we add to the cache");

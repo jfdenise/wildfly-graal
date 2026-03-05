@@ -40,8 +40,8 @@ reports/
 /deployment-src/helloworld/target/
 /deployment-src/custom-module/target/
 /analyzer/target/
-allServerPackages.txt
-allDeploymentClasses.txt
+/analyzer-output
+discovered-services.txt
 deployment-src/helloworld/nb-configuration.xml
 jspc/
 /runtime/target/

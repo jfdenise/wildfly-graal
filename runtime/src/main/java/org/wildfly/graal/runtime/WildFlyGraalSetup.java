@@ -503,4 +503,25 @@ public class WildFlyGraalSetup {
     public static GraalCache getCache(String context) {
         return CACHE.get(context);
     }
+    public static Class<?>[] getJsonBindingEagerClasses() {
+        String classNames = System.getProperty("org.wildfly.graal.deployment.json.binding.classes");
+        List<Class<?>> classes = new ArrayList<>();
+        if (classNames != null) {
+            String[] arr = classNames.split(",");
+            
+            for (int i = 0; i < arr.length; i++) {
+                try {
+                    String name = arr[i].trim();
+                    if (!name.isEmpty()) {
+                        System.out.println("JSON Binding support, EAGER INIT CLASS " + arr[i]);
+                        classes.add(Thread.currentThread().getContextClassLoader().loadClass(arr[i]));
+                    }
+                } catch (ClassNotFoundException ex) {
+                    throw new RuntimeException("Can't load class for JSON type " + arr[i] + ". " + ex);
+                }
+            }
+        }
+        Class<?>[] arr = new Class[classes.size()];
+        return classes.toArray(arr);
+    }
 }

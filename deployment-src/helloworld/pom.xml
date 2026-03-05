@@ -66,6 +66,16 @@
     </dependencyManagement>
 
     <dependencies>
+      <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Import the Servlet API, we use provided scope as the API is included in the server -->
         <dependency>
             <groupId>jakarta.servlet</groupId>

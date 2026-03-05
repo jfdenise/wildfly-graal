@@ -30,7 +30,7 @@ git clone -b wildfly_graal_2026_01_22 git@github.com:jfdenise/xnio
 git clone -b wildfly_graal_2026_01_23 git@github.com:jfdenise/undertow
 git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-elytron
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
-git clone -b wildfly_graal_2026_01_23 git@github.com:jfdenise/resteasy
+git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/resteasy
 
 cd wildfly-graal/runtime;mvn clean install;cd ../..
 
@@ -44,7 +44,7 @@ cd jboss-remoting; mvn clean install -DskipTests; cd ..
 cd resteasy; mvn clean install -DskipTests; cd ..
 
 git clone -b wildfly_core_wildfly_graal_2026_01_22 git@github.com:jfdenise/wildfly-core
-git clone -b wildfly_graal_2026_01_23 git@github.com:jfdenise/wildfly
+git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
@@ -211,6 +211,9 @@ Kill the server.
 * Access the secured servlet: `curl -v http://localhost:8080/helloworld/secured -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:password"`
 * Access the REST1: http://127.0.0.1:8080/helloworld/rest/HelloWorld?from=100&to=200&orderBy=age&orderBy=FOO
 * Access the REST2: http://127.0.0.1:8080/helloworld/rest2/HelloWorld2?from=100&to=200&orderBy=age&orderBy=name
+* Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/rectangle
+* Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/books
+* Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/books/9780596529260
 * Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
 (NOTE: It seems that we have a race condition in remoting. If you exit the CLI then you will need multiple attempt to reconnect. NEED INVESTIGATIONS)
 * In the CLI call:
