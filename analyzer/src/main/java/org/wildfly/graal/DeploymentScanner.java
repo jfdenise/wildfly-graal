@@ -181,7 +181,9 @@ public class DeploymentScanner implements AutoCloseable {
                 if (className.equals("jakarta.ws.rs.core.Response")) {
                     return; // Skip - runtime type unknown
                 }
-
+                if (className.startsWith("jakarta.json.")) {
+                    return; // Skip - implicit serialization
+                }
                 types.add(className);
                 break;
 
@@ -357,7 +359,8 @@ public class DeploymentScanner implements AutoCloseable {
             String className = type.asClassType().name().toString();
             return className.startsWith("jakarta.ws.rs.core.")
                     || className.startsWith("jakarta.ws.rs.container.")
-                    || className.startsWith("jakarta.servlet.");
+                    || className.startsWith("jakarta.servlet.")
+                    || className.startsWith("jakarta.json.");
         }
         return false;
     }

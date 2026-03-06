@@ -71,10 +71,11 @@ public class Analyzer {
 //            System.out.println(s);
 //        }
         System.out.println("Deployment class names stored in " + deploymentClasses);
+        Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
+        Files.deleteIfExists(jsonClasses);
         Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         if (!jsonBClasses.isEmpty()) {
-            Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
-            Files.deleteIfExists(jsonClasses);
+            
             System.out.println("JSON Binding class names stored in " + jsonClasses);
             Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         }

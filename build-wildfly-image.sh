@@ -52,6 +52,7 @@ done < "analyzer-output/allServerPackages.txt"
 
 # All deployment discovered classes
 while read -r line; do
+    line="${line//$/\\\\$}"
     name="$line"
     cmd="$cmd,\\
 $name"
