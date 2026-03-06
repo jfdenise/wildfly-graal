@@ -22,6 +22,14 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
    metadata-complete="false">
+  <context-param>
+    <param-name>resteasy.server.tracing.type</param-name>
+    <param-value>ALL</param-value>
+  </context-param>
+  <context-param>
+    <param-name>resteasy.server.tracing.threshold</param-name>
+    <param-value>VERBOSE</param-value>
+  </context-param>
     <servlet>
         <servlet-name>RESTEasy JSAPI</servlet-name>
         <servlet-class>org.jboss.resteasy.jsapi.JSAPIServlet</servlet-class>

@@ -216,6 +216,7 @@ Kill the server.
 * Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/books/9780596529260
 * Access REST + JSON Bindings (file upload): http://localhost:8080/helloworld/upload.html
 * Access REST + JSAPI: http://localhost:8080/helloworld/jsapi.html
+* Access REST + RestEasy Tracing extension: http://localhost:8080/helloworld/tracing.html
 * Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
 (NOTE: It seems that we have a race condition in remoting. If you exit the CLI then you will need multiple attempt to reconnect. NEED INVESTIGATIONS)
 * In the CLI call:
