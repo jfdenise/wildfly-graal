@@ -151,7 +151,6 @@ public class DeploymentScanner implements AutoCloseable {
 
     private static String formatClassName(String name) {
         name = name.replace("/", ".");
-        name = name.replace("$", "\\$");
         return name;
     }
 

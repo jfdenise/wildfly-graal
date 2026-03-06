@@ -22,7 +22,16 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
    metadata-complete="false">
+    <servlet>
+        <servlet-name>RESTEasy JSAPI</servlet-name>
+        <servlet-class>org.jboss.resteasy.jsapi.JSAPIServlet</servlet-class>
+        <load-on-startup>100</load-on-startup>
+    </servlet>
 
+    <servlet-mapping>
+        <servlet-name>RESTEasy JSAPI</servlet-name>
+        <url-pattern>/rest-js</url-pattern>
+    </servlet-mapping>
     <login-config>
         <auth-method>BASIC</auth-method>
         <realm-name>Simple Realm</realm-name>

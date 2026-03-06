@@ -35,6 +35,7 @@ public class Launcher {
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.ScriptFreeTLV");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.fasterxml.jackson.databind.type.TypeFactory");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.jsapi.JSAPIServlet");
         // Required by QueryInjector resteasy
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.ArrayList");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.TreeSet");

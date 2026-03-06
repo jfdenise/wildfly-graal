@@ -15,6 +15,7 @@ java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/
 # JSONB discovered classes
 if [ -f analyzer-output/allJsonBindingClasses.txt ]; then
   while read -r line; do
+    line="${line//$/\\$}"
     jsonbClasses="$jsonbClasses$line,"
   done < "analyzer-output/allJsonBindingClasses.txt"
 fi
