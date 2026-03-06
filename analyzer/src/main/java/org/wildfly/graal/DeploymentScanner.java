@@ -260,6 +260,19 @@ public class DeploymentScanner implements AutoCloseable {
     }
 
     /**
+     * Check if a method is a JAX-RS resource method (has an HTTP method annotation).
+     */
+    private boolean isJaxRsResourceMethod(MethodInfo mi) {
+        return mi.hasAnnotation("jakarta.ws.rs.GET")
+                || mi.hasAnnotation("jakarta.ws.rs.POST")
+                || mi.hasAnnotation("jakarta.ws.rs.PUT")
+                || mi.hasAnnotation("jakarta.ws.rs.DELETE")
+                || mi.hasAnnotation("jakarta.ws.rs.PATCH")
+                || mi.hasAnnotation("jakarta.ws.rs.HEAD")
+                || mi.hasAnnotation("jakarta.ws.rs.OPTIONS");
+    }
+
+    /**
      * Process @Produces or @Consumes annotation to extract JSON-mapped types.
      *
      * @param mi Method to analyze
@@ -373,11 +386,14 @@ public class DeploymentScanner implements AutoCloseable {
         for (ClassInfo ci : index.getKnownClasses()) {
             ctx.classes.add(formatClassName(ci.name().toString()));
             for (MethodInfo mi : ci.methods()) {
-                // Process @Produces (response types)
-                processJsonAnnotation(mi, ci, "jakarta.ws.rs.Produces", ctx, true);
+                // Only process JAX-RS resource methods
+                if (isJaxRsResourceMethod(mi)) {
+                    // Process @Produces (response types)
+                    processJsonAnnotation(mi, ci, "jakarta.ws.rs.Produces", ctx, true);
 
-                // Process @Consumes (request types)
-                processJsonAnnotation(mi, ci, "jakarta.ws.rs.Consumes", ctx, false);
+                    // Process @Consumes (request types)
+                    processJsonAnnotation(mi, ci, "jakarta.ws.rs.Consumes", ctx, false);
+                }
             }
         }
         int i = binary.toFile().getName().lastIndexOf(".");
