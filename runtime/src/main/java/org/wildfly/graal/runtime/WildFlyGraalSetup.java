@@ -156,10 +156,12 @@ public class WildFlyGraalSetup {
     }
 
     public static void buildtimeStaticInitEnded() {
-        try {
-            CLEANUP_PERMISSIONS.invoke(deploymentModule);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        if (deploymentModule != null) {
+            try {
+                CLEANUP_PERMISSIONS.invoke(deploymentModule);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 

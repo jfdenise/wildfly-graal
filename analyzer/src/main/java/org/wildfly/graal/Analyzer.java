@@ -54,30 +54,38 @@ public class Analyzer {
 
         //System.out.println(sorted.size());
         // Discover deployment classes
-        String deployment = args[1];
-        Path properties = Paths.get(args[2]);
+        Path properties;
+        String deployment = null;
+        if (args.length == 3) {
+            deployment = args[1];
+            properties = Paths.get(args[2]);
+        } else {
+            properties = Paths.get(args[1]);
+        }
         Properties props = new Properties();
-        try(FileInputStream stream = new FileInputStream(properties.toFile())) {
+        try (FileInputStream stream = new FileInputStream(properties.toFile())) {
             props.load(stream);
         }
-        Path deploymentPath = Paths.get(deployment).toAbsolutePath();
-        DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet(), props);
-        Set<String> allClasses = new TreeSet<>();
-        Set<String> jsonBClasses = new TreeSet<>();
-        scanner.scan(allClasses, jsonBClasses);
-        Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
-        Files.deleteIfExists(deploymentClasses);
+        if (deployment != null) {
+            Path deploymentPath = Paths.get(deployment).toAbsolutePath();
+            DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet(), props);
+            Set<String> allClasses = new TreeSet<>();
+            Set<String> jsonBClasses = new TreeSet<>();
+            scanner.scan(allClasses, jsonBClasses);
+            Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
+            Files.deleteIfExists(deploymentClasses);
 //        for (String s : allClasses) {
 //            System.out.println(s);
 //        }
-        System.out.println("Deployment class names stored in " + deploymentClasses);
-        Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
-        Files.deleteIfExists(jsonClasses);
-        Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        if (!jsonBClasses.isEmpty()) {
-            
-            System.out.println("JSON Binding class names stored in " + jsonClasses);
-            Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            System.out.println("Deployment class names stored in " + deploymentClasses);
+            Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
+            Files.deleteIfExists(jsonClasses);
+            Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            if (!jsonBClasses.isEmpty()) {
+
+                System.out.println("JSON Binding class names stored in " + jsonClasses);
+                Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
         }
     }
 

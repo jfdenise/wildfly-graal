@@ -1,8 +1,13 @@
 # wildfly-graal
 
-* Nothing in the classpath
-* Start the server suspended at build time. Capture what we can.
-* Then run the server at runtime.
+* Start the server suspended at build time.
+* Passivate the services, cleanup what need to be cleanup.
+* At runtime, activate the services.
+
+# Current observed numbers:
+
+* Startup time 10 to 15ms vs 2secs in Java
+* Memory (RSS): 8MB vs 28MB in Java.
 
 # Install latest graalvm (JDK25)
 
@@ -19,15 +24,15 @@ Test that native-image is OK, call `native-image --help`
 
 # Build WildFly and dependencies
 
-WARNING YOU MUST USE JDK17.
+WARNING YOU MUST USE JDK21.
 
 ```
-git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-graal
-git clone -b wildfly_graal_runtime git@github.com:jfdenise/jboss-modules
-git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-vfs
-git clone -b archive_servlet_starting git@github.com:jfdenise/jboss-msc
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly-graal
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/jboss-modules
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/jboss-vfs
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/jboss-msc
 git clone -b wildfly_graal_2026_01_22 git@github.com:jfdenise/xnio
-git clone -b wildfly_graal_2026_01_23 git@github.com:jfdenise/undertow
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/undertow
 git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-elytron
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
 git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/resteasy
@@ -43,8 +48,8 @@ cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd 
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 cd resteasy; mvn clean install -DskipTests; cd ..
 
-git clone -b wildfly_core_wildfly_graal_2026_01_22 git@github.com:jfdenise/wildfly-core
-git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/wildfly
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly-core
+git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
@@ -60,7 +65,7 @@ cd analyzer;mvn clean install;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,elytron,servlet,logging,core-tools,jaxrs --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,logging,elytron,management,servlet,-deployment-scanner,core-tools,jaxrs --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -218,8 +223,6 @@ Kill the server.
 * Access REST + JSAPI: http://localhost:8080/helloworld/jsapi.html
 * Access REST + RestEasy Tracing extension: http://localhost:8080/helloworld/tracing.html
 * Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
-(NOTE: It seems that we have a race condition in remoting. If you exit the CLI then you will need multiple attempt to reconnect. NEED INVESTIGATIONS)
-* In the CLI call:
 ```
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=ALL)
 /subsystem=logging/logger=org.wildfly.graal:add(level=ALL)

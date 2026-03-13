@@ -44,10 +44,12 @@ public class Launcher {
     static {
         try {
             List<String> allDeploymentClasses = new ArrayList<>();
-            
-            List<String> depClasses = Files.readAllLines(Paths.get("analyzer-output/allDeploymentClasses.txt"));
-            allDeploymentClasses.addAll(depClasses);
-            allDeploymentClasses.addAll(DEPLOYMENT_WELL_KNOWN_CLASSES);
+            Path deploymentClasses = Paths.get("analyzer-output/allDeploymentClasses.txt");
+            if (Files.exists(deploymentClasses)) {
+                List<String> depClasses = Files.readAllLines(deploymentClasses);
+                allDeploymentClasses.addAll(depClasses);
+                allDeploymentClasses.addAll(DEPLOYMENT_WELL_KNOWN_CLASSES);
+            }
 
             WildFlyGraalSetup.setDeploymentSetup(allDeploymentClasses, Cache.class);
 
@@ -112,7 +114,7 @@ services.append("MODULE : " + mod.getName() + "\n");
             modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
 
             modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
-            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
+           modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             WildFlyGraalSetup.buildtimeStaticInitEnded();
             for (String k : modules.keySet()) {
@@ -129,10 +131,11 @@ services.append("MODULE : " + mod.getName() + "\n");
         WildFlyGraalSetup.runtimeStarted();
         System.setProperty("jboss.home.dir", JBOSS_HOME);
         System.out.println("Running Main entry point");
-        for (String k : modules.keySet()) {
-            Module m = modules.get(k);
-            m.restorePermissions();
-        }
+        // No need to deal with permissions, will get removed
+//        for (String k : modules.keySet()) {
+//            Module m = modules.get(k);
+//            m.restorePermissions();
+//        }
         mainModule.run(args);
     }
 

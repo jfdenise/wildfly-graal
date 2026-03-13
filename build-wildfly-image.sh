@@ -31,12 +31,14 @@ wildfly-launcher \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
 -Dorg.wildfly.graal.deployment.json.binding.classes=$jsonbClasses \\
 -H:+PrintClassInitialization \\
---trace-object-instantiation=com.sun.jmx.mbeanserver.JmxMBeanServer \\
+--enable-monitoring=jcmd \\
+--trace-object-instantiation=org.xnio.nio.WorkerThread \\
 --initialize-at-build-time=\\"
 
 # Classes hard coded, not discovered but needed
 cmd="$cmd
 launcher,\\
+org.jboss.modules,\\
 java.beans,\\
 java.awt.color,\\
 sun.java2d.cmm,\\
@@ -50,14 +52,15 @@ while read -r line; do
 $name"
 done < "analyzer-output/allServerPackages.txt"
 
-# All deployment discovered classes
-while read -r line; do
+if [ -f analyzer-output/allDeploymentClasses.txt ]; then
+  # All deployment discovered classes
+  while read -r line; do
     line="${line//$/\\\\$}"
     name="$line"
     cmd="$cmd,\\
 $name"
-done < "analyzer-output/allDeploymentClasses.txt"
-
+  done < "analyzer-output/allDeploymentClasses.txt"
+fi
 cmd="$cmd \\"
 
 # All classes that can't be init at build time
@@ -81,8 +84,6 @@ org.jboss.as.domain.http.server.ManagementHttpServer,\\
 org.jboss.as.server.DomainServerCommunicationServices,\\
 org.jboss.as.server.deployment.module.TempFileProviderService,\\
 org.jboss.as.server.operations.NativeManagementServices,\\
-org.jboss.as.server.services.net.BindingAddHandler,\\
-org.jboss.as.server.services.net.SocketBindingResourceDefinition,\\
 org.jboss.classfilewriter.DefaultClassFactory,\\
 org.jboss.msc.service.ServiceContainer\\\$Factory,\\
 org.jboss.remoting3.ConfigurationEndpointSupplier\\\$Holder,\\
@@ -91,14 +92,12 @@ org.jboss.remoting3.remote.RemoteConnection,\\
 org.jboss.remoting3.remote.MessageReader,\\
 org.jboss.resteasy.spi.ResourceCleaner,\\
 org.bouncycastle.mail.smime.SMIMESignedGenerator,\\
-org.wildfly.common.net,\\
 org.wildfly.httpclient.common.ConfigurationHttpContextSupplier,\\
 org.wildfly.httpclient.common.HttpContextGetterHolder,\\
 org.wildfly.httpclient.common.PoolAuthenticationContext,\\
 org.wildfly.httpclient.common.WildflyHttpContext,\\
-org.xnio.DefaultXnioWorkerHolder,\\
 org.xnio.channels.Channels,\\
-org.xnio.nio.WorkerThread \\"
+org.xnio.DefaultXnioWorkerHolder \\"
 
 # Then other options
 cmd="$cmd
