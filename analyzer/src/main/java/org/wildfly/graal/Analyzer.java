@@ -72,7 +72,8 @@ public class Analyzer {
             Set<String> allClasses = new TreeSet<>();
             Set<String> jsonBClasses = new TreeSet<>();
             Set<String> cdiClasses = new TreeSet<>();
-            scanner.scan(allClasses, jsonBClasses, cdiClasses);
+            Set<String> cdiProxyClasses = new TreeSet<>();
+            scanner.scan(allClasses, jsonBClasses, cdiClasses, cdiProxyClasses);
             Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
             Files.deleteIfExists(deploymentClasses);
 //        for (String s : allClasses) {
@@ -87,13 +88,19 @@ public class Analyzer {
                 System.out.println("JSON Binding class names stored in " + jsonClasses);
                 Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
-
+            Path cdiClassesFile = output.resolve("allCDIClasses.txt");
+            Files.deleteIfExists(cdiClassesFile);
             // Write CDI classes
             if (!cdiClasses.isEmpty()) {
-                Path cdiClassesFile = output.resolve("allCDIClasses.txt");
-                Files.deleteIfExists(cdiClassesFile);
                 System.out.println("CDI class names stored in " + cdiClassesFile);
                 Files.write(cdiClassesFile, cdiClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
+            Path cdiProxiesFile = output.resolve("allCDIProxyClasses.txt");
+            Files.deleteIfExists(cdiProxiesFile);
+            // Write CDI classes
+            if (!cdiProxyClasses.isEmpty()) {
+                System.out.println("CDI proxy class names stored in " + cdiProxiesFile);
+                Files.write(cdiProxiesFile, cdiProxyClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
         }
     }

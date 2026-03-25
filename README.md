@@ -242,6 +242,27 @@ Then access again to http://127.0.0.1:8080/helloworld/bid.html You will see trac
 
 * Call: `sh ./build-wildfly-image.sh`
 
+## Access the servlet
+
+* `curl -v http://localhost:8080/helloworld/secured-cdi -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:quickstartPwd1"`
+
+# More resteasy examples that have been tested
+
+The repo is: https://github.com/resteasy/resteasy-examples
+
+* Copy the built war to $JBOSS_HOME/heeloworld.war
+
+* Call: `sh ./build-wildfly-image.sh`
+
+* Then activate the deployment the way it is documented in the next chapters.
+
+## Resteasy async-job-service
+
+https://github.com/resteasy/resteasy-examples/tree/main/async-job-service
+
+curl --verbose --request POST --header "Content-Type:  text/plain" --data "my message" http://localhost:8080/helloworld/resource/
+curl --verbose http://localhost:8080/helloworld/resource/
+
 
 # Some notes
 

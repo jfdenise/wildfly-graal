@@ -73,6 +73,17 @@ if [ -f analyzer-output/allDeploymentClasses.txt ]; then
 $name"
   done < "analyzer-output/allDeploymentClasses.txt"
 fi
+
+if [ -f analyzer-output/allCDIProxyClasses.txt ]; then
+  # All cdi proxy discovered classes
+  while read -r line; do
+    line="${line//$/\\\\$}"
+    name="$line"
+    cmd="$cmd,\\
+$name"
+  done < "analyzer-output/allCDIProxyClasses.txt"
+fi
+
 cmd="$cmd \\"
 
 # All classes that can't be init at build time

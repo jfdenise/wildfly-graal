@@ -132,13 +132,19 @@ public class DeploymentScanner implements AutoCloseable {
     }
 
     public void scan(Set<String> classes, Set<String> jsonBClasses) throws Exception {
-        scan(classes, jsonBClasses, new HashSet<>());
+        scan(classes, jsonBClasses, new HashSet<>(), new HashSet<>());
     }
 
-    public void scan(Set<String> classes, Set<String> jsonBClasses, Set<String> cdiClasses) throws Exception {
+    public void scan(Set<String> classes, Set<String> jsonBClasses, Set<String> cdiClasses, Set<String> proxyClasses) throws Exception {
         jsonBClasses.addAll(additionalJsonClasses);
         DeploymentScanContext ctx = new DeploymentScanContext(classes, jsonBClasses, cdiClasses);
         scan(ctx);
+        // Add proxies to be init at build tome for all CDI types
+        for(String cdi : cdiClasses) {
+            if (classes.contains(cdi)) {
+                proxyClasses.add(cdi + "$Proxy$_$$_WeldClientProxy");
+            }
+        }
     }
 
     private void scan(DeploymentScanContext ctx) throws Exception {
@@ -422,6 +428,29 @@ public class DeploymentScanner implements AutoCloseable {
     }
 
     /**
+     * Check if a class has a CDI scope annotation.
+     * Checks for standard CDI scopes like @ApplicationScoped, @SessionScoped, @RequestScoped, etc.
+     */
+    private boolean hasCDIScopeAnnotation(ClassInfo ci) {
+        // Standard CDI scopes
+        return ci.hasAnnotation("jakarta.enterprise.context.ApplicationScoped")
+                || ci.hasAnnotation("jakarta.enterprise.context.SessionScoped")
+                || ci.hasAnnotation("jakarta.enterprise.context.RequestScoped")
+                || ci.hasAnnotation("jakarta.enterprise.context.ConversationScoped")
+                || ci.hasAnnotation("jakarta.enterprise.context.Dependent")
+                || ci.hasAnnotation("jakarta.inject.Singleton")
+                // MicroProfile/Quarkus scopes
+                || ci.hasAnnotation("io.quarkus.arc.Unremovable")
+                // Legacy javax scopes (for compatibility)
+                || ci.hasAnnotation("javax.enterprise.context.ApplicationScoped")
+                || ci.hasAnnotation("javax.enterprise.context.SessionScoped")
+                || ci.hasAnnotation("javax.enterprise.context.RequestScoped")
+                || ci.hasAnnotation("javax.enterprise.context.ConversationScoped")
+                || ci.hasAnnotation("javax.enterprise.context.Dependent")
+                || ci.hasAnnotation("javax.inject.Singleton");
+    }
+
+    /**
      * Process @Produces or @Consumes annotation to extract JSON-mapped types.
      *
      * @param mi Method to analyze
@@ -556,6 +585,15 @@ public class DeploymentScanner implements AutoCloseable {
                 ctx.cdiClasses.add(className);
                 if (verbose) {
                     System.out.println("Found HttpAuthenticationMechanism implementation: " + className);
+                }
+            }
+
+            // Check if class has a CDI scope annotation
+            if (hasCDIScopeAnnotation(ci)) {
+                String className = formatClassName(ci.name().toString());
+                ctx.cdiClasses.add(className);
+                if (verbose) {
+                    System.out.println("Found CDI scoped bean: " + className);
                 }
             }
         }
