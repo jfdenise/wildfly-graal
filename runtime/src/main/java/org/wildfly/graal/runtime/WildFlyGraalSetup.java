@@ -494,6 +494,7 @@ public class WildFlyGraalSetup {
             throw new RuntimeException(ex);
         }
     }
+
     public static GraalCache initCache(String context) {
         GraalCache cache = CACHE.get(context);
         if (cache == null) {
@@ -502,20 +503,30 @@ public class WildFlyGraalSetup {
         }
         return cache;
     }
+
     public static GraalCache getCache(String context) {
         return CACHE.get(context);
     }
+
+    public static Class<?>[] getCDIClasses() {
+        return getClassesFromSystemProperty("org.wildfly.graal.deployment.cdi.classes");
+    }
+
     public static Class<?>[] getJsonBindingEagerClasses() {
-        String classNames = System.getProperty("org.wildfly.graal.deployment.json.binding.classes");
+        return getClassesFromSystemProperty("org.wildfly.graal.deployment.json.binding.classes");
+    }
+
+    public static Class<?>[] getClassesFromSystemProperty(String property) {
+        String classNames = System.getProperty(property);
         List<Class<?>> classes = new ArrayList<>();
         if (classNames != null) {
             String[] arr = classNames.split(",");
-            
+
             for (int i = 0; i < arr.length; i++) {
                 try {
                     String name = arr[i].trim();
                     if (!name.isEmpty()) {
-                        System.out.println("JSON Binding support, EAGER INIT CLASS " + arr[i]);
+                        System.out.println("EAGER INIT CLASS " + arr[i]);
                         classes.add(Thread.currentThread().getContextClassLoader().loadClass(arr[i]));
                     }
                 } catch (ClassNotFoundException ex) {

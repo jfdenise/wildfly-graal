@@ -71,7 +71,8 @@ public class Analyzer {
             DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet(), props);
             Set<String> allClasses = new TreeSet<>();
             Set<String> jsonBClasses = new TreeSet<>();
-            scanner.scan(allClasses, jsonBClasses);
+            Set<String> cdiClasses = new TreeSet<>();
+            scanner.scan(allClasses, jsonBClasses, cdiClasses);
             Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
             Files.deleteIfExists(deploymentClasses);
 //        for (String s : allClasses) {
@@ -85,6 +86,14 @@ public class Analyzer {
 
                 System.out.println("JSON Binding class names stored in " + jsonClasses);
                 Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
+
+            // Write CDI classes
+            if (!cdiClasses.isEmpty()) {
+                Path cdiClassesFile = output.resolve("allCDIClasses.txt");
+                Files.deleteIfExists(cdiClassesFile);
+                System.out.println("CDI class names stored in " + cdiClassesFile);
+                Files.write(cdiClassesFile, cdiClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
         }
     }

@@ -20,6 +20,17 @@ if [ -f analyzer-output/allJsonBindingClasses.txt ]; then
   done < "analyzer-output/allJsonBindingClasses.txt"
 fi
 echo "JSON Binding configured classes $jsonbClasses"
+
+
+# CDI discovered classes
+if [ -f analyzer-output/allCDIClasses.txt ]; then
+  while read -r line; do
+    line="${line//$/\\$}"
+    cdiClasses="$cdiClasses$line,"
+  done < "analyzer-output/allCDIClasses.txt"
+fi
+echo "CDI classes configured classes $cdiClasses"
+
 cmd="
 native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
@@ -30,6 +41,7 @@ wildfly-launcher \\
 -Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
 -Dorg.wildfly.graal.deployment.json.binding.classes=$jsonbClasses \\
+-Dorg.wildfly.graal.deployment.cdi.classes=$cdiClasses \\
 -H:+PrintClassInitialization \\
 --enable-monitoring=jcmd \\
 --trace-object-instantiation=org.xnio.nio.WorkerThread \\

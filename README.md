@@ -65,7 +65,7 @@ cd analyzer;mvn clean install;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,logging,elytron,management,servlet,-deployment-scanner,core-tools,jaxrs --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,logging,elytron,management,servlet,-deployment-scanner,core-tools,jaxrs,cdi,ee-security --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -85,7 +85,7 @@ cp -r files/welcome-content min-core-server/
 # Create the authenticated user
 
 ```
-min-core-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1!' -g Users
+min-core-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
 ```
 
 # Deploy the deployment
@@ -187,6 +187,9 @@ Replace undertow subsystem with:
     <handlers>
       <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
     </handlers>
+    <application-security-domains>
+        <application-security-domain name="other" security-domain="ApplicationDomain" integrated-jaspi="false"/>
+    </application-security-domains>
 </subsystem>
 ```
 
@@ -228,6 +231,17 @@ Kill the server.
 /subsystem=logging/logger=org.wildfly.graal:add(level=ALL)
 ```
 Then access again to http://127.0.0.1:8080/helloworld/bid.html You will see traces in the console.
+
+# CDI + EE security demo
+
+## Build the deployment
+
+* `cd deployment-src/ee-security;mvn clean install;cp target/ee-security.war ../../min-core-server/helloworld.war;cd ../..`
+
+## Build the image
+
+* Call: `sh ./build-wildfly-image.sh`
+
 
 # Some notes
 

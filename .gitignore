@@ -43,5 +43,7 @@ reports/
 /analyzer-output
 discovered-services.txt
 deployment-src/helloworld/nb-configuration.xml
+deployment-src/ee-security/target/
+deployment-src/ee-security/nb-configuration.xml
 jspc/
 /runtime/target/

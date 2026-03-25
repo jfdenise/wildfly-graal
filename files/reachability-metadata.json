@@ -74,5 +74,8 @@
         }
       ]
     }
+  ],
+   "bundles": [
+    {"name":"sun.security.util.resources.security"}
   ]
 }

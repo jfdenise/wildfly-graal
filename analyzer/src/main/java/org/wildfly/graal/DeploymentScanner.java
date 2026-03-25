@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.Type;
@@ -131,8 +132,12 @@ public class DeploymentScanner implements AutoCloseable {
     }
 
     public void scan(Set<String> classes, Set<String> jsonBClasses) throws Exception {
+        scan(classes, jsonBClasses, new HashSet<>());
+    }
+
+    public void scan(Set<String> classes, Set<String> jsonBClasses, Set<String> cdiClasses) throws Exception {
         jsonBClasses.addAll(additionalJsonClasses);
-        DeploymentScanContext ctx = new DeploymentScanContext(classes, jsonBClasses);
+        DeploymentScanContext ctx = new DeploymentScanContext(classes, jsonBClasses, cdiClasses);
         scan(ctx);
     }
 
@@ -273,6 +278,150 @@ public class DeploymentScanner implements AutoCloseable {
     }
 
     /**
+     * Process CDI @Inject annotations to extract injected types.
+     * Scans fields, constructor parameters, and method parameters.
+     */
+    private void processCDIInjections(ClassInfo ci, DeploymentScanContext ctx) {
+        Set<String> discoveredTypes = new HashSet<>();
+        Set<String> processedTypes = new HashSet<>();
+
+        // Scan @Inject on fields
+        for (FieldInfo field : ci.fields()) {
+            if (field.hasAnnotation("jakarta.inject.Inject")) {
+                Type fieldType = field.type();
+                if (verbose) {
+                    System.out.println("Processing @Inject field: " + ci.name() + "#" + field.name()
+                            + " type: " + fieldType);
+                }
+                extractCDITypes(fieldType, discoveredTypes, processedTypes);
+            }
+        }
+
+        // Scan @Inject on methods (setter injection)
+        for (MethodInfo method : ci.methods()) {
+            if (method.hasAnnotation("jakarta.inject.Inject")) {
+                List<Type> parameters = method.parameterTypes();
+                for (Type paramType : parameters) {
+                    if (verbose) {
+                        System.out.println("Processing @Inject method: " + ci.name() + "#" + method.name()
+                                + " parameter type: " + paramType);
+                    }
+                    extractCDITypes(paramType, discoveredTypes, processedTypes);
+                }
+            }
+        }
+
+        // Add all discovered types to the context
+        ctx.cdiClasses.addAll(discoveredTypes);
+
+        if (verbose && !discoveredTypes.isEmpty()) {
+            System.out.println("Discovered CDI types from " + ci.name() + ": " + discoveredTypes);
+        }
+    }
+
+    /**
+     * Extracts CDI injectable types, unwrapping Provider and Instance wrappers.
+     */
+    private void extractCDITypes(Type type, Set<String> types, Set<String> processedTypes) {
+        if (type == null) {
+            return;
+        }
+
+        switch (type.kind()) {
+            case CLASS:
+                String className = formatClassName(type.asClassType().name().toString());
+
+                // Skip if already processed
+                if (processedTypes.contains(className)) {
+                    return;
+                }
+                processedTypes.add(className);
+
+                types.add(className);
+                break;
+
+            case PARAMETERIZED_TYPE:
+                ParameterizedType paramType = type.asParameterizedType();
+                String ownerClassName = formatClassName(paramType.name().toString());
+
+                // Unwrap CDI-specific wrappers: Provider<T>, Instance<T>
+                if (isCDIWrapperType(ownerClassName)) {
+                    // Extract the wrapped type(s)
+                    for (Type arg : paramType.arguments()) {
+                        extractCDITypes(arg, types, processedTypes);
+                    }
+                } else {
+                    // For other generic types, add the owner class
+                    if (!processedTypes.contains(ownerClassName)) {
+                        processedTypes.add(ownerClassName);
+                        types.add(ownerClassName);
+                    }
+
+                    // Also process type arguments
+                    for (Type arg : paramType.arguments()) {
+                        extractCDITypes(arg, types, processedTypes);
+                    }
+                }
+                break;
+
+            case ARRAY:
+                // Extract the component type from arrays
+                extractCDITypes(type.asArrayType().componentType(), types, processedTypes);
+                break;
+
+            case WILDCARD_TYPE:
+                // For wildcards like "? extends Foo", extract the bound
+                Type bound = type.asWildcardType().extendsBound();
+                if (bound != null) {
+                    extractCDITypes(bound, types, processedTypes);
+                }
+                break;
+
+            case TYPE_VARIABLE:
+            case PRIMITIVE:
+            case VOID:
+                // Skip these
+                break;
+
+            default:
+                if (verbose) {
+                    System.out.println("Unhandled CDI type kind: " + type.kind() + " for type: " + type);
+                }
+                break;
+        }
+    }
+
+    /**
+     * Checks if a class is a CDI wrapper type that should be unwrapped.
+     */
+    private boolean isCDIWrapperType(String className) {
+        return className.equals("jakarta.inject.Provider")
+                || className.equals("jakarta.enterprise.inject.Instance");
+    }
+
+    /**
+     * Check if a class implements HttpAuthenticationMechanism interface.
+     */
+    private boolean implementsHttpAuthenticationMechanism(ClassInfo ci) {
+        DotName httpAuthMechanism = DotName.createSimple("jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism");
+
+        // Check direct interfaces
+        if (ci.interfaceNames().contains(httpAuthMechanism)) {
+            return true;
+        }
+
+        // Check parent class interfaces (if there's inheritance)
+        DotName superName = ci.superName();
+        if (superName != null && !superName.toString().equals("java.lang.Object")) {
+            // Note: We can't recursively check parent classes here without the full index
+            // This would require looking up the parent ClassInfo, which may not be available
+            // if the parent is in a different module/jar
+        }
+
+        return false;
+    }
+
+    /**
      * Process @Produces or @Consumes annotation to extract JSON-mapped types.
      *
      * @param mi Method to analyze
@@ -385,6 +534,8 @@ public class DeploymentScanner implements AutoCloseable {
                 : DirectoryIndexer.indexDirectory(binary.toFile(), indexer);
         for (ClassInfo ci : index.getKnownClasses()) {
             ctx.classes.add(formatClassName(ci.name().toString()));
+
+            // Scan for JAX-RS endpoints
             for (MethodInfo mi : ci.methods()) {
                 // Only process JAX-RS resource methods
                 if (isJaxRsResourceMethod(mi)) {
@@ -393,6 +544,18 @@ public class DeploymentScanner implements AutoCloseable {
 
                     // Process @Consumes (request types)
                     processJsonAnnotation(mi, ci, "jakarta.ws.rs.Consumes", ctx, false);
+                }
+            }
+
+            // Scan for CDI injection points
+            processCDIInjections(ci, ctx);
+
+            // Check if class implements HttpAuthenticationMechanism
+            if (implementsHttpAuthenticationMechanism(ci)) {
+                String className = formatClassName(ci.name().toString());
+                ctx.cdiClasses.add(className);
+                if (verbose) {
+                    System.out.println("Found HttpAuthenticationMechanism implementation: " + className);
                 }
             }
         }
@@ -581,10 +744,16 @@ public class DeploymentScanner implements AutoCloseable {
 
         private final Set<String> classes;
         private final Set<String> jsonBClasses;
+        private final Set<String> cdiClasses;
 
         private DeploymentScanContext(Set<String> classes, Set<String> jsonBClasses) {
+            this(classes, jsonBClasses, new HashSet<>());
+        }
+
+        private DeploymentScanContext(Set<String> classes, Set<String> jsonBClasses, Set<String> cdiClasses) {
             this.classes = classes;
             this.jsonBClasses = jsonBClasses;
+            this.cdiClasses = cdiClasses;
         }
     }
 }
