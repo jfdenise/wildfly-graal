@@ -139,11 +139,9 @@ public class DeploymentScanner implements AutoCloseable {
         jsonBClasses.addAll(additionalJsonClasses);
         DeploymentScanContext ctx = new DeploymentScanContext(classes, jsonBClasses, cdiClasses);
         scan(ctx);
-        // Add proxies to be init at build tome for all CDI types
-        for(String cdi : cdiClasses) {
-            if (classes.contains(cdi)) {
-                proxyClasses.add(cdi + "$Proxy$_$$_WeldClientProxy");
-            }
+        // Any type can be a proxy, init them all at build time.
+        for(String clazz : classes) {
+            proxyClasses.add(clazz + "$Proxy$_$$_WeldClientProxy");
         }
     }
 
@@ -564,15 +562,32 @@ public class DeploymentScanner implements AutoCloseable {
         for (ClassInfo ci : index.getKnownClasses()) {
             ctx.classes.add(formatClassName(ci.name().toString()));
 
+            boolean isRestEndpoint = false;
+
             // Scan for JAX-RS endpoints
             for (MethodInfo mi : ci.methods()) {
                 // Only process JAX-RS resource methods
                 if (isJaxRsResourceMethod(mi)) {
+                    isRestEndpoint = true;
                     // Process @Produces (response types)
                     processJsonAnnotation(mi, ci, "jakarta.ws.rs.Produces", ctx, true);
 
                     // Process @Consumes (request types)
                     processJsonAnnotation(mi, ci, "jakarta.ws.rs.Consumes", ctx, false);
+                }
+            }
+
+            // Check if class has @Path annotation (REST resource class)
+            if (ci.hasAnnotation("jakarta.ws.rs.Path")) {
+                isRestEndpoint = true;
+            }
+
+            // Add REST endpoint classes to CDI classes
+            if (isRestEndpoint) {
+                String className = formatClassName(ci.name().toString());
+                ctx.cdiClasses.add(className);
+                if (verbose) {
+                    System.out.println("Found REST endpoint class: " + className);
                 }
             }
 

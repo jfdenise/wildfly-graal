@@ -36,6 +36,7 @@ git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/un
 git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-elytron
 git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
 git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/resteasy
+git clone -b max_server_init_at_build_time_2026_04_01 git@github.com:jfdenise/jboss-jakarta-el-api_spec
 
 cd wildfly-graal/runtime;mvn clean install;cd ../..
 
@@ -47,6 +48,7 @@ cd undertow; mvn clean install -DskipTests; cd ..
 cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 cd resteasy; mvn clean install -DskipTests; cd ..
+cd jboss-jakarta-el-api_spec; mvn clean install -DskipTests; cd ..
 
 git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly-core
 git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly
@@ -65,7 +67,7 @@ cd analyzer;mvn clean install;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=base-server,io,logging,elytron,management,servlet,-deployment-scanner,core-tools,jaxrs,cdi,ee-security --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=ee-core-profile-server,-deployment-scanner,core-tools,ee-security,-jmx-remoting --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
@@ -230,6 +232,8 @@ Kill the server.
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=ALL)
 /subsystem=logging/logger=org.wildfly.graal:add(level=ALL)
 ```
+NOTE: Exit the CLI, then try to reconnect, will fail 80% of the time. We have a race condition in XNIO I suppose.
+
 Then access again to http://127.0.0.1:8080/helloworld/bid.html You will see traces in the console.
 
 # CDI + EE security demo
@@ -250,7 +254,7 @@ Then access again to http://127.0.0.1:8080/helloworld/bid.html You will see trac
 
 The repo is: https://github.com/resteasy/resteasy-examples
 
-* Copy the built war to $JBOSS_HOME/heeloworld.war
+* Copy the built war to $JBOSS_HOME/helloworld.war
 
 * Call: `sh ./build-wildfly-image.sh`
 

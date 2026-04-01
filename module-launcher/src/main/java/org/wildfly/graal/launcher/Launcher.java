@@ -36,6 +36,7 @@ public class Launcher {
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.fasterxml.jackson.databind.type.TypeFactory");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.jsapi.JSAPIServlet");
+        DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.sun.el.ExpressionFactoryImpl");
         // Required by QueryInjector resteasy
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.ArrayList");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.TreeSet");
@@ -114,7 +115,8 @@ services.append("MODULE : " + mod.getName() + "\n");
             modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
 
             modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
-           modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
+            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
+            modules.get("org.jboss.as.weld").getCache().addClassToCache("org.jboss.weld.module.web.el.WeldELContextListener");
             System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             WildFlyGraalSetup.buildtimeStaticInitEnded();
             for (String k : modules.keySet()) {
