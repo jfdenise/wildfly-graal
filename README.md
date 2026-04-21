@@ -268,6 +268,27 @@ curl --verbose --request POST --header "Content-Type:  text/plain" --data "my me
 curl --verbose http://localhost:8080/helloworld/resource/
 
 
+## CDI + bean validation
+
+FAILURE, bean-validation requires some reflection that we failed to move at build time due to generated CDI proxy being themselves introspected. And we
+don't want to do that at build time. The example used for the attempt: https://github.com/wildfly/quickstart/tree/main/jaxrs-jwt
+
+
 # Some notes
 
 * If we don't specify the packages to load at build time, _logger are not found at runtime. So we need to build the list of all packages to put in the script.
+
+* CREMA will be used to fix the reflection issues we have at runtime. We can't use the Graal VM support for reflection that only works for classes in the classpath.
+
+* CDI: We collect all the classes that could be injected and JAXRS endpoints + some well known and we force generate proxies at build time. It seems to work, at least for the xamples
+tried. 
+
+* Stopping at the Bean validation level. We have added in the CdiValidatorFactoryService, a way to force creation of the cache needed for validation 
+for cdi classes but that has not been enough, The Proxy classes can also be validated and require to be cached. We will not do that. 
+The dependency is hibernate-validator, in particular the class ValidatorImpl and BeanMetaDataImpl
+
+
+# TODO
+
+* Cleanup of permissions handling, we don't care about permissions, no more security manager
+* Cleanup of some useless pre loading of services now that the server is started once in the heap.
