@@ -67,31 +67,19 @@ cd analyzer;mvn clean install;cd ..
 # Provision a WildFly server
 
 * download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=ee-core-profile-server,-deployment-scanner,core-tools,ee-security,-jmx-remoting --dir=min-core-server`
+unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=ee-core-profile-server,-deployment-scanner,core-tools,ee-security,-jmx-remoting,-bean-validation --dir=min-core-server`
 
 NOTE: make sure to provision the server in the wildfly-graal repo root directory.
 
-# Copy the files needed by the demo
+# The demo
 
-We do:
-
-* Disable the PeriodicFile logger (incompatible with build time initialization).
-* Copy the welcome content
-* Cleanup previous session of services recording
-
-```
-cp files/logging.properties min-core-server/standalone/configuration
-cp -r files/welcome-content min-core-server/
-```
-
-# Create the authenticated user
+## Create the authenticated user
 
 ```
 min-core-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
 ```
 
-# Deploy the deployment
-
+## Deploy the deployment
 
 ## Build and explode the deployment
 
@@ -115,9 +103,13 @@ mkdir -p ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cp precompiled-jsp.jar ../../../../min-core-server/deployment-exploded/WEB-INF/lib
 cd ../../../..
 cd min-core-server/deployment-exploded
-zip ../helloworld.war * */**/*
+zip ../ROOT.war * */**/*
 cd ../..
 ```
+
+## Deploy the deployment
+
+./min-core-server/bin/jboss-cli.sh --file=graal-deploy.cli
 
 ## Build the custom auth module
 
@@ -125,77 +117,8 @@ cd ../..
 cd deployment-src/custom-module;mvn clean install;cd ../..
 ```
 
-Add to standalone.xml:
 
-```
-    <deployments>
-        <deployment name="helloworld.war" runtime-name="helloworld.war">
-            <fs-archive path="helloworld.war" relative-to="jboss.home.dir"/>
-        </deployment>
-    </deployments>
-```
-
-## Remove content from the server config
-
-* Elytron:
-
-```
-<!--<audit-logging>
-    <file-audit-log name="local-audit" path="audit.log" relative-to="jboss.server.log.dir" format="JSON"/>
-</audit-logging>-->
-```
-
-* Remove content from Logging (File handler)
-
-```
-<!--
-            <periodic-rotating-file-handler name="FILE" autoflush="true">
-                <formatter>
-                    <named-formatter name="PATTERN"/>
-                </formatter>
-                <file relative-to="jboss.server.log.dir" path="server.log"/>
-                <suffix value=".yyyy-MM-dd"/>
-                <append value="true"/>
-            </periodic-rotating-file-handler>
--->
-...
-            <root-logger>
-                <level name="INFO"/>
-                <handlers>
-                    <handler name="CONSOLE"/>
-                    <!--<handler name="FILE"/>-->
-                </handlers>
-            </root-logger>
-```
-## Add the welcome content to the server config
-
-Replace undertow subsystem with:
-
-```
-<subsystem xmlns="urn:jboss:domain:undertow:community:14.0" default-virtual-host="default-host" default-servlet-container="default" default-server="default-server" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
-    <byte-buffer-pool name="default"/>
-    <buffer-cache name="default"/>
-    <server name="default-server">
-        <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-        <host name="default-host" alias="localhost">
-            <location name="/" handler="welcome-content"/>
-            <http-invoker/>
-        </host>
-    </server>
-    <servlet-container name="default">
-        <jsp-config/>
-        <websockets/>
-    </servlet-container>
-    <handlers>
-      <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
-    </handlers>
-    <application-security-domains>
-        <application-security-domain name="other" security-domain="ApplicationDomain" integrated-jaspi="false"/>
-    </application-security-domains>
-</subsystem>
-```
-
-## Use WildFly CLI to update the configuration and deploy the custome auth module
+## Use WildFly CLI to update the configuration and deploy the custom auth module
 
 ```
 sh ./min-core-server/bin/standalone.sh &
@@ -213,20 +136,20 @@ Kill the server.
 ## Run the image
 
 * `./wildfly-launcher`
-* Access the page: http://127.0.0.1:8080/helloworld/HelloWorld
-* Access the pre-compiled JSP: http://127.0.0.1:8080/helloworld/simple.jsp
-* Servlet filter: http://127.0.0.1:8080/helloworld/FilterExample
-* Access the websocket 1: http://127.0.0.1:8080/helloworld/websocket.html
-* Access the websocket 2 (with encoding/decoding): http://127.0.0.1:8080/helloworld/bid.html
-* Access the secured servlet: `curl -v http://localhost:8080/helloworld/secured -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:password"`
-* Access the REST1: http://127.0.0.1:8080/helloworld/rest/HelloWorld?from=100&to=200&orderBy=age&orderBy=FOO
-* Access the REST2: http://127.0.0.1:8080/helloworld/rest2/HelloWorld2?from=100&to=200&orderBy=age&orderBy=name
-* Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/rectangle
-* Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/books
-* Access REST + JSON Bindings: http://localhost:8080/helloworld/rest3/library/books/9780596529260
-* Access REST + JSON Bindings (file upload): http://localhost:8080/helloworld/upload.html
-* Access REST + JSAPI: http://localhost:8080/helloworld/jsapi.html
-* Access REST + RestEasy Tracing extension: http://localhost:8080/helloworld/tracing.html
+* Access the page: http://127.0.0.1:8080/HelloWorld
+* Access the pre-compiled JSP: http://127.0.0.1:8080/simple.jsp
+* Servlet filter: http://127.0.0.1:8080/FilterExample
+* Access the websocket 1: http://127.0.0.1:8080/websocket.html
+* Access the websocket 2 (with encoding/decoding): http://127.0.0.1:8080/bid.html
+* Access the secured servlet: `curl -v http://localhost:8080/secured -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:password"`
+* Access the REST1: http://127.0.0.1:8080/rest/HelloWorld?from=100&to=200&orderBy=age&orderBy=FOO
+* Access the REST2: http://127.0.0.1:8080/rest2/HelloWorld2?from=100&to=200&orderBy=age&orderBy=name
+* Access REST + JSON Bindings: http://localhost:8080/rest3/library/rectangle
+* Access REST + JSON Bindings: http://localhost:8080/rest3/library/books
+* Access REST + JSON Bindings: http://localhost:8080/rest3/library/books/9780596529260
+* Access REST + JSON Bindings (file upload): http://localhost:8080/upload.html
+* Access REST + JSAPI: http://localhost:8080/jsapi.html
+* Access REST + RestEasy Tracing extension: http://localhost:8080/tracing.html
 * Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
 ```
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=ALL)
@@ -234,7 +157,7 @@ Kill the server.
 ```
 NOTE: Exit the CLI, then try to reconnect, will fail 80% of the time. We have a race condition in XNIO I suppose.
 
-Then access again to http://127.0.0.1:8080/helloworld/bid.html You will see traces in the console.
+Then access again to http://127.0.0.1:8080/bid.html You will see traces in the console.
 
 # CDI + EE security demo
 

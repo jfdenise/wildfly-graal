@@ -1,0 +1,21 @@
+embed-server
+
+if (outcome == success) of /subsystem=logging/root-logger=ROOT:read-resource
+  /subsystem=logging/root-logger=ROOT:write-attribute(name=handlers,value=[CONSOLE])
+end-if
+
+if (outcome == success) of /subsystem=logging/periodic-rotating-file-handler=FILE:read-resource
+  /subsystem=logging/periodic-rotating-file-handler=FILE:remove
+end-if
+
+if (outcome == success) of /subsystem=elytron/file-audit-log=local-audit:read-resource
+  /subsystem=elytron/file-audit-log=local-audit:remove
+end-if
+
+if (outcome == success) of /subsystem=bean-validation:read-resource
+  echo "bean-validation subsystem detected, WildFly running on Graal VM will not work properly, you should remove it."
+end-if
+
+if (outcome == success) of /subsystem=deployment-scanner:read-resource
+  echo "deployment-scanner subsystem detected, WildFly running on Graal VM will not work properly, you should remove it."
+end-if

@@ -8,9 +8,13 @@ unset IFS
 
 arraylength=${#array[@]}
 
+echo "Adjust the server"
+cp files/logging.properties min-core-server/standalone/configuration
+./min-core-server/bin/jboss-cli.sh --file=graal-adjustments.cli
+
 
 echo "Analyzing the server and deployment"
-java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/helloworld.war analyzer.properties
+java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/ROOT.war analyzer.properties
 
 # JSONB discovered classes
 if [ -f analyzer-output/allJsonBindingClasses.txt ]; then
@@ -34,7 +38,7 @@ echo "CDI classes configured classes $cdiClasses"
 cmd="
 native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
--Dorg.wildfly.graal.deployment.module=deployment.helloworld.war \\
+-Dorg.wildfly.graal.deployment.module=deployment.root.war \\
 -Dorg.wildfly.graal.build.time=true \\
 -Djboss.home.dir=${JBOSS_HOME} \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
