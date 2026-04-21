@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -101,6 +102,20 @@ public class Analyzer {
             if (!cdiProxyClasses.isEmpty()) {
                 System.out.println("CDI proxy class names stored in " + cdiProxiesFile);
                 Files.write(cdiProxiesFile, cdiProxyClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
+            Path resourcesFile = output.resolve("resources.txt");
+            Files.deleteIfExists(resourcesFile);
+            String res = props.getProperty("preloaded.resources");
+            if (res != null) {
+                Set<String> resources = new HashSet<>();
+                String[] split = res.split(",");
+                for(String s : split) {
+                    s = s.trim();
+                    if(!s.isEmpty()) {
+                        resources.add(s);
+                    }
+                }
+                Files.write(resourcesFile, resources, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
         }
     }

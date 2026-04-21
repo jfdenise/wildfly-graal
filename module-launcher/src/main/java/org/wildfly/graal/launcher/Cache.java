@@ -1,5 +1,8 @@
 package org.wildfly.graal.launcher;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -34,6 +37,7 @@ public class Cache extends ClassCache {
     private final Map<Class<?>, Map<Method, Map<Class<?>, Annotation>>> METHOD_ANNOTATIONS = new HashMap<>();
     private final Map<Class<?>, Map<Method, Annotation[][]>> PARAMETERS_ANNOTATIONS = new HashMap<>();
     private final Map<Class<?>, Method[]> METHODS = new HashMap<>();
+    private final Map<String, byte[]> RESOURCES = new HashMap<>();
 
     public void addClassToCache(String className) throws Exception {
         if (!CACHE.containsKey(className)) {
@@ -302,5 +306,23 @@ public class Cache extends ClassCache {
 //        }
 //        Constructor[] array = new Constructor[constructors.size()];
 //        return constructors.toArray(array);
+    }
+
+    @Override
+    public void addResourceToCache(String path) throws IOException {
+        try (InputStream stream = getModule().getClassLoader().getResourceAsStream(path)) {
+            byte[] bytes = stream.readAllBytes();
+            RESOURCES.put(path, bytes);
+        }
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String path) throws IOException {
+        InputStream stream = null;
+        byte[] arr = RESOURCES.get(path);
+        if (arr != null) {
+            stream = new ByteArrayInputStream(arr);
+        }
+        return stream;
     }
 }

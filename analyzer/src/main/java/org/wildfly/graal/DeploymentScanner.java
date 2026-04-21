@@ -47,15 +47,17 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.Type;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DeploymentScanner implements AutoCloseable {
 
     private static final String IGNORE_RESPONSE_PROPERTIES = "json.ignore.responses";
     private static final String ADDITIONL_JSON_CLASSES = "json.additional.classes";
+    private static final String EXCLUDED_DEPENDENCIES = "excluded.dependencies";
     private final Path binary;
     private final Path tempDirectory;
     private boolean verbose;
-    private final Set<Pattern> excludeArchivesFromScan;
+    private final Set<Pattern> excludeArchivesFromScan = new HashSet<>();
     private ArchiveType archiveType;
     private DeploymentScanner parent;
     private final boolean isArchive;
@@ -73,7 +75,7 @@ public class DeploymentScanner implements AutoCloseable {
         this.props = props;
         this.tempDirectory = parent == null ? Files.createTempDirectory("analyzer") : parent.tempDirectory;
         this.verbose = verbose;
-        this.excludeArchivesFromScan = excludeArchivesFromScan;
+        this.excludeArchivesFromScan.addAll(excludeArchivesFromScan);
         String ignored = props.getProperty(IGNORE_RESPONSE_PROPERTIES);
         if (ignored != null) {
             String[] arr = ignored.split(",");
@@ -91,6 +93,16 @@ public class DeploymentScanner implements AutoCloseable {
                 s = s.trim();
                 if (!s.isEmpty()) {
                     additionalJsonClasses.add(s);
+                }
+            }
+        }
+        String excludedDeps = props.getProperty(EXCLUDED_DEPENDENCIES);
+        if (excludedDeps != null) {
+            String[] arr = excludedDeps.split(",");
+            for (String s : arr) {
+                s = s.trim();
+                if (!s.isEmpty()) {
+                    this.excludeArchivesFromScan.add(Pattern.compile(s));
                 }
             }
         }
@@ -449,6 +461,72 @@ public class DeploymentScanner implements AutoCloseable {
     }
 
     /**
+     * Check if a class, its fields, or method parameters have Bean Validation annotations.
+     */
+    private boolean hasBeanValidationAnnotations(ClassInfo ci) {
+        // Check class-level annotations
+        for (AnnotationInstance annotation : ci.annotations()) {
+            if (isBeanValidationAnnotation(annotation.name().toString())) {
+                return true;
+            }
+        }
+
+        // Check field annotations
+        for (FieldInfo field : ci.fields()) {
+            for (AnnotationInstance annotation : field.annotations()) {
+                if (isBeanValidationAnnotation(annotation.name().toString())) {
+                    return true;
+                }
+            }
+        }
+
+        // Check method parameter annotations and return value annotations
+        for (MethodInfo method : ci.methods()) {
+            // Check method-level annotations (for return value validation)
+            for (AnnotationInstance annotation : method.annotations()) {
+                if (isBeanValidationAnnotation(annotation.name().toString())) {
+                    return true;
+                }
+            }
+
+            // Check parameter annotations
+            for (short i = 0; i < method.parametersCount(); i++) {
+                final short finalIndex = i;
+                List<AnnotationInstance> paramAnnotations = method.annotations().stream()
+                        .filter(a -> a.target().kind() == org.jboss.jandex.AnnotationTarget.Kind.METHOD_PARAMETER
+                                && a.target().asMethodParameter().position() == finalIndex)
+                        .collect(java.util.stream.Collectors.toList());
+                for (AnnotationInstance annotation : paramAnnotations) {
+                    if (isBeanValidationAnnotation(annotation.name().toString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if an annotation is a Bean Validation annotation.
+     */
+    private boolean isBeanValidationAnnotation(String annotationName) {
+        // Jakarta Bean Validation annotations
+        if (annotationName.startsWith("jakarta.validation.constraints.")
+                || annotationName.equals("jakarta.validation.Valid")
+                || annotationName.equals("jakarta.validation.groups.ConvertGroup")) {
+            return true;
+        }
+
+        // Hibernate Validator specific annotations
+        if (annotationName.startsWith("org.hibernate.validator.constraints.")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Process @Produces or @Consumes annotation to extract JSON-mapped types.
      *
      * @param mi Method to analyze
@@ -559,7 +637,13 @@ public class DeploymentScanner implements AutoCloseable {
         Index index = isArchive ? JarIndexer.createJarIndex(binary.toFile(),
                 indexer, false, true, false).getIndex()
                 : DirectoryIndexer.indexDirectory(binary.toFile(), indexer);
+
+        boolean hasBeanValidation = false;
+
         for (ClassInfo ci : index.getKnownClasses()) {
+            if (ci.name().toString().equals("module-info")) {
+                continue;
+            }
             ctx.classes.add(formatClassName(ci.name().toString()));
 
             boolean isRestEndpoint = false;
@@ -611,6 +695,22 @@ public class DeploymentScanner implements AutoCloseable {
                     System.out.println("Found CDI scoped bean: " + className);
                 }
             }
+
+            // Check for Bean Validation annotations
+            if (hasBeanValidationAnnotations(ci)) {
+                hasBeanValidation = true;
+                if (verbose) {
+                    System.out.println("Found Bean Validation annotations in: " + ci.name());
+                }
+            }
+        }
+
+        // If any Bean Validation annotations were found, add Validator to CDI classes
+        if (hasBeanValidation) {
+            ctx.cdiClasses.add("jakarta.validation.Validator");
+            if (verbose) {
+                System.out.println("Added jakarta.validation.Validator to CDI classes");
+            }
         }
         int i = binary.toFile().getName().lastIndexOf(".");
         String ext = binary.toFile().getName().substring(i + 1);
@@ -660,7 +760,9 @@ public class DeploymentScanner implements AutoCloseable {
     private void scanWithNestedScanner(Path file, DeploymentScanContext ctx) throws IOException {
         // Check it is not an excluded archive
         for (Pattern exclude : excludeArchivesFromScan) {
+            System.out.println(" TEST EXCLUDE OF " + file.getFileName() + " with pattern " + exclude);
             if (exclude.matcher(file.getFileName().toString()).matches()) {
+                System.out.println("IS EXCLUDED!!!!!");
                 return;
             }
         }

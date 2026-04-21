@@ -45,14 +45,20 @@ public class Launcher {
     static {
         try {
             List<String> allDeploymentClasses = new ArrayList<>();
+            List<String> allResources = new ArrayList<>();
             Path deploymentClasses = Paths.get("analyzer-output/allDeploymentClasses.txt");
             if (Files.exists(deploymentClasses)) {
                 List<String> depClasses = Files.readAllLines(deploymentClasses);
                 allDeploymentClasses.addAll(depClasses);
                 allDeploymentClasses.addAll(DEPLOYMENT_WELL_KNOWN_CLASSES);
             }
+            Path resourcesPath = Paths.get("analyzer-output/resources.txt");
+            if (Files.exists(resourcesPath)) {
+                List<String> resources = Files.readAllLines(resourcesPath);
+                allResources.addAll(resources);
+            }
 
-            WildFlyGraalSetup.setDeploymentSetup(allDeploymentClasses, Cache.class);
+            WildFlyGraalSetup.setDeploymentSetup(allDeploymentClasses, allResources, Cache.class);
 
             Path modulesDir = Paths.get(JBOSS_HOME + "/modules").toAbsolutePath();
             LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());

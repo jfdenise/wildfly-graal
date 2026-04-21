@@ -58,6 +58,7 @@ public class WildFlyGraalSetup {
     private static final Class<?> MODULE;
     private static final Method GET_CACHE;
     private static final Method ADD_CLASS_TO_CACHE;
+    private static final Method ADD_RESOURCE_TO_CACHE;
     private static final Method ADD_SERVICE_TO_CACHE;
     private static final Method GET_CONSTRUCTOR_FROM_CACHE;
     private static final Method GET_CLASS_FROM_CACHE;
@@ -77,6 +78,7 @@ public class WildFlyGraalSetup {
     private static boolean runtime;
     private static boolean buildtime;
     private static List<String> deploymentClasses;
+    private static List<String> deploymentResources;
     private static Class<?> cacheImpl;
     private static Object deploymentModule;
     private static Object deploymentReflectionIndex;
@@ -88,6 +90,7 @@ public class WildFlyGraalSetup {
         Class<?> module = null;
         Method getCache = null;
         Method addClassToCache = null;
+        Method addResourceToCache = null;
         Method getConstructorFromCache = null;
         Method getClassFromCache = null;
         Method setCache = null;
@@ -111,6 +114,7 @@ public class WildFlyGraalSetup {
                 cache = Class.forName("org.jboss.modules.ClassCache", false, WildFlyGraalSetup.class.getClassLoader());
                 getCache = cacheHandler.getMethod("getCache");
                 addClassToCache = cache.getMethod("addClassToCache", String.class);
+                addResourceToCache = cache.getMethod("addResourceToCache", String.class);
                 getConstructorFromCache = cache.getMethod("getConstructorFromCache", Class.class, Class[].class);
                 getClassFromCache = cache.getMethod("getClassFromCache", String.class);
                 getAnnotation = cache.getMethod("getAnnotation", Class.class, Class.class);
@@ -139,6 +143,7 @@ public class WildFlyGraalSetup {
         MODULE_CACHE = cache;
         GET_CACHE = getCache;
         ADD_CLASS_TO_CACHE = addClassToCache;
+        ADD_RESOURCE_TO_CACHE = addResourceToCache;
         GET_CONSTRUCTOR_FROM_CACHE = getConstructorFromCache;
         GET_CLASS_FROM_CACHE = getClassFromCache;
         GET_ANNOTATION = getAnnotation;
@@ -176,8 +181,9 @@ public class WildFlyGraalSetup {
         runtime = true;
     }
 
-    public static void setDeploymentSetup(List<String> classes, Class<?> clazz) {
+    public static void setDeploymentSetup(List<String> classes, List<String> resources, Class<?> clazz) {
         deploymentClasses = Collections.unmodifiableList(classes);
+        deploymentResources = Collections.unmodifiableList(resources);
         cacheImpl = clazz;
     }
 
@@ -256,6 +262,9 @@ public class WildFlyGraalSetup {
                     }
                     for (String depClass : deploymentClasses) {
                         ADD_CLASS_TO_CACHE.invoke(cache, depClass);
+                    }
+                    for (String resource : deploymentResources) {
+                        ADD_RESOURCE_TO_CACHE.invoke(cache, resource);
                     }
                 }
             }
@@ -526,7 +535,7 @@ public class WildFlyGraalSetup {
                 try {
                     String name = arr[i].trim();
                     if (!name.isEmpty()) {
-                        System.out.println("EAGER INIT CLASS " + arr[i]);
+                        System.out.println("Preloading class " + arr[i]);
                         classes.add(Thread.currentThread().getContextClassLoader().loadClass(arr[i]));
                     }
                 } catch (ClassNotFoundException ex) {
