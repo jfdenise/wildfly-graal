@@ -1,27 +1,53 @@
 package org.wildfly.graal;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
+import org.jboss.galleon.MessageWriter;
+import org.jboss.galleon.ProvisioningException;
+import org.jboss.galleon.api.GalleonBuilder;
+import org.jboss.galleon.api.Provisioning;
+import org.jboss.galleon.api.config.GalleonConfigurationWithLayers;
+import org.jboss.galleon.api.config.GalleonConfigurationWithLayersBuilder;
+import org.jboss.galleon.api.config.GalleonFeaturePackConfig;
+import org.jboss.galleon.api.config.GalleonProvisioningConfig;
+import org.jboss.galleon.config.ConfigId;
+import org.jboss.galleon.universe.maven.repo.MavenRepoManager;
+import org.jboss.galleon.util.IoUtils;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.wildfly.glow.Arguments;
+import org.wildfly.glow.GlowMessageWriter;
+import org.wildfly.glow.GlowSession;
+import org.wildfly.glow.Layer;
+import org.wildfly.glow.ProvisioningTracker;
+import org.wildfly.glow.ScanArguments;
+import org.wildfly.glow.ScanResults;
+import org.wildfly.glow.maven.MavenResolver;
 
 public class Analyzer {
 
@@ -30,14 +56,109 @@ public class Analyzer {
     private static final String SYSPROP_KEY_SYSTEM_PACKAGES = "jboss.modules.system.pkgs";
 
     public static void main(String[] args) throws Exception {
+        Path output = Paths.get("analyzer-output");
+        Files.createDirectories(output);
+
         Map<String, Path> all = new HashMap<>();
-        String server = args[0];
-        Path modulesDir = Paths.get(server).resolve("modules").toAbsolutePath();
+
+        Path deploymentPath = Paths.get(args[0]).toAbsolutePath();
+        Set<String> supportedLayers;
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("supported-layers.txt")) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+                supportedLayers = new HashSet<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    supportedLayers.add(line);
+                }
+
+            }
+        }
+        Set<String> bannedLayers;
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("banned-layers.txt")) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+                bannedLayers = new HashSet<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    bannedLayers.add(line);
+                }
+            }
+        }
+        Set<String> requiredLayers;
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("required-layers.txt")) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+                requiredLayers = new HashSet<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    requiredLayers.add(line);
+                }
+            }
+        }
+        Path provisioningFile = Files.createTempFile("graal-glow", null);
+        provisioningFile.toFile().deleteOnExit();
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("provisioning.xml")) {
+            Files.copy(stream, provisioningFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+        
+        Path cliFile = output.resolve("graal-adjustments.cli");
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("graal-adjustments.cli")) {
+            Files.copy(stream, cliFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Check with Glow that it doesn't require unsupported layers
+        List<Path> deployments = new ArrayList<>();
+        deployments.add(deploymentPath);
+        ScanArguments.Builder builder = Arguments.scanBuilder();
+        builder.setBinaries(deployments);
+        builder.setJndiLayers(requiredLayers);
+        builder.setProvisoningXML(provisioningFile);
+        MavenRepoManager repoManager = MavenResolver.newMavenResolver();
+        ScanResults res = GlowSession.scan(repoManager, builder.build(), GlowMessageWriter.DEFAULT);
+        Set<Layer> layers = res.getDiscoveredLayers();
+        res.outputCompactInformation();
+        for (Layer l : layers) {
+            if (!supportedLayers.contains(l.getName())) {
+                if (!bannedLayers.contains(l.getName())) {
+                    throw new Exception("The layer " + l.getName() + " is required by the deployment although not supported in a Graal VM context.");
+                }
+            }
+        }
+        // Provision the server
+
+        GalleonProvisioningConfig.Builder provisioningConfigBuilder = GalleonProvisioningConfig.builder();
+        ConfigId id = new ConfigId("standalone", "standalone.xml");
+        GalleonConfigurationWithLayers original = res.getProvisioningConfig().getDefinedConfig(id);
+        GalleonConfigurationWithLayersBuilder configBuilder = GalleonConfigurationWithLayersBuilder.builder(original);
+        configBuilder.setName(id.getName());
+        configBuilder.setModel(id.getModel());
+        for (GalleonFeaturePackConfig fp : res.getProvisioningConfig().getFeaturePackDeps()) {
+            provisioningConfigBuilder.addFeaturePackDep(fp);
+        }
+        for (String l : bannedLayers) {
+            configBuilder.excludeLayer(l);
+        }
+        provisioningConfigBuilder.addConfig(configBuilder.build());
+        for (Entry<String, String> entry : res.getProvisioningConfig().getOptions().entrySet()) {
+            provisioningConfigBuilder.addOption(entry.getKey(), entry.getValue());
+        }
+        provisioningConfigBuilder.addOption("ignore-not-excluded-layers", "true");
+        Path jbossHome = output.resolve("wildfly-server");
+        if (Files.exists(jbossHome)) {
+            IoUtils.recursiveDelete(jbossHome);
+        }
+        GalleonProvisioningConfig newConfig = provisioningConfigBuilder.build();
+        provisionServer(newConfig, jbossHome, repoManager, GlowMessageWriter.DEFAULT);
+
+        // Update the logging file
+        Path loggingFile = jbossHome.resolve("standalone").resolve("configuration").resolve("logging.properties");
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("logging.properties")) {
+            Files.copy(stream, loggingFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        Path modulesDir = jbossHome.resolve("modules").toAbsolutePath();
         LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
         handleModules(modulesDir, all);
         Set<String> sorted = new TreeSet<>();
-        Path output = Paths.get("analyzer-output");
-        Files.createDirectories(output);
+        
         Path allPackages = output.resolve("allServerPackages.txt");
         for (String k : all.keySet()) {
             //System.out.println("Load module " + k);
@@ -55,68 +176,60 @@ public class Analyzer {
 
         //System.out.println(sorted.size());
         // Discover deployment classes
-        Path properties;
-        String deployment = null;
-        if (args.length == 3) {
-            deployment = args[1];
-            properties = Paths.get(args[2]);
-        } else {
-            properties = Paths.get(args[1]);
-        }
+        Path properties = Paths.get(args[1]);
+
         Properties props = new Properties();
         try (FileInputStream stream = new FileInputStream(properties.toFile())) {
             props.load(stream);
         }
-        if (deployment != null) {
-            Path deploymentPath = Paths.get(deployment).toAbsolutePath();
-            DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet(), props);
-            Set<String> allClasses = new TreeSet<>();
-            Set<String> jsonBClasses = new TreeSet<>();
-            Set<String> cdiClasses = new TreeSet<>();
-            Set<String> cdiProxyClasses = new TreeSet<>();
-            scanner.scan(allClasses, jsonBClasses, cdiClasses, cdiProxyClasses);
-            Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
-            Files.deleteIfExists(deploymentClasses);
+
+        DeploymentScanner scanner = new DeploymentScanner(deploymentPath, false, Collections.emptySet(), props);
+        Set<String> allClasses = new TreeSet<>();
+        Set<String> jsonBClasses = new TreeSet<>();
+        Set<String> cdiClasses = new TreeSet<>();
+        Set<String> cdiProxyClasses = new TreeSet<>();
+        scanner.scan(allClasses, jsonBClasses, cdiClasses, cdiProxyClasses);
+        Path deploymentClasses = output.resolve("allDeploymentClasses.txt");
+        Files.deleteIfExists(deploymentClasses);
 //        for (String s : allClasses) {
 //            System.out.println(s);
 //        }
-            System.out.println("Deployment class names stored in " + deploymentClasses);
-            Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
-            Files.deleteIfExists(jsonClasses);
-            Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            if (!jsonBClasses.isEmpty()) {
+        System.out.println("Deployment class names stored in " + deploymentClasses);
+        Path jsonClasses = output.resolve("allJsonBindingClasses.txt");
+        Files.deleteIfExists(jsonClasses);
+        Files.write(deploymentClasses, allClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        if (!jsonBClasses.isEmpty()) {
 
-                System.out.println("JSON Binding class names stored in " + jsonClasses);
-                Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            }
-            Path cdiClassesFile = output.resolve("allCDIClasses.txt");
-            Files.deleteIfExists(cdiClassesFile);
-            // Write CDI classes
-            if (!cdiClasses.isEmpty()) {
-                System.out.println("CDI class names stored in " + cdiClassesFile);
-                Files.write(cdiClassesFile, cdiClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            }
-            Path cdiProxiesFile = output.resolve("allCDIProxyClasses.txt");
-            Files.deleteIfExists(cdiProxiesFile);
-            // Write CDI classes
-            if (!cdiProxyClasses.isEmpty()) {
-                System.out.println("CDI proxy class names stored in " + cdiProxiesFile);
-                Files.write(cdiProxiesFile, cdiProxyClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            }
-            Path resourcesFile = output.resolve("resources.txt");
-            Files.deleteIfExists(resourcesFile);
-            String res = props.getProperty("preloaded.resources");
-            if (res != null) {
-                Set<String> resources = new HashSet<>();
-                String[] split = res.split(",");
-                for(String s : split) {
-                    s = s.trim();
-                    if(!s.isEmpty()) {
-                        resources.add(s);
-                    }
+            System.out.println("JSON Binding class names stored in " + jsonClasses);
+            Files.write(jsonClasses, jsonBClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }
+        Path cdiClassesFile = output.resolve("allCDIClasses.txt");
+        Files.deleteIfExists(cdiClassesFile);
+        // Write CDI classes
+        if (!cdiClasses.isEmpty()) {
+            System.out.println("CDI class names stored in " + cdiClassesFile);
+            Files.write(cdiClassesFile, cdiClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }
+        Path cdiProxiesFile = output.resolve("allCDIProxyClasses.txt");
+        Files.deleteIfExists(cdiProxiesFile);
+        // Write CDI classes
+        if (!cdiProxyClasses.isEmpty()) {
+            System.out.println("CDI proxy class names stored in " + cdiProxiesFile);
+            Files.write(cdiProxiesFile, cdiProxyClasses, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }
+        Path resourcesFile = output.resolve("resources.txt");
+        Files.deleteIfExists(resourcesFile);
+        String resourcesProp = props.getProperty("preloaded.resources");
+        if (resourcesProp != null) {
+            Set<String> resources = new HashSet<>();
+            String[] split = resourcesProp.split(",");
+            for (String s : split) {
+                s = s.trim();
+                if (!s.isEmpty()) {
+                    resources.add(s);
                 }
-                Files.write(resourcesFile, resources, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
+            Files.write(resourcesFile, resources, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         }
     }
 
@@ -231,6 +344,46 @@ public class Analyzer {
             if (classPath != null) {
                 System.setProperty(SYSPROP_KEY_CLASS_PATH, classPath);
             }
+        }
+    }
+
+    static void provisionServer(GalleonProvisioningConfig config, Path home, MavenRepoManager resolver, GlowMessageWriter writer) throws ProvisioningException {
+        try (Provisioning pm = new GalleonBuilder().addArtifactResolver(resolver).newProvisioningBuilder(config)
+                .setInstallationHome(home)
+                .setLogTime(false)
+                .setMessageWriter(new MessageWriter() {
+                    @Override
+                    public void verbose(Throwable cause, CharSequence message) {
+                        if (writer.isVerbose()) {
+                            writer.trace(message);
+                        }
+                    }
+
+                    @Override
+                    public void print(Throwable cause, CharSequence message) {
+                        writer.info(message);
+                    }
+
+                    @Override
+                    public void error(Throwable cause, CharSequence message) {
+                        writer.error(message);
+                    }
+
+                    @Override
+                    public boolean isVerboseEnabled() {
+                        return writer.isVerbose();
+                    }
+
+                    @Override
+                    public void close() throws Exception {
+                    }
+
+                })
+                .setRecordState(true)
+                .build()) {
+            ProvisioningTracker.initTrackers(pm, writer);
+
+            pm.provision(config);
         }
     }
 }

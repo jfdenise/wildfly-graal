@@ -1,20 +1,19 @@
 set -e
 current_dir=$(pwd)
-JBOSS_HOME=${current_dir}/min-core-server
+JBOSS_HOME=${current_dir}/analyzer-output/wildfly-server
 
+if [ ! -d "${JBOSS_HOME}" ]; then
+  if [ -z "$1" ]; then
+    echo "ERROR. No server installation found, you must provide a path to a deployment file to analyze."
+    exit 1
+  fi
+  sh ./provision-wildfly-server.sh $1 analyzer.properties
+fi
 IFS=$'\n'
 array=($(find ${JBOSS_HOME}/modules/system/layers/base/ -name \*.jar))
 unset IFS
 
 arraylength=${#array[@]}
-
-echo "Adjust the server"
-cp files/logging.properties min-core-server/standalone/configuration
-./min-core-server/bin/jboss-cli.sh --file=graal-adjustments.cli
-./min-core-server/bin/jboss-cli.sh --file=graal-deploy.cli
-
-echo "Analyzing the server and deployment"
-java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/ROOT.war analyzer.properties
 
 # JSONB discovered classes
 if [ -f analyzer-output/allJsonBindingClasses.txt ]; then

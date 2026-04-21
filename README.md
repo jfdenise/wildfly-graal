@@ -64,29 +64,21 @@ cd analyzer;mvn clean install;cd ..
 
 ```
 
-# Provision a WildFly server
+# How to build a compiled wildFly
 
-* download Galleon from https://github.com/wildfly/galleon/releases/download/6.1.1.Final/galleon-6.1.1.Final.zip, 
-unzip it and call: `galleon-6.1.1.Final/bin/galleon.sh install wildfly#39.0.0.Beta1-SNAPSHOT --layers=ee-core-profile-server,-deployment-scanner,core-tools,ee-security,-jmx-remoting,-bean-validation --dir=min-core-server`
+* In one step (if you don't seed to twak the server prior compilation): `sh ./build-wildfly-image.sh <path to a war file>`
 
-NOTE: make sure to provision the server in the wildfly-graal repo root directory.
+* In two steps: `sh ./provision-wildfly-server.sh <path to a war file>;sh ./build-wildfly-image.sh`
 
-# The demo
-
-## Create the authenticated user
-
-```
-min-core-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
-```
-
-## Deploy the deployment
+# Demos
 
 ## Build and explode the deployment
 
 ```
 cd deployment-src/helloworld;mvn clean install;cd ../..
-rm -rf min-core-server/deployment-exploded
-unzip deployment-src/helloworld/target/helloworld.war -d min-core-server/deployment-exploded
+rm -rf tmp
+mkdir -p tmp
+unzip deployment-src/helloworld/target/helloworld.war -d tmp/deployment-exploded
 ```
 
 ## Pre-compile the jsp, install it in the exploded deployment and rezip
@@ -96,15 +88,29 @@ git clone https://github.com/rmartinc/jspc
 cd jspc; mvn clean install -DskipTests; cd ..
 cd jspc/tool
 mkdir -p precompiled/classes/META-INF
-mvn exec:java -Dexec.args="-v -p pre.compiled.jsps -d  precompiled/classes -webapp ../../min-core-server/deployment-exploded -webfrg  precompiled/classes/META-INF/web-fragment.xml"
+mvn exec:java -Dexec.args="-v -p pre.compiled.jsps -d  precompiled/classes -webapp ../../tmp/deployment-exploded -webfrg  precompiled/classes/META-INF/web-fragment.xml"
 cd precompiled/classes
 jar cvf precompiled-jsp.jar *
-mkdir -p ../../../../min-core-server/deployment-exploded/WEB-INF/lib
-cp precompiled-jsp.jar ../../../../min-core-server/deployment-exploded/WEB-INF/lib
+mkdir -p ../../../../tmp/deployment-exploded/WEB-INF/lib
+cp precompiled-jsp.jar ../../../../tmp/deployment-exploded/WEB-INF/lib
 cd ../../../..
-cd min-core-server/deployment-exploded
+cd tmp/deployment-exploded
 zip ../ROOT.war * */**/*
 cd ../..
+```
+
+# Provision a WildFly server and deploy the deployment.
+
+```
+sh ./provision-wildfly-server.sh tmp/ROOT.war
+```
+
+# The demo
+
+## Create the authenticated user
+
+```
+analyzer-output/wildfly-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
 ```
 
 ## Build the custom auth module
@@ -117,10 +123,10 @@ cd deployment-src/custom-module;mvn clean install;cd ../..
 ## Use WildFly CLI to update the configuration and deploy the custom auth module
 
 ```
-sh ./min-core-server/bin/standalone.sh &
+sh ./analyzer-output/wildfly-server/bin/standalone.sh &
 cd deployment-src
-../min-core-server/bin/jboss-cli.sh --file=add-custom-module.cli
-../min-core-server/bin/jboss-cli.sh -c --file=configure-elytron.cli
+../analyzer-output/wildfly-server/bin/jboss-cli.sh --file=add-custom-module.cli
+../analyzer-output/wildfly-server/bin/jboss-cli.sh -c --file=configure-elytron.cli
 cd ..
 ```
 Kill the server.
@@ -146,7 +152,7 @@ Kill the server.
 * Access REST + JSON Bindings (file upload): http://localhost:8080/upload.html
 * Access REST + JSAPI: http://localhost:8080/jsapi.html
 * Access REST + RestEasy Tracing extension: http://localhost:8080/tracing.html
-* Connect the WildFly CLI: `./min-core-server/bin/jboss-cli.sh -c`
+* Connect the WildFly CLI: `./analyzer-output/wildfly-server/bin/jboss-cli.sh -c`
 ```
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=ALL)
 /subsystem=logging/logger=org.wildfly.graal:add(level=ALL)
@@ -157,9 +163,10 @@ Then access again to http://127.0.0.1:8080/bid.html You will see traces in the c
 
 # CDI + EE security demo
 
-## Build the deployment
+## Build the deployment and provision a new server
 
-* `cd deployment-src/ee-security;mvn clean install;cp target/ee-security.war ../../min-core-server/ROOT.war;cd ../..`
+* `cd deployment-src/ee-security;mvn clean install;cd ../..`
+* `sh ./provision-wildfly-server.sh target/ee-security.war`
 
 ## Build the image
 
@@ -173,8 +180,9 @@ Then access again to http://127.0.0.1:8080/bid.html You will see traces in the c
 
 The repo is: https://github.com/resteasy/resteasy-examples
 
-* Copy the built war to $JBOSS_HOME/ROOT.war
+* Build the example then
 
+* Call: `sh ./provision-wildfly-server.sh <path to the example war file>`
 * Call: `sh ./build-wildfly-image.sh`
 
 * Then activate the deployment the way it is documented in the next chapters.

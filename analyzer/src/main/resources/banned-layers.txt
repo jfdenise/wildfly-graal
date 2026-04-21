@@ -1,0 +1,3 @@
+deployment-scanner
+bean-validation
+jmx-remoting

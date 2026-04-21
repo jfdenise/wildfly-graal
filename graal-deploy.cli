@@ -1,3 +1,0 @@
-embed-server
-
-deployment deploy-file min-core-server/ROOT.war --name=ROOT.war --runtime-name=ROOT.war --replace
