@@ -11,7 +11,7 @@ arraylength=${#array[@]}
 echo "Adjust the server"
 cp files/logging.properties min-core-server/standalone/configuration
 ./min-core-server/bin/jboss-cli.sh --file=graal-adjustments.cli
-
+./min-core-server/bin/jboss-cli.sh --file=graal-deploy.cli
 
 echo "Analyzing the server and deployment"
 java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${JBOSS_HOME} ${JBOSS_HOME}/ROOT.war analyzer.properties

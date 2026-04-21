@@ -107,10 +107,6 @@ zip ../ROOT.war * */**/*
 cd ../..
 ```
 
-## Deploy the deployment
-
-./min-core-server/bin/jboss-cli.sh --file=graal-deploy.cli
-
 ## Build the custom auth module
 
 ```
@@ -129,11 +125,11 @@ cd ..
 ```
 Kill the server.
 
-## Build the image
+# Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
 
-## Run the image
+# Run the image
 
 * `./wildfly-launcher`
 * Access the page: http://127.0.0.1:8080/HelloWorld
@@ -163,7 +159,7 @@ Then access again to http://127.0.0.1:8080/bid.html You will see traces in the c
 
 ## Build the deployment
 
-* `cd deployment-src/ee-security;mvn clean install;cp target/ee-security.war ../../min-core-server/helloworld.war;cd ../..`
+* `cd deployment-src/ee-security;mvn clean install;cp target/ee-security.war ../../min-core-server/ROOT.war;cd ../..`
 
 ## Build the image
 
@@ -171,13 +167,13 @@ Then access again to http://127.0.0.1:8080/bid.html You will see traces in the c
 
 ## Access the servlet
 
-* `curl -v http://localhost:8080/helloworld/secured-cdi -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:quickstartPwd1"`
+* `curl -v http://localhost:8080/secured-cdi -H "X-USERNAME:quickstartUser" -H "X-PASSWORD:quickstartPwd1"`
 
 # More resteasy examples that have been tested
 
 The repo is: https://github.com/resteasy/resteasy-examples
 
-* Copy the built war to $JBOSS_HOME/helloworld.war
+* Copy the built war to $JBOSS_HOME/ROOT.war
 
 * Call: `sh ./build-wildfly-image.sh`
 
@@ -187,8 +183,8 @@ The repo is: https://github.com/resteasy/resteasy-examples
 
 https://github.com/resteasy/resteasy-examples/tree/main/async-job-service
 
-curl --verbose --request POST --header "Content-Type:  text/plain" --data "my message" http://localhost:8080/helloworld/resource/
-curl --verbose http://localhost:8080/helloworld/resource/
+curl --verbose --request POST --header "Content-Type:  text/plain" --data "my message" http://localhost:8080/resource/
+curl --verbose http://localhost:8080/resource/
 
 
 ## CDI + bean validation
