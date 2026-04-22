@@ -1,5 +1,9 @@
 embed-server
 
+if (outcome == success) of /subsystem=logging:read-resource
+  /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=ALL)
+end-if
+
 if (outcome == success) of /subsystem=logging/root-logger=ROOT:read-resource
   /subsystem=logging/root-logger=ROOT:write-attribute(name=handlers,value=[CONSOLE])
 end-if

@@ -28,15 +28,15 @@ WARNING YOU MUST USE JDK21.
 
 ```
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-graal
+# TODO JBoss Modules
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-modules
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-vfs
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-msc
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/xnio
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/undertow
-git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-elytron
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/undertow
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-elytron
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-remoting
 git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/resteasy
-git clone -b max_server_init_at_build_time_2026_04_01 git@github.com:jfdenise/jboss-jakarta-el-api_spec
 
 cd wildfly-graal/runtime;mvn clean install;cd ../..
 
@@ -48,7 +48,6 @@ cd undertow; mvn clean install -DskipTests; cd ..
 cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 cd resteasy; mvn clean install -DskipTests; cd ..
-cd jboss-jakarta-el-api_spec; mvn clean install -DskipTests; cd ..
 
 git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly-core
 git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly
@@ -64,11 +63,17 @@ cd analyzer;mvn clean install;cd ..
 
 ```
 
-# How to build a compiled wildFly
+# How to build a native WildFly
 
 * In one step (if you don't seed to twak the server prior compilation): `sh ./build-wildfly-image.sh <path to a war file>`
 
 * In two steps: `sh ./provision-wildfly-server.sh <path to a war file>;sh ./build-wildfly-image.sh`
+
+NOTE: In both cases you can set the env variable `DEBUG=true` to have some traces related to Graal support enabled.
+
+# How to run a native WildFly
+
+* Call: `wildfly-launcher`
 
 # Demos
 
@@ -229,3 +234,5 @@ The dependency is hibernate-validator, in particular the class ValidatorImpl and
 
 * Cleanup of permissions handling, we don't care about permissions, no more security manager
 * Cleanup of some useless pre loading of services now that the server is started once in the heap.
+* WildFly elytron is updated because resolution of security provider services do some reflection at runtime that CREMA should help with.
+* As a NOTE, in case it popup in the future, during the cleanup we get ridoff the git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-jakarta-el-api_spec

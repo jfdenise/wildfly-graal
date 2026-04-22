@@ -112,16 +112,13 @@ public class Launcher {
 
             // Java reflection exists at runtime, those classes must be pre loaded for runtime execution
             // This should be removed once we have CREMA
-            // when undertow UndertowHttpManagementService starts at runtime, it loads this class
-            if (modules.get("io.undertow.core") != null) {
-                modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
-            }
             // Required by org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper
             if (modules.get("org.jboss.as.weld") != null) {
                 modules.get("org.jboss.as.weld").getCache().addClassToCache("org.jboss.weld.module.web.el.WeldELContextListener");
             }
 
             // Those classes have been needed at some point, are kept for reference.
+            //modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
             //modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
             //modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
             //modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");

@@ -103,6 +103,11 @@ public class Analyzer {
         try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("graal-adjustments.cli")) {
             Files.copy(stream, cliFile, StandardCopyOption.REPLACE_EXISTING);
         }
+        
+        Path debugFile = output.resolve("graal-traces.cli");
+        try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("graal-traces.cli")) {
+            Files.copy(stream, debugFile, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         // Check with Glow that it doesn't require unsupported layers
         List<Path> deployments = new ArrayList<>();

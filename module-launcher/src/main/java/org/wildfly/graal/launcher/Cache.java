@@ -181,7 +181,9 @@ public class Cache extends ClassCache {
 
     public Class<?> getClassFromCache(String className) {
         Class<?> clazz = CACHE.get(className);
-        LOGGER.debug("GET CLASS FROM CACHE " + className + " in cache " + clazz);
+        if (clazz != null) {
+            LOGGER.debug("RETRIEVED CLASS FROM CACHE " + className + ":" + clazz);
+        }
         return clazz;
     }
 
@@ -284,8 +286,8 @@ public class Cache extends ClassCache {
     public InputStream getResourceAsStream(String path) throws IOException {
         InputStream stream = null;
         byte[] arr = RESOURCES.get(path);
-        LOGGER.debug("GET RESOURCE FROM CACHE " + path + ", in cache" + arr + ", for module " + getModule().getName());
         if (arr != null) {
+            LOGGER.debug("RETRIEVED RESOURCE " + path + "FROM CACHE for module " + getModule().getName());
             stream = new ByteArrayInputStream(arr);
         }
         return stream;

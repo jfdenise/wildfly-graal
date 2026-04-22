@@ -1,0 +1,5 @@
+embed-server
+
+if (outcome == success) of /subsystem=logging:read-resource
+  /subsystem=logging/logger=org.wildfly.graal:add(level=ALL)
+end-if
