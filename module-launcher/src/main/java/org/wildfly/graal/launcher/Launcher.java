@@ -29,19 +29,26 @@ public class Launcher {
     private static Module mainModule;
     private static final String JBOSS_HOME = System.getProperty("jboss.home.dir");
     private static final List<String> DEPLOYMENT_WELL_KNOWN_CLASSES = new ArrayList<>();
-    
+
     static {
-        DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV");
-        DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.ScriptFreeTLV");
+        // Some classes that are loaded at runtime for which we need to preload the class and constructor at build time
+        // Should be no more needed with CREMA.
+        // The comment classes have been needed at some point and are kept there for reference.
+
+//        DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.PermittedTaglibsTLV");
+//        DEPLOYMENT_WELL_KNOWN_CLASSES.add("jakarta.servlet.jsp.jstl.tlv.ScriptFreeTLV");
+        // This class is loaded at runtime when the deployment is undeployed
+        // Class org.jboss.as.jaxrs.deployment.JaxrsIntegrationProcessor.undeploy
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.fasterxml.jackson.databind.type.TypeFactory");
-        DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher");
-        DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.jsapi.JSAPIServlet");
-        DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.sun.el.ExpressionFactoryImpl");
+//        DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher");
+//        DEPLOYMENT_WELL_KNOWN_CLASSES.add("org.jboss.resteasy.jsapi.JSAPIServlet");
+//        DEPLOYMENT_WELL_KNOWN_CLASSES.add("com.sun.el.ExpressionFactoryImpl");
         // Required by QueryInjector resteasy
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.ArrayList");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.TreeSet");
         DEPLOYMENT_WELL_KNOWN_CLASSES.add("java.util.HashSet");
     }
+
     static {
         try {
             List<String> allDeploymentClasses = new ArrayList<>();
@@ -67,8 +74,13 @@ public class Launcher {
             // Load all modules to have them accessible at runtime, and register as ParrallelCapable.
             handleModules(modulesDir, all);
             StringBuilder services = new StringBuilder();
+
+            // Iterate all the modules to pre load the Services loader and retrieve the main module
+            // A lot of services are loaded when the server activatesd the service at runtime.
+            // E.g.: org.xnio.XnioProvider, io.undertow.attribute.ExchangeAttributeBuilder
+            // A substitution of ServiceLoader is in place to allow to retrieve services from the cache
+            // This should not be needed with CREMA.
             for (String k : all.keySet()) {
-                //System.out.println("Load module " + k);
                 try {
                     Module mod = loader.loadModule(k);
                     Cache classCache = new Cache();
@@ -76,24 +88,10 @@ public class Launcher {
                     if (k.equals("org.jboss.as.standalone")) {
                         mainModule = mod;
                     }
-//                    if(k.equals("org.jboss.resteasy.resteasy-crypto")) {
-//                        for (String serviceClass : mod.getServices()) {
-//                            if(serviceClass.equals("jakarta.ws.rs.ext.Providers")) {
-//                                System.out.println("FOUND IN CRYPTO");
-//                                Class x = mod.getClassLoader().loadClass(serviceClass);
-//                                System.out.println("CLAZZ CL " + ((ModuleClassLoader) x.getClassLoader()).getModule().getName());
-//                                ServiceLoader l = ServiceLoader.load(x, mod.getClassLoader());
-//                                for (Object service : l) {
-//                                    System.out.println("SERVICE " + service.getClass());
-//                                }
-//                            }
-//                        }
-//                    }
-services.append("MODULE : " + mod.getName() + "\n");
+                    services.append("MODULE : " + mod.getName() + "\n");
                     for (String serviceClass : mod.getServices()) {
                         if (!serviceClass.startsWith("java.lang.")) {
                             services.append("  Service : " + serviceClass + "\n");
-
                             Set<String> servicesImpl = mod.getCache().addServiceToCache(serviceClass);
                             for (String s : servicesImpl) {
                                 services.append("    " + s + "\n");
@@ -107,23 +105,27 @@ services.append("MODULE : " + mod.getName() + "\n");
                     throw ex;
                 }
             }
-            Files.write(Paths.get("discovered-services.txt"),services.toString().getBytes());
+            Files.write(Paths.get("analyzer-output").resolve("discovered-services.txt"), services.toString().getBytes());
+
+            // The server is started in its preMain
             mainModule.preRun(new String[0]);
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("The server classes that we add to the cache");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.compiler.JspRuntimeContext");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.apache.jasper.servlet.JspServlet");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("org.wildfly.extension.undertow.deployment.JspInitializationListener");
-            modules.get("org.wildfly.extension.undertow").getCache().addClassToCache("io.undertow.servlet.handlers.DefaultServlet");
 
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
-            modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
+            // Java reflection exists at runtime, those classes must be pre loaded for runtime execution
+            // This should be removed once we have CREMA
+            // when undertow UndertowHttpManagementService starts at runtime, it loads this class
+            if (modules.get("io.undertow.core") != null) {
+                modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
+            }
+            // Required by org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper
+            if (modules.get("org.jboss.as.weld") != null) {
+                modules.get("org.jboss.as.weld").getCache().addClassToCache("org.jboss.weld.module.web.el.WeldELContextListener");
+            }
 
-            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
-            modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.protocol.http.HttpRequestParser$$generated");
-            modules.get("org.jboss.as.weld").getCache().addClassToCache("org.jboss.weld.module.web.el.WeldELContextListener");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            // Those classes have been needed at some point, are kept for reference.
+            //modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter");
+            //modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.JsrWebSocketFilter$LogoutListener");
+            //modules.get("io.undertow.websocket").getCache().addClassToCache("io.undertow.websockets.jsr.Bootstrap$WebSocketListener");
+            //modules.get("io.undertow.core").getCache().addClassToCache("io.undertow.server.DirectByteBufferDeallocator");
             WildFlyGraalSetup.buildtimeStaticInitEnded();
             for (String k : modules.keySet()) {
                 Module m = modules.get(k);

@@ -2,12 +2,12 @@ set -e
 current_dir=$(pwd)
 JBOSS_HOME=${current_dir}/analyzer-output/wildfly-server
 
-if [ ! -d "${JBOSS_HOME}" ]; then
-  if [ -z "$1" ]; then
-    echo "ERROR. No server installation found, you must provide a path to a deployment file to analyze."
-    exit 1
-  fi
+if [ "$1" ]; then
   sh ./provision-wildfly-server.sh $1 analyzer.properties
+fi
+if [ ! -d "${JBOSS_HOME}" ]; then
+    echo "ERROR. No server installation found, you must provide a path to a deployment file to analyze."
+    exit 1  
 fi
 IFS=$'\n'
 array=($(find ${JBOSS_HOME}/modules/system/layers/base/ -name \*.jar))
@@ -37,7 +37,7 @@ echo "CDI classes configured classes $cdiClasses"
 cmd="
 native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
 wildfly-launcher \\
--Dorg.wildfly.graal.deployment.module=deployment.root.war \\
+-Dorg.wildfly.graal.deployment.module=deployment.ROOT.war \\
 -Dorg.wildfly.graal.build.time=true \\
 -Djboss.home.dir=${JBOSS_HOME} \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
@@ -52,7 +52,6 @@ wildfly-launcher \\
 
 # Classes hard coded, not discovered but needed
 cmd="$cmd
-launcher,\\
 org.jboss.modules,\\
 java.beans,\\
 java.awt.color,\\

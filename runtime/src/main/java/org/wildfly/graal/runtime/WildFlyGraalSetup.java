@@ -259,7 +259,12 @@ public class WildFlyGraalSetup {
                         }
                     }
                     for (String depClass : deploymentClasses) {
-                        ADD_CLASS_TO_CACHE.invoke(cache, depClass);
+                        try {
+                            ADD_CLASS_TO_CACHE.invoke(cache, depClass);
+                        } catch(Exception ex) {
+                            System.err.append("WARNING: Class failed to load in the context of the Deployment module " + depClass);
+                            ex.printStackTrace();
+                        }
                     }
                     for (String resource : deploymentResources) {
                         ADD_RESOURCE_TO_CACHE.invoke(cache, resource);

@@ -27,14 +27,14 @@ Test that native-image is OK, call `native-image --help`
 WARNING YOU MUST USE JDK21.
 
 ```
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly-graal
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/jboss-modules
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/jboss-vfs
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/jboss-msc
-git clone -b wildfly_graal_2026_01_22 git@github.com:jfdenise/xnio
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-graal
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-modules
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-vfs
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-msc
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/xnio
 git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/undertow
 git clone -b wildfly_graal_runtime git@github.com:jfdenise/wildfly-elytron
-git clone -b wildfly_graal_elytron_services git@github.com:jfdenise/jboss-remoting
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-remoting
 git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/resteasy
 git clone -b max_server_init_at_build_time_2026_04_01 git@github.com:jfdenise/jboss-jakarta-el-api_spec
 
@@ -166,11 +166,21 @@ Then access again to http://127.0.0.1:8080/bid.html You will see traces in the c
 ## Build the deployment and provision a new server
 
 * `cd deployment-src/ee-security;mvn clean install;cd ../..`
-* `sh ./provision-wildfly-server.sh target/ee-security.war`
+* `sh ./provision-wildfly-server.sh deployment-src/ee-security/target/ee-security.war`
+
+## Create the authenticated user
+
+```
+analyzer-output/wildfly-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
+```
 
 ## Build the image
 
 * Call: `sh ./build-wildfly-image.sh`
+
+## Start the server
+
+* Call: `./wildfly-launcher`
 
 ## Access the servlet
 
@@ -182,8 +192,8 @@ The repo is: https://github.com/resteasy/resteasy-examples
 
 * Build the example then
 
-* Call: `sh ./provision-wildfly-server.sh <path to the example war file>`
-* Call: `sh ./build-wildfly-image.sh`
+* Call: `sh ./build-wildfly-image.sh <path to the example war file>`
+* Call: `./wildfly-launcher`
 
 * Then activate the deployment the way it is documented in the next chapters.
 

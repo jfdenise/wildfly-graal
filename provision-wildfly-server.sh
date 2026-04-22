@@ -2,6 +2,7 @@ set -e
 
 echo "Analyzing the deployment ${1} and provision a server to analyzer-output/wildfly-server"
 
+rm -rf analyzer-output
 java -jar analyzer/target/Analyzer-1.0-SNAPSHOT.jar ${1} analyzer.properties
 
 echo "* Adjust the server"

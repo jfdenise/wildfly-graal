@@ -41,20 +41,19 @@ public class Cache extends ClassCache {
 
     public void addClassToCache(String className) throws Exception {
         if (!CACHE.containsKey(className)) {
-            //System.out.println("Adding to cache: " + className + " in module " + getModule().getName());
             LOGGER.debug("Adding to cache: " + className + " in module " + getModule().getName());
             Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
             CACHE.put(className, clazz);
-            
+
             try {
-                for(Constructor c : clazz.getConstructors()) {
+                for (Constructor c : clazz.getConstructors()) {
                     if (!Modifier.isPublic(c.getModifiers())) {
                         continue;
                     }
                     StringBuilder key = new StringBuilder();
                     key.append(className);
-                    
-                    for(Class p : c.getParameterTypes()) {
+
+                    for (Class p : c.getParameterTypes()) {
                         key.append("_" + p.getName());
                     }
                     CONSTRUCTORS.put(key.toString(), c);
@@ -62,7 +61,7 @@ public class Cache extends ClassCache {
                 ALL_CONSTRUCTORS_PER_CLASS.put(clazz, CONSTRUCTORS);
                 ALL_CONSTRUCTORS.put(clazz, clazz.getConstructors());
                 ALL_DECLARED_CONSTRUCTORS.put(clazz, clazz.getDeclaredConstructors());
-                
+
             } catch (Exception ex) {
                 // OK
             }
@@ -107,24 +106,22 @@ public class Cache extends ClassCache {
     }
 
     public Constructor getConstructorFromCache(Class<?> clazz, Class<?>... parameterTypes) {
-        //System.out.println("GET CONSTRUCTOR " + className + " FROM CACHE FROM MODULE " + getModule().getName());
         LOGGER.debug("GET CONSTRUCTOR " + clazz + " FROM CACHE FROM MODULE " + getModule().getName());
         Map<String, Constructor> constructors = ALL_CONSTRUCTORS_PER_CLASS.get(clazz);
-        if(constructors == null) {
+        if (constructors == null) {
             return null;
         }
         StringBuilder key = new StringBuilder();
         key.append(clazz.getName());
         if (parameterTypes != null) {
             for (Class<?> type : parameterTypes) {
-                if(type != null) {
+                if (type != null) {
                     key.append("_" + type.getName());
                 }
             }
         }
         Constructor ctr = constructors.get(key.toString());
         if (ctr != null) {
-            //System.out.println("SUCCESS, FOUND CONSTRUCTOR IN " + getModule().getName());
             LOGGER.debug("SUCCESS, FOUND CONSTRUCTOR IN " + getModule().getName());
         }
         return ctr;
@@ -145,10 +142,8 @@ public class Cache extends ClassCache {
     }
 
     public Set<String> addServiceToCache(String className) throws Exception {
+        LOGGER.debug("ADD SERVICES " + className + " IN CACHE FOR MODULE " + getModule().getName());
         Set<String> ret = new HashSet<>();
-        if(getModule().getName().equals("deployment.helloworld.war") && className.equals("jakarta.ws.rs.ext.Providers")) {
-            System.out.println("SERVICE ADDED TO THE CACHE " + className);
-        }
         try {
             Class<?> clazz = getModule().getClassLoader().loadClass(className, true);
             if (!SERVICES.containsKey(clazz)) {
@@ -158,27 +153,13 @@ public class Cache extends ClassCache {
                     ServiceLoader<?> sl = ServiceLoader.load(clazz, getModule().getClassLoader());
                     List<Object> services = new ArrayList<>();
                     for (Object service : sl) {
-//                        if(getModule().getName().equals("deployment.helloworld.war")) {
-//                            if(className.equals("jakarta.ws.rs.ext.Providers")) {
-//                                System.out.println("FOUND EXT SERVICE " + service);
-//                            }
-//                        }
                         if (service.getClass().getClassLoader() instanceof ModuleClassLoader) {
                             services.add(service);
                             ret.addAll(getClassesTree(service.getClass()));
-                            // Those services are actually loaded from the services file
-//                            if(service.getClass().getName().startsWith("org.jboss.resteasy.")&& className.equals("jakarta.ws.rs.ext.Providers")) {
-//                                if(getModule().getName().equals("deployment.helloworld.war")) {
-//                                    System.out.println("ADD RESTEASY PROVIDER TO CACHE " + service.getClass().getName());
-//                                }
-//                                addClassToCache(service.getClass().getName());
-//                            }
                         }
                     }
                     if (!services.isEmpty()) {
                         SERVICES.put(clazz, services);
-                    } else {
-                        //System.out.print("!!!!!!!!!!!! NO SERVICE TO CACHE FOR " + className);
                     }
                 } finally {
                     Thread.currentThread().setContextClassLoader(orig);
@@ -193,19 +174,20 @@ public class Cache extends ClassCache {
     public List<Object> getServicesFromCache(Class<?> type) {
         List<Object> services = SERVICES.get(type);
         if (services != null && !services.isEmpty()) {
-            //System.out.println("SUCCESS, found services " + type + " from module " + getModule().getName());
             LOGGER.debug("SUCCESS, found services " + type + " impl " + services + " from module " + getModule().getName());
         }
         return services;
     }
 
     public Class<?> getClassFromCache(String className) {
-        return CACHE.get(className);
+        Class<?> clazz = CACHE.get(className);
+        LOGGER.debug("GET CLASS FROM CACHE " + className + " in cache " + clazz);
+        return clazz;
     }
 
     public Annotation getAnnotation(Class<?> clazz, Class<? extends Annotation> type) {
         Map<Class<?>, Annotation> map = ANNOTATIONS.get(clazz);
-        //System.out.println("MAP FOR " + clazz + " " + map);
+        LOGGER.debug("GET ANNOTATION FROM CACHE " + clazz + " for annotation " + type + " in cache " + map + " from module " + getModule().getName());
         if (map == null) {
             return null;
         }
@@ -214,7 +196,7 @@ public class Cache extends ClassCache {
 
     public Annotation getAnnotation(Class<?> clazz, Method m, Class<? extends Annotation> type) {
         Map<Method, Map<Class<?>, Annotation>> map = METHOD_ANNOTATIONS.get(clazz);
-        //System.out.println("MAP FOR " + clazz + " " + map);
+        LOGGER.debug("GET ANNOTATION FROM CACHE " + clazz + " for annotation " + type + " in cache " + map + " from module " + getModule().getName());
         if (map == null) {
             return null;
         }
@@ -228,6 +210,7 @@ public class Cache extends ClassCache {
 
     public Annotation[][] getParameterAnnotations(Class<?> clazz, Method m) {
         Map<Method, Annotation[][]> map = PARAMETERS_ANNOTATIONS.get(clazz);
+        LOGGER.debug("GET ParameterAnnotations FROM CACHE " + clazz + " for annotation " + m + " in cache " + map + " from module " + getModule().getName());
         if (map == null) {
             return null;
         }
@@ -237,6 +220,7 @@ public class Cache extends ClassCache {
 
     public Method[] getDeclaredMethods(Class<?> clazz) {
         Method[] methods = METHODS.get(clazz);
+        LOGGER.debug("GET getDeclaredMethods FROM CACHE " + clazz + " in cache " + methods + " from module " + getModule().getName());
         if (methods == null) {
             methods = new Method[0];
         }
@@ -246,6 +230,7 @@ public class Cache extends ClassCache {
     @Override
     public Method getMethod(Class<?> clazz, String name, Class<?>[] params) throws NoSuchMethodException {
         Method[] methods = METHODS.get(clazz);
+        LOGGER.debug("GET getMethod FROM CACHE " + clazz + ", name " + name + " in cache " + methods + " from module " + getModule().getName());
         if (methods != null) {
             for (Method m : methods) {
                 if (m.isBridge()) {
@@ -272,47 +257,26 @@ public class Cache extends ClassCache {
 
     @Override
     public Constructor[] getDeclaredConstructors(Class<?> type) {
-        return ALL_DECLARED_CONSTRUCTORS.get(type);
+        Constructor[] constr = ALL_DECLARED_CONSTRUCTORS.get(type);
+        LOGGER.debug("GET CONSTRUCTORS for  " + type + " in cache " + constr + " for module " + getModule().getName());
+        return constr;
     }
+
     @Override
     public Constructor[] getConstructors(Class<?> type) {
-        return ALL_CONSTRUCTORS.get(type);
-//        List<Constructor> constructors = new ArrayList<>();
-//        for(String key : CONSTRUCTORS.keySet()) {
-//            if(key.equals(type.getName()) || key.startsWith(type.getName()+"_")) {
-//                constructors.add(CONSTRUCTORS.get(key));
-//            }
-//        }
-//        if(constructors.isEmpty()) {
-//            for (DependencySpec spec : getModule().getDependencies()) {
-//                if (spec instanceof ModuleDependencySpec) {
-//                    ModuleDependencySpec md = (ModuleDependencySpec) spec;
-//                    try {
-//                        // Can be null for java.base, ...
-//                        if (md.getModuleLoader() != null) {
-//                            Module m = md.getModuleLoader().loadModule(md.getName());
-//                            Constructor[] arr = m.getCache().getConstructors(type);
-//                            if (arr.length > 0) {
-//                                System.out.println("FOUND CTR IN " + m.getName());
-//                                return arr;
-//                            }
-//                        }
-//                    } catch (ModuleLoadException ex) {
-//                        // Ok, not found
-//                    }
-//                }
-//                
-//            }
-//        }
-//        Constructor[] array = new Constructor[constructors.size()];
-//        return constructors.toArray(array);
+        Constructor[] constr = ALL_CONSTRUCTORS.get(type);
+        LOGGER.debug("GET CONSTRUCTORS for  " + type + " in cache " + constr + " for module " + getModule().getName());
+        return constr;
     }
 
     @Override
     public void addResourceToCache(String path) throws IOException {
         try (InputStream stream = getModule().getClassLoader().getResourceAsStream(path)) {
-            byte[] bytes = stream.readAllBytes();
-            RESOURCES.put(path, bytes);
+            LOGGER.debug("ADD RESOURCE TO CACHE " + path + " for module " + getModule().getName());
+            if (stream != null) {
+                byte[] bytes = stream.readAllBytes();
+                RESOURCES.put(path, bytes);
+            }
         }
     }
 
@@ -320,6 +284,7 @@ public class Cache extends ClassCache {
     public InputStream getResourceAsStream(String path) throws IOException {
         InputStream stream = null;
         byte[] arr = RESOURCES.get(path);
+        LOGGER.debug("GET RESOURCE FROM CACHE " + path + ", in cache" + arr + ", for module " + getModule().getName());
         if (arr != null) {
             stream = new ByteArrayInputStream(arr);
         }
