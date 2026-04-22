@@ -134,8 +134,6 @@ public class WildFlyGraalSetup {
             } catch (Exception ex) {
                 System.out.println("WILDFLY GRAAL ERROR INITIALIZING GRAAL SETUP " + ex);
             }
-        } else {
-            System.out.println("WILDFLY NOT INITIALIZING GRAAL SETUP BECAUSE NOT AT BUILD TIME ");
         }
         IS_MODULAR = isModular;
         MODULE = module;

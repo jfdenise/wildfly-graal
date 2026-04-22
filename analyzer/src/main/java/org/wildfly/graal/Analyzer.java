@@ -114,16 +114,10 @@ public class Analyzer {
         MavenRepoManager repoManager = MavenResolver.newMavenResolver();
         ScanResults res = GlowSession.scan(repoManager, builder.build(), GlowMessageWriter.DEFAULT);
         Set<Layer> layers = res.getDiscoveredLayers();
+        System.out.println("Set of discovered layers:");
         res.outputCompactInformation();
-        for (Layer l : layers) {
-            if (!supportedLayers.contains(l.getName())) {
-                if (!bannedLayers.contains(l.getName())) {
-                    throw new Exception("The layer " + l.getName() + " is required by the deployment although not supported in a Graal VM context.");
-                }
-            }
-        }
+        System.out.println("Provisioning the server:");
         // Provision the server
-
         GalleonProvisioningConfig.Builder provisioningConfigBuilder = GalleonProvisioningConfig.builder();
         ConfigId id = new ConfigId("standalone", "standalone.xml");
         GalleonConfigurationWithLayers original = res.getProvisioningConfig().getDefinedConfig(id);
