@@ -28,7 +28,6 @@ WARNING YOU MUST USE JDK21.
 
 ```
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-graal
-# TODO JBoss Modules
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-modules
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-vfs
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-msc
@@ -36,7 +35,7 @@ git clone -b cleanup_2026_04_21 git@github.com:jfdenise/xnio
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/undertow
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-elytron
 git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-remoting
-git clone -b wildfly_graal_2026_03_05 git@github.com:jfdenise/resteasy
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/resteasy
 
 cd wildfly-graal/runtime;mvn clean install;cd ../..
 
@@ -49,8 +48,8 @@ cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd 
 cd jboss-remoting; mvn clean install -DskipTests; cd ..
 cd resteasy; mvn clean install -DskipTests; cd ..
 
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly-core
-git clone -b max_server_init_at_build_time_2026_03_12 git@github.com:jfdenise/wildfly
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-core
+git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly
 
 cd wildfly-core; mvn clean install -DskipTests; cd ..
 cd wildfly; mvn clean install -DskipTests; cd ..
@@ -234,5 +233,12 @@ The dependency is hibernate-validator, in particular the class ValidatorImpl and
 
 * Cleanup of permissions handling, we don't care about permissions, no more security manager
 * Cleanup of some useless pre loading of services now that the server is started once in the heap.
+* Cleanup of JBoss Modules.
+* Cleanup of WildFly core
+* Cleanup of WildFly
+* Write presentation.
+
+# NOTES
+
 * WildFly elytron is updated because resolution of security provider services do some reflection at runtime that CREMA should help with.
 * As a NOTE, in case it popup in the future, during the cleanup we get ridoff the git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-jakarta-el-api_spec

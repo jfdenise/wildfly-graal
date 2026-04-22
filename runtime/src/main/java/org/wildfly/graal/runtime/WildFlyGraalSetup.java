@@ -74,7 +74,6 @@ public class WildFlyGraalSetup {
     private static final Method RESTORE_PERMISSIONS;
     private static final Method CLEANUP_PERMISSIONS;
     private static final Map<String, List<java.security.Permission>> PERMISSIONS_CACHE = new HashMap<>();
-    private static final Map<String, Field> IO_OPTIONS_FIELDS = new HashMap<>();
     private static boolean runtime;
     private static boolean buildtime;
     private static List<String> deploymentClasses;
@@ -129,10 +128,11 @@ public class WildFlyGraalSetup {
                 restorePermissions = module.getMethod("restorePermissions");
                 cleanupPermissions = module.getMethod("cleanupPermissions");
                 addServiceToCache = cache.getMethod("addServiceToCache", String.class);
-                System.out.println("WILDFLY GRAAL INITIALIZING GRAAL SETUP OK ");
+                System.out.println("WildFly Graal support initialized ");
                 isModular = true;
             } catch (Exception ex) {
-                System.out.println("WILDFLY GRAAL ERROR INITIALIZING GRAAL SETUP " + ex);
+                System.err.println("Error when initializing WildFly Graal support" + ex);
+                throw new RuntimeException(ex);
             }
         }
         IS_MODULAR = isModular;
@@ -276,17 +276,6 @@ public class WildFlyGraalSetup {
         }
     }
 
-    public static Object getDeploymentModule() {
-        try {
-            if (isRuntime()) {
-                RESTORE_PERMISSIONS.invoke(deploymentModule);
-            }
-            return deploymentModule;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     public static void addPermission(java.security.Permission perm, String moduleName, String className) {
         if (isBuildTime()) {
             moduleName = moduleName == null ? "" : moduleName;
@@ -313,37 +302,11 @@ public class WildFlyGraalSetup {
         return null;
     }
 
-    public static void cacheIoOptionField(String clazz, Field f) {
-        if (isBuildTime()) {
-            IO_OPTIONS_FIELDS.put(clazz, f);
-        }
-    }
-
-    public static Field getIoOptionField(String className) {
-        if (isRuntime()) {
-            return IO_OPTIONS_FIELDS.get(className);
-        }
-        return null;
-    }
-
     public static boolean isJMXRegistrationSupported() {
         if (isBuildTime()) {
             return false;
         }
         return true;
-    }
-
-    public static void setDeploymentReflectionIndex(Object index) {
-        if (isBuildTime()) {
-            deploymentReflectionIndex = index;
-        }
-    }
-
-    public static Object getDeploymentReflectionIndex() {
-        if (isRuntime()) {
-            return deploymentReflectionIndex;
-        }
-        return null;
     }
 
     public static Annotation getAnnotation(Class<?> clazz, Class<? extends Annotation> annotType) {
