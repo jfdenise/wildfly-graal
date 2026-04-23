@@ -53,10 +53,11 @@ public class WildFlyGraalSetup {
     private static final Map<String, GraalCache> CACHE = new HashMap<>();
     // Graal is only supported for WildFly in a modular context
     private static final boolean IS_MODULAR;
-    private static final Class<?> MODULE_CACHE_HANDLER;
+    private static final Class<?> MODULE_CLASSLOADER;
     private static final Class<?> MODULE_CACHE;
     private static final Class<?> MODULE;
     private static final Method GET_CACHE;
+    private static final Method GET_MODULE;
     private static final Method ADD_CLASS_TO_CACHE;
     private static final Method ADD_RESOURCE_TO_CACHE;
     private static final Method ADD_SERVICE_TO_CACHE;
@@ -80,13 +81,12 @@ public class WildFlyGraalSetup {
     private static List<String> deploymentResources;
     private static Class<?> cacheImpl;
     private static Object deploymentModule;
-    private static Object deploymentReflectionIndex;
-    private static Object scisMetaData;
 
     static {
-        Class<?> cacheHandler = null;
+        Class<?> moduleClassLoader = null;
         Class<?> cache = null;
         Class<?> module = null;
+        Method getModule = null;
         Method getCache = null;
         Method addClassToCache = null;
         Method addResourceToCache = null;
@@ -109,9 +109,10 @@ public class WildFlyGraalSetup {
             buildtime = true;
             try {
                 module = Class.forName("org.jboss.modules.Module", false, WildFlyGraalSetup.class.getClassLoader());
-                cacheHandler = Class.forName("org.jboss.modules.CacheHandler", false, WildFlyGraalSetup.class.getClassLoader());
+                moduleClassLoader = Class.forName("org.jboss.modules.ModuleClassLoader", false, WildFlyGraalSetup.class.getClassLoader());
                 cache = Class.forName("org.jboss.modules.ClassCache", false, WildFlyGraalSetup.class.getClassLoader());
-                getCache = cacheHandler.getMethod("getCache");
+                getCache = module.getMethod("getCache");
+                getModule = moduleClassLoader.getMethod("getModule");
                 addClassToCache = cache.getMethod("addClassToCache", String.class);
                 addResourceToCache = cache.getMethod("addResourceToCache", String.class);
                 getConstructorFromCache = cache.getMethod("getConstructorFromCache", Class.class, Class[].class);
@@ -137,9 +138,10 @@ public class WildFlyGraalSetup {
         }
         IS_MODULAR = isModular;
         MODULE = module;
-        MODULE_CACHE_HANDLER = cacheHandler;
+        MODULE_CLASSLOADER = moduleClassLoader;
         MODULE_CACHE = cache;
         GET_CACHE = getCache;
+        GET_MODULE = getModule;
         ADD_CLASS_TO_CACHE = addClassToCache;
         ADD_RESOURCE_TO_CACHE = addResourceToCache;
         GET_CONSTRUCTOR_FROM_CACHE = getConstructorFromCache;
@@ -200,8 +202,9 @@ public class WildFlyGraalSetup {
     public static void addClassToCache(ClassLoader loader, String className, Class<?>... params) {
         try {
             if (isBuildTime()) {
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     ADD_CLASS_TO_CACHE.invoke(cache, className);
                 }
             }
@@ -213,14 +216,16 @@ public class WildFlyGraalSetup {
     public static Constructor getConstructorFromCache(ClassLoader loader, Class<?> clazz, Class<?>... params) {
         try {
             if (isRuntime()) {
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Constructor) GET_CONSTRUCTOR_FROM_CACHE.invoke(cache, clazz, params);
                 } else {
                     // This can happen for java.lang classes (we have a case for RestEasy that instantiate ArrayList, TreeSet, ...)
                     ClassLoader l = Thread.currentThread().getContextClassLoader();
-                    if (MODULE_CACHE_HANDLER.isAssignableFrom(l.getClass())) {
-                        Object cache = GET_CACHE.invoke(l);
+                    if (MODULE_CLASSLOADER.isAssignableFrom(l.getClass())) {
+                        Object module = GET_MODULE.invoke(l);
+                        Object cache = GET_CACHE.invoke(module);
                         return (Constructor) GET_CONSTRUCTOR_FROM_CACHE.invoke(cache, clazz, params);
                     }
                 }
@@ -234,8 +239,9 @@ public class WildFlyGraalSetup {
     public static Class<?> getClassFromCache(ClassLoader loader, String className) {
         try {
             if (isRuntime()) {
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Class<?>) GET_CLASS_FROM_CACHE.invoke(cache, className);
                 }
             }
@@ -313,8 +319,9 @@ public class WildFlyGraalSetup {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Annotation) GET_ANNOTATION.invoke(cache, clazz, annotType);
                 }
                 return null;
@@ -330,8 +337,9 @@ public class WildFlyGraalSetup {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Annotation) GET_METHOD_ANNOTATION.invoke(cache, clazz, m, annotType);
                 }
                 return null;
@@ -363,8 +371,9 @@ public class WildFlyGraalSetup {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Annotation[][]) GET_METHOD_PARAMETER_ANNOTATIONS.invoke(cache, clazz, m);
                 }
                 return null;
@@ -380,8 +389,9 @@ public class WildFlyGraalSetup {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Method[]) GET_DECLARED_METHODS.invoke(cache, clazz);
                 }
                 return null;
@@ -397,8 +407,9 @@ public class WildFlyGraalSetup {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Method) GET_METHOD.invoke(cache, clazz, name, params);
                 }
                 return null;
@@ -410,25 +421,13 @@ public class WildFlyGraalSetup {
         }
     }
 
-    public static Object getScisMetaData() {
-        if (isRuntime()) {
-            return scisMetaData;
-        }
-        return null;
-    }
-
-    public static void setScisMetaData(Object obj) {
-        if (isBuildTime()) {
-            scisMetaData = obj;
-        }
-    }
-
     public static Constructor[] getConstructors(Class clazz) {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Constructor[]) GET_CONSTRUCTORS.invoke(cache, clazz);
                 }
                 return null;
@@ -444,8 +443,9 @@ public class WildFlyGraalSetup {
         try {
             if (isRuntime()) {
                 ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && MODULE_CACHE_HANDLER.isAssignableFrom(loader.getClass())) {
-                    Object cache = GET_CACHE.invoke(loader);
+                if (loader != null && MODULE_CLASSLOADER.isAssignableFrom(loader.getClass())) {
+                    Object module = GET_MODULE.invoke(loader);
+                    Object cache = GET_CACHE.invoke(module);
                     return (Constructor[]) GET_DECLARED_CONSTRUCTORS.invoke(cache, clazz);
                 }
                 return null;

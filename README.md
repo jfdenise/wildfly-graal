@@ -231,12 +231,11 @@ The dependency is hibernate-validator, in particular the class ValidatorImpl and
 
 # TODO
 
-* Cleanup of permissions handling, we don't care about permissions, no more security manager
-* Cleanup of some useless pre loading of services now that the server is started once in the heap.
-* Cleanup of JBoss Modules.
-* Cleanup of WildFly core
-* Cleanup of WildFly
-* Write presentation.
+* Write and do a presentation.
+* Next focus will be increase complexity of server startup (security, https). We must start as much as we can at build time. 
+  Do not continue in the subsystem land, need crema.
+* bootstrap tck testing
+* Keep a eye on CREMA.
 
 # NOTES
 
