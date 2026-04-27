@@ -215,6 +215,18 @@ FAILURE, bean-validation requires some reflection that we failed to move at buil
 don't want to do that at build time. The example used for the attempt: https://github.com/wildfly/quickstart/tree/main/jaxrs-jwt
 
 
+## SSL
+
+* You can use out of the box SSL: `sh ./build-wildfly-image.sh tmp/ROOT.war ssl`
+
+* Or create your own keystore and certificate:
+* ./analyser-output/wildfly-server/bin/jboss-cli.sh
+* embed-server
+* security enable-ssl-http-server --add-https-listener --interactive
+* Follow the interactive steps...
+* Start the server `wildfly-launcher`
+* Access the page: `http://127.0.0.1:8080/HelloWorld`
+
 # Some notes
 
 * If we don't specify the packages to load at build time, _logger are not found at runtime. So we need to build the list of all packages to put in the script.
