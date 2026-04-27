@@ -62,6 +62,14 @@ public class Analyzer {
         Map<String, Path> all = new HashMap<>();
 
         Path deploymentPath = Paths.get(args[0]).toAbsolutePath();
+        String addOnsString = args.length == 3 ? args[2] : null;
+        Set<String> addOns = new HashSet<>();
+        if (addOnsString != null) {
+            String[] arr = addOnsString.split(",");
+            for(String s : arr) {
+                addOns.add(s);
+            }
+        }
         Set<String> supportedLayers;
         try (InputStream stream = Analyzer.class.getClassLoader().getResourceAsStream("supported-layers.txt")) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
@@ -116,9 +124,16 @@ public class Analyzer {
         builder.setBinaries(deployments);
         builder.setJndiLayers(requiredLayers);
         builder.setProvisoningXML(provisioningFile);
+        builder.setUserEnabledAddOns(addOns);
         MavenRepoManager repoManager = MavenResolver.newMavenResolver();
         ScanResults res = GlowSession.scan(repoManager, builder.build(), GlowMessageWriter.DEFAULT);
         Set<Layer> layers = res.getDiscoveredLayers();
+        for(Layer l : layers) {
+            if (!supportedLayers.contains(l.getName())) {
+                throw new Exception("Layer " + l.getName() + " is not supported. "
+                        + "You can't build a WildFly native launcher.");
+            }
+        }
         System.out.println("Set of discovered layers:");
         res.outputCompactInformation();
         System.out.println("Provisioning the server:");

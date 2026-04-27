@@ -64,9 +64,9 @@ cd analyzer;mvn clean install;cd ..
 
 # How to build a native WildFly
 
-* In one step (if you don't seed to twak the server prior compilation): `sh ./build-wildfly-image.sh <path to a war file>`
+* In one step (if you don't seed to twak the server prior compilation): `sh ./build-wildfly-image.sh <path to a war file> [<comma separated Glow add-ons>]`
 
-* In two steps: `sh ./provision-wildfly-server.sh <path to a war file>;sh ./build-wildfly-image.sh`
+* In two steps: `sh ./provision-wildfly-server.sh <path to a war file> [<comma separated Glow add-ons>];sh ./build-wildfly-image.sh`
 
 NOTE: In both cases you can set the env variable `DEBUG=true` to have some traces related to Graal support enabled.
 

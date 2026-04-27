@@ -20,3 +20,4 @@ jaxrs-core
 jaxrs
 jsonp
 ee-core-profile-server
+undertow-https

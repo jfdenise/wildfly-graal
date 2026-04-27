@@ -3,7 +3,7 @@ current_dir=$(pwd)
 JBOSS_HOME=${current_dir}/analyzer-output/wildfly-server
 
 if [ "$1" ]; then
-  sh ./provision-wildfly-server.sh $1 analyzer.properties
+  sh ./provision-wildfly-server.sh $1 analyzer.properties ${2}
 fi
 if [ ! -d "${JBOSS_HOME}" ]; then
     echo "ERROR. No server installation found, you must provide a path to a deployment file to analyze."
