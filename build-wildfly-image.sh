@@ -2,6 +2,7 @@ set -e
 current_dir=$(pwd)
 JBOSS_HOME=${current_dir}/analyzer-output/wildfly-server
 
+echo "INSTALLED SERVER HOME: $JBOSS_HOME" 
 if [ "$1" ]; then
   sh ./provision-wildfly-server.sh $1 analyzer.properties ${2}
 fi
@@ -40,6 +41,10 @@ wildfly-launcher \\
 -Dorg.wildfly.graal.deployment.module=deployment.ROOT.war \\
 -Dorg.wildfly.graal.build.time=true \\
 -Djboss.home.dir=${JBOSS_HOME} \\
+-Djboss.bind.address=0.0.0.0 \\
+-Djboss.bind.address.management=0.0.0.0 \\
+-Djboss.node.name=my-server1 \\
+-Djboss.tx.node.id=my-server1 \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
 -Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
@@ -69,7 +74,7 @@ done < "analyzer-output/allServerPackages.txt"
 if [ -f analyzer-output/allDeploymentClasses.txt ]; then
   # All deployment discovered classes
   while read -r line; do
-    line="${line//$/\\\\$}"
+    line="${line//$/\\$}"
     name="$line"
     cmd="$cmd,\\
 $name"
@@ -79,7 +84,7 @@ fi
 if [ -f analyzer-output/allCDIProxyClasses.txt ]; then
   # All cdi proxy discovered classes
   while read -r line; do
-    line="${line//$/\\\\$}"
+    line="${line//$/\\$}"
     name="$line"
     cmd="$cmd,\\
 $name"
@@ -169,6 +174,9 @@ $line\\"
   fi
 done
 
+echo "COMMAND";
+echo "$cmd"
+echo "========================"
 echo "$cmd" > "./build-image.sh"
 chmod +x ./build-image.sh
-./build-image.sh
+sh ./build-image.sh
