@@ -50,6 +50,7 @@ public class Launcher {
     }
 
     static {
+        System.out.println("***************************** START ******************************************");
         try {
             List<String> allDeploymentClasses = new ArrayList<>();
             List<String> allResources = new ArrayList<>();
@@ -109,7 +110,7 @@ public class Launcher {
 
             // The server is started in its preMain
             mainModule.preRun(new String[0]);
-
+            
             // Java reflection exists at runtime, those classes must be pre loaded for runtime execution
             // This should be removed once we have CREMA
             // Required by org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper
@@ -129,7 +130,10 @@ public class Launcher {
                 m.cleanupPermissions();
             }
         } catch (Throwable ex) {
+            System.out.println("***************************** END WITH EXCEPTION ****************************************** " + ex);
             throw new RuntimeException(ex);
+        } finally {
+            System.out.println("***************************** END ****************************************** ");
         }
     }
 
