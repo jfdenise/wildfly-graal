@@ -97,6 +97,7 @@ cmd="$cmd \\"
 
 cmd="$cmd
 --initialize-at-run-time=\\
+sun.security.util.Password\\\$ConsoleHolder,\\
 io.smallrye.common.os.Process,\\
 io.smallrye.common.net.CidrAddress,\\
 io.smallrye.common.net.Inet,\\
