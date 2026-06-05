@@ -60,7 +60,30 @@ public class Analyzer {
         Files.createDirectories(output);
 
         Map<String, Path> all = new HashMap<>();
+        String flag = args[0];
+        if (flag.equals("--server-only")) {
+            Path jbossHome = output.resolve("wildfly-server");
+            Path modulesDir = jbossHome.resolve("modules").toAbsolutePath();
+            LocalModuleLoader loader = (LocalModuleLoader) setupModuleLoader(modulesDir.toString());
+            handleModules(modulesDir, all);
+            Set<String> sorted = new TreeSet<>();
 
+            Path allPackages = output.resolve("allServerPackages.txt");
+            for (String k : all.keySet()) {
+                //System.out.println("Load module " + k);
+                Module m = loader.loadModule(k);
+                Set<String> p = m.getClassLoader().getLocalPaths();
+                sorted.addAll(p);
+            }
+            sorted = cleanupSet(sorted);
+            Files.deleteIfExists(allPackages);
+//        for (String s : sorted) {
+//            System.out.println(s);
+//        }
+            System.out.println("Server classes packages name stored in " + allPackages);
+            Files.write(allPackages, sorted, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return;
+        }
         Path deploymentPath = Paths.get(args[0]).toAbsolutePath();
         String addOnsString = args.length == 3 ? args[2] : null;
         Set<String> addOns = new HashSet<>();
