@@ -13,7 +13,7 @@ while getopts ":a:d:p:c:b:" arg; do
       done
       ;;
     d) # Deployment
-      cp $OPTARG $current_dir
+      cp $OPTARG $current_dir/ROOT.war
       deploymentSet=true
       ;;
     p) # Analyzer properties, overrides default one

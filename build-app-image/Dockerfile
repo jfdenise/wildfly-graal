@@ -1,4 +1,4 @@
-FROM wildfly-native-server-builder:latest AS build
+FROM quay.io/jdenise/wildfly-graal-image-builder:latest AS build
 COPY --chown=1001:root --chmod=0755 ROOT.war /opt/wildfly/graal/wildfly-graal/
 COPY --chown=1001:root --chmod=0755 user-content /opt/wildfly/graal/wildfly-graal/user-content
 RUN cd /opt/wildfly/graal/wildfly-graal; sh ./provision-wildfly-server.sh ROOT.war
