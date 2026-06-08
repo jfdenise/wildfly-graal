@@ -52,7 +52,7 @@ wildfly-launcher \\
 -Dorg.wildfly.graal.deployment.cdi.classes=$cdiClasses \\
 -H:+PrintClassInitialization \\
 --enable-monitoring=jcmd \\
---trace-object-instantiation=org.xnio.nio.WorkerThread \\
+--trace-object-instantiation=java.util.jar.JarFile \\
 --initialize-at-build-time=\\"
 
 # Classes hard coded, not discovered but needed
