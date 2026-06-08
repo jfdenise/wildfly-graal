@@ -6,6 +6,14 @@ echo "INSTALLED SERVER HOME: $JBOSS_HOME"
 if [ "$1" ]; then
   sh ./provision-wildfly-server.sh $1 analyzer.properties ${2}
 fi
+if [ -f "${current_dir}/user-content/user-script.cli" ]; then
+  echo "Executing CLI script"
+  ${JBOSS_HOME}/bin/jboss-cli.sh --file=${current_dir}/user-content/user-script.cli
+fi
+if [ -f "${current_dir}/user-content/user-script.sh" ]; then
+  echo "Executing BASH script"
+  JBOSS_HOME=${JBOSS_HOME} sh ${current_dir}/user-content/user-script.sh
+fi
 if [ ! -d "${JBOSS_HOME}" ]; then
     echo "ERROR. No server installation found, you must provide a path to a deployment file to analyze."
     exit 1  

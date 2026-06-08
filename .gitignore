@@ -48,3 +48,5 @@ deployment-src/ee-security/nb-configuration.xml
 jspc/
 /runtime/target/
 tmp
+/builder-image/graalvm-jdk-25
+/build-app-image/user-content

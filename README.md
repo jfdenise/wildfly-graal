@@ -9,6 +9,12 @@
 * Startup time 10 to 15ms vs 2secs in Java
 * Memory (RSS): 8MB vs 28MB in Java.
 
+# Fast way to get started
+
+The best way to get started is by using the WildFly Graal builder image that produces a container image with compiled server and deployment.
+Using the builder image [doc](./build-app-image/README.md).
+You don't need Graal VM nor special WildFly build, but you need podman.
+
 # Install latest graalvm (JDK25)
 
 * Download from https://www.oracle.com/downloads/graalvm-downloads.html

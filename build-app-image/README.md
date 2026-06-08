@@ -1,0 +1,24 @@
+
+# Build a native application image
+
+WARNING: podman must be installed on your system
+
+To build the image:
+
+`sh ./build-wildfly-native-app-image.sh -d <required path to ROOT.war deployment> 
+-p <optional, analyzer properties file> -c <optional, CLI script> -b <optional, bash script> -a <optional, comma separated list of files to copy in the image>`
+
+
+The image `wildfly-native-app-image:latest` is produced.
+
+To run it: `podman run -p 8080:8080 wildfly-native-app-image:latest`.
+
+
+# Project demo
+
+The demo documented in the main [README.md](../README.md) can be executed, once the deployment ROOT.war file has been built, by calling:
+
+```
+cd build-app-image
+./build-wildfly-native-app-image.sh -d ../tmp/ROOT.war  -c ../demo/user-script.cli -b ../demo/user-script.sh -a ../deployment-src/custom-module/target/custom-module.jar
+```
