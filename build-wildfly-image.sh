@@ -60,11 +60,11 @@ wildfly-launcher \\
 -Dorg.wildfly.graal.deployment.cdi.classes=$cdiClasses \\
 -H:+PrintClassInitialization \\
 --enable-monitoring=jcmd \\
---trace-object-instantiation=java.util.jar.JarFile \\
 --initialize-at-build-time=\\"
 
 # Classes hard coded, not discovered but needed
 cmd="$cmd
+org.wildfly.graal.launcher.Launcher,\\
 org.jboss.modules,\\
 java.beans,\\
 java.awt.color,\\
