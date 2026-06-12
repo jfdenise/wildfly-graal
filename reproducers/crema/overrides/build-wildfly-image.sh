@@ -53,6 +53,7 @@ wildfly-launcher \\
 -Djboss.bind.address.management=0.0.0.0 \\
 -Djboss.node.name=my-server1 \\
 -Djboss.tx.node.id=my-server1 \\
+-Dorg.wildfly.graal.build.time.timeout=30000 \\
 -Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
 -Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
 -Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\

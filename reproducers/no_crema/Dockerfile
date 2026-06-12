@@ -3,8 +3,6 @@ ARG IMAGE_NAME="wildfly-graal-image-builder"
 FROM quay.io/jdenise/${IMAGE_NAME}:latest AS build
 COPY --chown=1001:root --chmod=0755 ROOT.war /opt/wildfly/graal/wildfly-graal/
 COPY --chown=1001:root --chmod=0755 user-content /opt/wildfly/graal/wildfly-graal/user-content
-COPY --chown=1001:root --chmod=0755 overrides/build-wildfly-image.sh /opt/wildfly/graal/wildfly-graal/build-wildfly-image.sh
-COPY --chown=1001:root --chmod=0755 overrides/wildfly-graal-launcher-1.0-SNAPSHOT.jar /opt/wildfly/graal/wildfly-graal/module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar
 RUN cd /opt/wildfly/graal/wildfly-graal; sh ./provision-wildfly-server.sh ROOT.war
 RUN cd /opt/wildfly/graal/wildfly-graal; sh ./build-wildfly-image.sh
 
