@@ -3,7 +3,8 @@ set -e
 current_dir=$(pwd)
 user_dir=$current_dir/user-content
 mkdir -p $user_dir
-while getopts ":a:d:p:c:b:" arg; do
+image=wildfly-graal-image-builder
+while getopts ":a:d:p:c:b:i:" arg; do
   case $arg in
     a) # Specify additional file
       IFS=',' read -r -a array <<< "$OPTARG"
@@ -25,6 +26,9 @@ while getopts ":a:d:p:c:b:" arg; do
     b) # bash script
       cp $OPTARG $user_dir/user-script.sh
       ;;
+    i) # image
+      image=$OPTARG
+      ;;
     *) # unknown
       echo "Unknown argument -${OPTARG}"
       exit 1
@@ -37,4 +41,4 @@ if [ -z "$deploymentSet" ]; then
   exit 1
 fi
 
-podman build -t wildfly-native-app-image:latest .
+podman build --build-arg IMAGE_NAME=$image -t wildfly-native-app-image:latest .
