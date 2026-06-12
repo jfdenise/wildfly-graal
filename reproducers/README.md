@@ -1,5 +1,11 @@
 # CREMA REPRODUCERS
 
+## Get the repo
+
+```
+git clone -b crema_reproducers https://github.com/jfdenise/wildfly-graal
+cd wildfly-graal
+```
 
 ## Pre crema changes
 
@@ -8,7 +14,7 @@
 
 To run it:
 ```
-cd no_crema
+cd reproducers/no_crema
 sh ./build-wildfly-native-app-image.sh
 run the image : podman -p 8080:8080 wildfly-native-app-image:latest
 ```
@@ -21,7 +27,7 @@ When running the image you should observe the XNIO problem.
 
 To run it:
 ```
-cd crema
+cd reproducers/crema
 sh ./build-wildfly-native-app-image.sh
 run the image : podman -p 8080:8080 wildfly-native-app-image-crema:latest
 ```
