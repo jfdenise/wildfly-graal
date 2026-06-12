@@ -1,0 +1,191 @@
+set -e
+current_dir=$(pwd)
+JBOSS_HOME=${current_dir}/analyzer-output/wildfly-server
+
+echo "INSTALLED SERVER HOME: $JBOSS_HOME" 
+if [ "$1" ]; then
+  sh ./provision-wildfly-server.sh $1 analyzer.properties ${2}
+fi
+if [ -f "${current_dir}/user-content/user-script.cli" ]; then
+  echo "Executing CLI script"
+  ${JBOSS_HOME}/bin/jboss-cli.sh --file=${current_dir}/user-content/user-script.cli
+fi
+if [ -f "${current_dir}/user-content/user-script.sh" ]; then
+  echo "Executing BASH script"
+  JBOSS_HOME=${JBOSS_HOME} sh ${current_dir}/user-content/user-script.sh
+fi
+if [ ! -d "${JBOSS_HOME}" ]; then
+    echo "ERROR. No server installation found, you must provide a path to a deployment file to analyze."
+    exit 1  
+fi
+IFS=$'\n'
+array=($(find ${JBOSS_HOME}/modules/system/layers/base/ -name \*.jar))
+unset IFS
+
+arraylength=${#array[@]}
+
+# JSONB discovered classes
+if [ -f analyzer-output/allJsonBindingClasses.txt ]; then
+  while read -r line; do
+    line="${line//$/\\$}"
+    jsonbClasses="$jsonbClasses$line,"
+  done < "analyzer-output/allJsonBindingClasses.txt"
+fi
+echo "JSON Binding configured classes $jsonbClasses"
+
+
+# CDI discovered classes
+if [ -f analyzer-output/allCDIClasses.txt ]; then
+  while read -r line; do
+    line="${line//$/\\$}"
+    cdiClasses="$cdiClasses$line,"
+  done < "analyzer-output/allCDIClasses.txt"
+fi
+echo "CDI classes configured classes $cdiClasses"
+
+cmd="
+native-image -jar module-launcher/target/wildfly-graal-launcher-1.0-SNAPSHOT.jar \\
+wildfly-launcher \\
+-Dorg.wildfly.graal.deployment.module=deployment.ROOT.war \\
+-Dorg.wildfly.graal.build.time=true \\
+-Djboss.home.dir=${JBOSS_HOME} \\
+-Djboss.bind.address=0.0.0.0 \\
+-Djboss.bind.address.management=0.0.0.0 \\
+-Djboss.node.name=my-server1 \\
+-Djboss.tx.node.id=my-server1 \\
+-Djava.util.logging.manager=org.jboss.logmanager.LogManager \\
+-Djboss.modules.system.pkgs=org.jboss.modules,org.wildfly.graal,org.jboss.logmanager,org.jboss.logging \\
+-Dlogging.configuration=file:${JBOSS_HOME}/standalone/configuration/logging.properties \\
+-Dorg.wildfly.graal.deployment.json.binding.classes=$jsonbClasses \\
+-Dorg.wildfly.graal.deployment.cdi.classes=$cdiClasses \\
+-H:+PrintClassInitialization \\
+-H:+RuntimeClassLoading \\
+--enable-monitoring=jcmd \\
+--trace-object-instantiation=java.security.SecureRandom \\
+--initialize-at-build-time=\\"
+
+# Classes hard coded, not discovered but needed
+cmd="$cmd
+org.wildfly.graal.launcher.Launcher,\\
+org.jboss.modules,\\
+java.beans,\\
+java.awt.color,\\
+sun.java2d.cmm,\\
+org.xml.sax,\\
+sun.security.jgss.GSSManagerImpl"
+
+# All server discovered classes
+while read -r line; do
+    name="$line"
+    cmd="$cmd,\\
+$name"
+done < "analyzer-output/allServerPackages.txt"
+
+if [ -f analyzer-output/allDeploymentClasses.txt ]; then
+  # All deployment discovered classes
+  while read -r line; do
+    line="${line//$/\\$}"
+    name="$line"
+    cmd="$cmd,\\
+$name"
+  done < "analyzer-output/allDeploymentClasses.txt"
+fi
+
+if [ -f analyzer-output/allCDIProxyClasses.txt ]; then
+  # All cdi proxy discovered classes
+  while read -r line; do
+    line="${line//$/\\$}"
+    name="$line"
+    cmd="$cmd,\\
+$name"
+  done < "analyzer-output/allCDIProxyClasses.txt"
+fi
+
+cmd="$cmd \\"
+
+# All classes that can't be init at build time
+
+cmd="$cmd
+--initialize-at-run-time=\\
+org.apache.sshd.common.random,\\
+sun.security.util.Password\\\$ConsoleHolder,\\
+io.smallrye.common.os.Process,\\
+io.smallrye.common.net.CidrAddress,\\
+io.smallrye.common.net.Inet,\\
+io.undertow.security.impl.SimpleNonceManager,\\
+io.undertow.server.handlers.resource.DirectoryUtils\\\$Blobs,\\
+io.undertow.server.protocol.ajp.AjpServerResponseConduit,\\
+io.undertow.server.protocol.ajp.AjpServerRequestConduit,\\
+org.eclipse.jgit.util.FileUtils,\\
+org.eclipse.jgit.transport.HttpAuthMethod\\\$Digest,\\
+org.eclipse.jgit.internal.storage.file.WindowCache,\\
+org.eclipse.jgit.lib.RepositoryCache,\\
+org.eclipse.jgit.lib.internal.WorkQueue,\\
+org.eclipse.yasson.internal.ClassMultiReleaseExtension,\\
+org.jboss.as.domain.http.server.ManagementHttpServer,\\
+org.jboss.as.server.DomainServerCommunicationServices,\\
+org.jboss.as.server.deployment.module.TempFileProviderService,\\
+org.jboss.as.server.operations.NativeManagementServices,\\
+org.jboss.classfilewriter.DefaultClassFactory,\\
+org.jboss.msc.service.ServiceContainer\\\$Factory,\\
+org.jboss.remoting3.ConfigurationEndpointSupplier\\\$Holder,\\
+org.jboss.remoting3.ConnectionInfo,\\
+org.jboss.remoting3.remote.RemoteConnection,\\
+org.jboss.remoting3.remote.MessageReader,\\
+org.jboss.resteasy.spi.ResourceCleaner,\\
+org.bouncycastle.mail.smime.SMIMESignedGenerator,\\
+org.wildfly.httpclient.common.ConfigurationHttpContextSupplier,\\
+org.wildfly.httpclient.common.HttpContextGetterHolder,\\
+org.wildfly.httpclient.common.PoolAuthenticationContext,\\
+org.wildfly.httpclient.common.WildflyHttpContext,\\
+org.xnio.channels.Channels,\\
+org.xnio.DefaultXnioWorkerHolder \\"
+
+# Then other options
+cmd="$cmd
+--enable-url-protocols=jar,data \\
+-H:ConfigurationFileDirectories=files \\
+--enable-sbom=false \\
+-cp \\
+$JBOSS_HOME/jboss-modules.jar:\\
+runtime/target/wildfly-graal-runtime-1.0-SNAPSHOT.jar:\\"
+
+# Finally build the classpath
+
+for (( i=0; i<${arraylength}; i++ ));
+do
+  line=${array[$i]}":"
+  if [[ $line =~ "org/jboss/logmanager/" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+  if [[ $line =~ "org/wildfly/common" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+  if [[ $line =~ "io/smallrye/common/cpu" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+  if [[ $line =~ "io/smallrye/common/net" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+if [[ $line =~ "io/smallrye/common/os" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+if [[ $line =~ "io/smallrye/common/expression" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+if [[ $line =~ "org/jboss/logging/" ]]; then
+    cmd="$cmd
+$line\\"
+  fi
+done
+
+echo "========================"
+echo "$cmd" > "./build-image.sh"
+chmod +x ./build-image.sh
+sh ./build-image.sh
