@@ -90,15 +90,16 @@ public class Launcher {
                         mainModule = mod;
                     }
                     services.append("MODULE : " + mod.getName() + "\n");
-                    for (String serviceClass : mod.getServices()) {
-                        if (!serviceClass.startsWith("java.lang.")) {
-                            services.append("  Service : " + serviceClass + "\n");
-                            Set<String> servicesImpl = mod.getCache().addServiceToCache(serviceClass);
-                            for (String s : servicesImpl) {
-                                services.append("    " + s + "\n");
-                            }
-                        }
-                    }
+                    // DO NOT CACHE THE SERVICES, CREMA
+//                    for (String serviceClass : mod.getServices()) {
+//                        if (!serviceClass.startsWith("java.lang.")) {
+//                            services.append("  Service : " + serviceClass + "\n");
+//                            Set<String> servicesImpl = mod.getCache().addServiceToCache(serviceClass);
+//                            for (String s : servicesImpl) {
+//                                services.append("    " + s + "\n");
+//                            }
+//                        }
+//                    }
                     modules.put(k, mod);
                 } catch (Throwable ex) {
                     ex.printStackTrace();
