@@ -7,7 +7,7 @@ COPY --chown=1001:root --chmod=0755 user-content /opt/wildfly/graal/wildfly-graa
 RUN cd /opt/wildfly/graal/wildfly-graal; sh ./provision-wildfly-server.sh ROOT.war ${ADDONS}
 RUN cd /opt/wildfly/graal/wildfly-graal; sh ./build-wildfly-image.sh
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.8-1782797275
 RUN mkdir -p /opt/wildfly/graal/wildfly-graal
 COPY --from=build /opt/wildfly/graal/wildfly-graal/wildfly-launcher /opt/wildfly/graal/wildfly-graal/wildfly-launcher
 COPY --from=build /opt/wildfly/graal/wildfly-graal/analyzer-output /opt/wildfly/graal/wildfly-graal/analyzer-output 
