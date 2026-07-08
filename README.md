@@ -9,6 +9,11 @@
 * Startup time 10 to 15ms vs 2secs in Java
 * Memory (RSS): 8MB vs 28MB in Java.
 
+# Architecture Documentation
+
+For detailed architectural information and component documentation, see:
+- **[Architecture Documentation](./docs/ARCHITECTURE.md)** - Comprehensive architectural overview with links to all component docs
+
 # Fast way to get started
 
 The best way to get started is by using the WildFly Graal builder image that produces a container image with compiled server and deployment.
