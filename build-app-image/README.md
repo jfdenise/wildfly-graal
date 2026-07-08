@@ -7,7 +7,7 @@ By default Mac ARM image is produced, add the `-i wildfly-graal-image-builder-li
 To build the image:
 
 `sh ./build-wildfly-native-app-image.sh -d <required path to ROOT.war deployment> -i <required for linux: wildfly-graal-image-builder-linux>
--p <optional, analyzer properties file> -c <optional, CLI script> -b <optional, bash script> -a <optional, comma separated list of files to copy in the image>`
+-p <optional, analyzer properties file> -g <comma seperated list of Glow addOns> -c <optional, CLI script> -b <optional, bash script> -a <optional, comma separated list of files to copy in the image>`
 
 
 The image `wildfly-native-app-image:latest` is produced.

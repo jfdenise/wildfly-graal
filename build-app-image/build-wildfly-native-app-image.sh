@@ -4,7 +4,8 @@ current_dir=$(pwd)
 user_dir=$current_dir/user-content
 mkdir -p $user_dir
 image=wildfly-graal-image-builder
-while getopts ":a:d:p:c:b:i:" arg; do
+addons=
+while getopts ":a:d:p:c:b:i:g:" arg; do
   case $arg in
     a) # Specify additional file
       IFS=',' read -r -a array <<< "$OPTARG"
@@ -29,6 +30,9 @@ while getopts ":a:d:p:c:b:i:" arg; do
     i) # image
       image=$OPTARG
       ;;
+    g) # glow addons
+      addons=$OPTARG
+      ;;
     *) # unknown
       echo "Unknown argument -${OPTARG}"
       exit 1
@@ -41,4 +45,4 @@ if [ -z "$deploymentSet" ]; then
   exit 1
 fi
 
-podman build --build-arg IMAGE_NAME=$image -t wildfly-native-app-image:latest .
+podman build --build-arg IMAGE_NAME=$image --build-arg ADDONS=$addons -t wildfly-native-app-image:latest .

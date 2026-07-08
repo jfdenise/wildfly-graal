@@ -1,9 +1,10 @@
 
 ARG IMAGE_NAME="wildfly-graal-image-builder"
 FROM quay.io/jdenise/${IMAGE_NAME}:latest AS build
+ARG ADDONS=""
 COPY --chown=1001:root --chmod=0755 ROOT.war /opt/wildfly/graal/wildfly-graal/
 COPY --chown=1001:root --chmod=0755 user-content /opt/wildfly/graal/wildfly-graal/user-content
-RUN cd /opt/wildfly/graal/wildfly-graal; sh ./provision-wildfly-server.sh ROOT.war
+RUN cd /opt/wildfly/graal/wildfly-graal; sh ./provision-wildfly-server.sh ROOT.war ${ADDONS}
 RUN cd /opt/wildfly/graal/wildfly-graal; sh ./build-wildfly-image.sh
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest

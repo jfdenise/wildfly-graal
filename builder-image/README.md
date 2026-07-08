@@ -1,6 +1,6 @@
 # Builder image
 
-This image allows you to produce an container image containing a compiled WildFly server with your application deployed.
+This image allows you to produce a container image containing a compiled WildFly server with your application deployed.
 
 # How to build the image
 

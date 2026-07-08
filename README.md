@@ -12,77 +12,26 @@
 # Fast way to get started
 
 The best way to get started is by using the WildFly Graal builder image that produces a container image with compiled server and deployment.
-Using the builder image [doc](./build-app-image/README.md).
-You don't need Graal VM nor special WildFly build, but you need podman.
+To produce a container image that contains your compiled application, read this [doc](./build-app-image/README.md).
 
-# Install latest graalvm (JDK25)
+NOTE: You don't need Graal VM nor special WildFly build, but you need podman.
 
-* Download from https://www.oracle.com/downloads/graalvm-downloads.html
-* Then call in the terminal:
+# Building the builder image
 
-```
-export GRAALVM_HOME=<path to graal>/Contents/Home/
-export JAVA_HOME=${GRAALVM_HOME}
-export PATH=${GRAALVM_HOME}/bin:$PATH
-```
+NOTE: Pre-built builder image is available on quay.io:
 
-Test that native-image is OK, call `native-image --help`
+* For Mac ARM: `podman pull quay.io/jdenise/wildfly-graal-image-builder:latest`
+* For Linux x64: `podman pull quay.io/jdenise/wildfly-graal-image-builder-linux:latest`
 
-# Build WildFly and dependencies
-
-WARNING YOU MUST USE JDK21.
-
-```
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-graal
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-modules
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-vfs
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-msc
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/xnio
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/undertow
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-elytron
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/jboss-remoting
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/resteasy
-
-cd wildfly-graal/runtime;mvn clean install;cd ../..
-
-cd jboss-modules; mvn clean install -DskipTests; cd ..
-cd jboss-vfs; mvn clean install -DskipTests; cd ..
-cd jboss-msc; mvn clean install -DskipTests; cd ..
-cd xnio; mvn clean install -DskipTests; cd ..
-cd undertow; mvn clean install -DskipTests; cd ..
-cd wildfly-elytron; mvn clean install -DskipTests -DskipCompatibility=true ; cd ..
-cd jboss-remoting; mvn clean install -DskipTests; cd ..
-cd resteasy; mvn clean install -DskipTests; cd ..
-
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly-core
-git clone -b cleanup_2026_04_21 git@github.com:jfdenise/wildfly
-
-cd wildfly-core; mvn clean install -DskipTests; cd ..
-cd wildfly; mvn clean install -DskipTests; cd ..
-
-cd wildfly-graal
-cd module-launcher; mvn clean install -DskipTests; cd ..
-cd agent; mvn clean install -DskipTests; cd ..
-cd wildfly-substitutions;mvn clean install -DskipTests;cd ..
-cd analyzer;mvn clean install;cd ..
-
-```
-
-# How to build a native WildFly
-
-* In one step (if you don't seed to twak the server prior compilation): `sh ./build-wildfly-image.sh <path to a war file> [<comma separated Glow add-ons>]`
-
-* In two steps: `sh ./provision-wildfly-server.sh <path to a war file> [<comma separated Glow add-ons>];sh ./build-wildfly-image.sh`
-
-NOTE: In both cases you can set the env variable `DEBUG=true` to have some traces related to Graal support enabled.
-
-# How to run a native WildFly
-
-* Call: `wildfly-launcher`
+This image contains the updated WildFly and dependencies as well as the tooling required to build native wildfly image.
+Building the builder image [doc](./builder-image/README.md).
+This [Dockerfile file](./builder-image/Dockerfile) contains the automation to build wildfly, its dependencies and install the tooling.
 
 # Demos
 
-## Build and explode the deployment
+## The more complete demo with JSP, servlet, websocket, JAX-RS, JSON binding, RESTEasy JSAPI, WildFly CLI, Elytron security, SSL
+
+### Build and explode the deployment
 
 ```
 cd deployment-src/helloworld;mvn clean install;cd ../..
@@ -91,7 +40,7 @@ mkdir -p tmp
 unzip deployment-src/helloworld/target/helloworld.war -d tmp/deployment-exploded
 ```
 
-## Pre-compile the jsp, install it in the exploded deployment and rezip
+### Pre-compile the jsp, install it in the exploded deployment and rezip
 
 ```
 git clone https://github.com/rmartinc/jspc
@@ -109,45 +58,22 @@ zip ../ROOT.war * */**/*
 cd ../..
 ```
 
-# Provision a WildFly server and deploy the deployment.
-
-```
-sh ./provision-wildfly-server.sh tmp/ROOT.war
-```
-
-# The demo
-
-## Create the authenticated user
-
-```
-analyzer-output/wildfly-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
-```
-
-## Build the custom auth module
+### Build the custom auth module
 
 ```
 cd deployment-src/custom-module;mvn clean install;cd ../..
 ```
 
+## Build the image
 
-## Use WildFly CLI to update the configuration and deploy the custom auth module
+* `cd build-app-image`
+* `./build-wildfly-native-app-image.sh -d ../tmp/ROOT.war \
+-c ../demo/user-script.cli -b ../demo/user-script.sh \
+-g ssl -a ../deployment-src/custom-module/target/custom-module.jar`
 
-```
-sh ./analyzer-output/wildfly-server/bin/standalone.sh &
-cd deployment-src
-../analyzer-output/wildfly-server/bin/jboss-cli.sh --file=add-custom-module.cli
-../analyzer-output/wildfly-server/bin/jboss-cli.sh -c --file=configure-elytron.cli
-cd ..
-```
-Kill the server.
+## Run the image
 
-# Build the image
-
-* Call: `sh ./build-wildfly-image.sh`
-
-# Run the image
-
-* `./wildfly-launcher`
+* `podman run -p 8080:8080 -p 9990:9990 -p 8443:8443 wildfly-native-app-image:latest`
 * Access the page: http://127.0.0.1:8080/HelloWorld
 * Access the pre-compiled JSP: http://127.0.0.1:8080/simple.jsp
 * Servlet filter: http://127.0.0.1:8080/FilterExample
@@ -162,7 +88,7 @@ Kill the server.
 * Access REST + JSON Bindings (file upload): http://localhost:8080/upload.html
 * Access REST + JSAPI: http://localhost:8080/jsapi.html
 * Access REST + RestEasy Tracing extension: http://localhost:8080/tracing.html
-* Connect the WildFly CLI: `./analyzer-output/wildfly-server/bin/jboss-cli.sh -c`
+* Connect the WildFly CLI (use admin admin for User and Password): `<path to a wildfly installation>/bin/jboss-cli.sh -c`
 ```
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=ALL)
 /subsystem=logging/logger=org.wildfly.graal:add(level=ALL)
@@ -171,26 +97,22 @@ NOTE: Exit the CLI, then try to reconnect, will fail 80% of the time. We have a 
 
 Then access again to http://127.0.0.1:8080/bid.html You will see traces in the console.
 
+Remove the traces
+```
+/subsystem=logging/logger=org.wildfly.graal:remove
+```
+
 # CDI + EE security demo
 
-## Build the deployment and provision a new server
+## Build the deployment and the image
 
 * `cd deployment-src/ee-security;mvn clean install;cd ../..`
-* `sh ./provision-wildfly-server.sh deployment-src/ee-security/target/ee-security.war`
+* `cd build-app-image`
+* `./build-wildfly-native-app-image.sh -d ../deployment-src/ee-security/target/ee-security.war -b ../demo/user-script.sh`
 
-## Create the authenticated user
+## Run the image
 
-```
-analyzer-output/wildfly-server/bin/add-user.sh -a -u 'quickstartUser' -p 'quickstartPwd1' -g Users
-```
-
-## Build the image
-
-* Call: `sh ./build-wildfly-image.sh`
-
-## Start the server
-
-* Call: `./wildfly-launcher`
+* `podman run -p 8080:8080 wildfly-native-app-image:latest`
 
 ## Access the servlet
 
@@ -202,10 +124,11 @@ The repo is: https://github.com/resteasy/resteasy-examples
 
 * Build the example then
 
-* Call: `sh ./build-wildfly-image.sh <path to the example war file>`
-* Call: `./wildfly-launcher`
+* `cd build-app-image`
+* `./build-wildfly-native-app-image.sh -d <path to the example war file>`
+* `podman run -p 8080:8080 wildfly-native-app-image:latest`
 
-* Then activate the deployment the way it is documented in the next chapters.
+* Then test the deployment the way it is documented in the next chapters.
 
 ## Resteasy async-job-service
 
@@ -219,19 +142,6 @@ curl --verbose http://localhost:8080/resource/
 
 FAILURE, bean-validation requires some reflection that we failed to move at build time due to generated CDI proxy being themselves introspected. And we
 don't want to do that at build time. The example used for the attempt: https://github.com/wildfly/quickstart/tree/main/jaxrs-jwt
-
-
-## SSL
-
-* You can use out of the box SSL: `sh ./build-wildfly-image.sh tmp/ROOT.war ssl`
-
-* Or create your own keystore and certificate:
-* ./analyser-output/wildfly-server/bin/jboss-cli.sh
-* embed-server
-* security enable-ssl-http-server --add-https-listener --interactive
-* Follow the interactive steps...
-* Start the server `wildfly-launcher`
-* Access the page: `http://127.0.0.1:8080/HelloWorld`
 
 # Some notes
 
