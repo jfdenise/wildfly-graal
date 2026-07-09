@@ -4,68 +4,13 @@
 
 This document provides a comprehensive architectural overview of the WildFly-GraalVM integration, which enables WildFly application server to run as a GraalVM native image.
 
-**Performance Results:**
-- **Startup Time**: 10-15ms (vs 2000ms in standard Java) - **200x faster**
-- **Memory Footprint**: 8MB RSS (vs 28MB in standard Java) - **3.5x reduction**
-
 ## Table of Contents
 
-1. [Architecture Overview](#architecture-overview)
-2. [Component Documentation](#component-documentation)
-3. [Build-Time vs Runtime Phases](#build-time-vs-runtime-phases)
-4. [Data Flow](#data-flow)
-5. [Key Concepts](#key-concepts)
-6. [Integration Points](#integration-points)
-
----
-
-## Architecture Overview
-
-### High-Level Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          Application Layer                           │
-│  ┌──────────┬──────────┬────────────┬──────────┬──────────────────┐ │
-│  │ Servlets │   JSPs   │ WebSockets │  JAX-RS  │  CDI Beans       │ │
-│  └──────────┴──────────┴────────────┴──────────┴──────────────────┘ │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────────┐
-│                        WildFly Subsystems                            │
-│  ┌──────────┬──────────┬────────────┬──────────┬──────────────────┐ │
-│  │ Undertow │   Weld   │   EE       │ Elytron  │  RESTEasy        │ │
-│  └──────────┴──────────┴────────────┴──────────┴──────────────────┘ │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Core Infrastructure                             │
-│  ┌───────────────┬──────────────┬─────────────┬──────────────────┐  │
-│  │ JBoss Modules │  JBoss MSC   │  XNIO       │  Undertow Core   │  │
-│  └───────────────┴──────────────┴─────────────┴──────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────────┐
-│                    WildFly-GraalVM Runtime                           │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │  WildFlyGraalSetup (runtime utilities & caching)             │   │
-│  │  - Build-time/runtime detection                              │   │
-│  │  - Reflection caching                                         │   │
-│  │  - ServiceLoader support                                      │   │
-│  │  - Proxy caching                                              │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────────┐
-│                          GraalVM Native Image                        │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │  - Ahead-of-Time Compilation                                 │   │
-│  │  - Closed-World Assumption                                    │   │
-│  │  - Heap Snapshotting                                          │   │
-│  │  - ServiceLoader Substitution                                 │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-```
+1. [Component Documentation](#component-documentation)
+2. [Build-Time vs Runtime Phases](#build-time-vs-runtime-phases)
+3. [Data Flow](#data-flow)
+4. [Key Concepts](#key-concepts)
+5. [Integration Points](#integration-points)
 
 ---
 
