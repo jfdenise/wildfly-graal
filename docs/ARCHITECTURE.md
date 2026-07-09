@@ -55,11 +55,12 @@ Each of the following projects has been modified to support GraalVM native image
 
 #### 3. WildFly Subsystems
 
-- **[WildFly (Main)](./wildfly-graal-changes.md)**
-  - EE subsystem (class loading)
-  - Undertow subsystem (HTTP server, listeners, byte buffers)
-  - Weld subsystem (CDI proxy generation, bean validation)
-  - Module dependencies
+- **[WildFly (Full Server)](./wildfly-full-graal-changes.md)**
+  - EE subsystem (permission handling, class loading)
+  - Undertow subsystem (HTTP server, listeners, byte buffers, WebSockets, JSP)
+  - Weld subsystem (CDI proxy generation, bean validation, executor services)
+  - Module dependencies (module.xml configurations)
+  - Dependency version updates
 
 #### 4. Web and REST
 
@@ -75,7 +76,7 @@ Each of the following projects has been modified to support GraalVM native image
 
 #### 5. WildFly-GraalVM Integration
 
-- **[WildFly-Graal Project](./wildfly-graal-changes.md)**
+- **[WildFly-Graal Project](./wildfly-graal.md)**
   - Runtime utilities (`WildFlyGraalSetup`)
   - Module launcher (native image entry point)
   - ServiceLoader substitutions
@@ -576,7 +577,7 @@ For detailed implementation specifics, refer to the individual component documen
 - [JBoss VFS](./jboss-vfs-graal-changes.md)
 - [WildFly Core](./wildfly-core-graal-changes.md)
 - [WildFly Elytron](./wildfly-elytron-graal-changes.md)
-- [WildFly Subsystems](./wildfly-graal-changes.md)
+- [WildFly Full Server](./wildfly-full-graal-changes.md)
 - [Undertow](./undertow-graal-changes.md)
 - [RESTEasy](./resteasy-graal-changes.md)
-- [WildFly-Graal Project](./wildfly-graal-changes.md)
+- [WildFly-Graal Project](./wildfly-graal.md)
